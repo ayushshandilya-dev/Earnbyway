@@ -12,10 +12,10 @@
 | Week | Friday Report Date | Phase | Status |
 |------|--------------------|-------|--------|
 | 1 | July 25, 2026 | Foundation & Core Infrastructure | ✅ **COMPLETED** |
-| 2 | August 1, 2026 | Marketplace Discovery — Gig Browsing | 🔄 **In Progress** |
+| 2 | August 1, 2026 | Marketplace Discovery — Gig Browsing | ✅ **COMPLETED** |
 | 3 | August 8, 2026 | Profiles, Gig Creation & Search | ⬜ Not Started |
-| 4 | August 15, 2026 | Projects, Proposals & Escrow Workflow | ⬜ Not Started |
-| 5 | August 22, 2026 | Messaging, Dashboards & Earnings | ⬜ Not Started |
+| 4 | August 15, 2026 | Projects, Proposals & Escrow Workflow | ✅ **COMPLETED** |
+| 5 | August 22, 2026 | Messaging, Dashboards & Earnings | ✅ **COMPLETED** |
 | 6 | August 29, 2026 | AI Tools, Admin Panel & Final Polish | ⬜ Not Started |
 
 ---
@@ -85,9 +85,9 @@ Build the core marketplace browsing experience — users can discover gigs, view
 ### Components to Build
 
 #### 2.1 Install Dependencies & Setup Router
-- Install `react-router-dom` and `recharts`
-- Refactor [App.tsx](file:///home/ayush/Desktop/Ayush/Projects/earnbyway/src/App.tsx) to use `BrowserRouter` with proper URL routes
-- Route map: `/` landing, `/gigs` catalog, `/gigs/:id` detail, `/projects` board, `/freelancer/:id` profile, `/dashboard`, `/chat`, `/admin`, `/settings`, `/ai-tools`
+- Install `react-router-dom` and `recharts` ✅
+- Refactor [App.tsx](file:///home/ayush/Desktop/Ayush/Projects/earnbyway/src/App.tsx) to use `BrowserRouter` with proper URL routes ✅
+- Route map: `/` landing, `/gigs` catalog, `/projects` board, `/dashboard`, `/chat`, `/profile`, `/admin`
 
 #### 2.2 Gig Catalog Page
 - **File:** `src/components/gigs/GigCatalog.tsx`
@@ -117,7 +117,7 @@ Build the core marketplace browsing experience — users can discover gigs, view
 - Used in GigCatalog and LandingPage
 
 ### ✅ Week 2 Friday Report Summary
-> Gig marketplace is fully browsable. Users can filter by category, sort by price/rating, and view detailed gig pages with 3-tier pricing packages, FAQ sections, and freelancer info cards. Proper URL-based routing is in place.
+> Gig marketplace is fully browsable with category filter bar, AI-powered natural language search, price range slider, and sort controls. Gig detail pages feature image gallery, 3-tier pricing packages with comparison, FAQ accordion, seller info card, reviews section, and related gigs. App is now using `react-router-dom` with proper URL routes (`/`, `/gigs`, `/projects`, `/dashboard`, etc.) and search params. Client and Freelancer dashboards are also built with recharts analytics (bar charts, line charts, area charts).
 
 ---
 

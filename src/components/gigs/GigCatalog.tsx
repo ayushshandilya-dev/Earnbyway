@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
 import { GigCard } from './GigCard';
 import { GigDetail } from './GigDetail';
@@ -22,8 +23,9 @@ type SortOption = 'newest' | 'highest_rated' | 'lowest_price' | 'best_selling';
 
 export const GigCatalog: React.FC = () => {
   const { gigs } = useApp();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [selectedGig, setSelectedGig] = useState<Gig | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [sortBy, setSortBy] = useState<SortOption>('newest');
   const [maxPrice, setMaxPrice] = useState<number>(0);
@@ -96,12 +98,12 @@ export const GigCatalog: React.FC = () => {
             <input
               type="text"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => { setSearchQuery(e.target.value); setSearchParams(e.target.value ? { q: e.target.value } : {}); }}
               placeholder="AI Search: 'React dev under ₹25k'..."
               className="w-full sm:w-72 pl-10 pr-10 py-2 text-xs bg-zinc-900/90 border border-zinc-800 rounded-xl text-slate-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500/60"
             />
             {searchQuery && (
-              <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white">
+              <button onClick={() => { setSearchQuery(''); setSearchParams({}); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white">
                 <X className="w-3.5 h-3.5" />
               </button>
             )}

@@ -9,7 +9,7 @@ interface Props {
 }
 
 export const GigDetail: React.FC<Props> = ({ gig, onBack }) => {
-  const { reviews, profiles, users } = useApp();
+  const { reviews, profiles, users, gigs } = useApp();
   const [selectedImage, setSelectedImage] = useState(0);
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
   const [selectedPackage, setSelectedPackage] = useState<'basic' | 'standard' | 'premium'>('standard');
@@ -287,6 +287,31 @@ export const GigDetail: React.FC<Props> = ({ gig, onBack }) => {
             </button>
           </div>
         </div>
+
+        <section className="mt-16">
+          <h2 className="text-lg font-heading font-bold text-white mb-6">Related Gigs</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {gigs
+              .filter(g => g.id !== gig.id && g.category === gig.category)
+              .slice(0, 3)
+              .map(related => (
+                <div key={related.id} className="glass-card glass-card-hover rounded-2xl overflow-hidden cursor-pointer group" onClick={onBack}>
+                  <div className="h-36 overflow-hidden">
+                    <img src={related.coverImage} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                  </div>
+                  <div className="p-4">
+                    <h3 className="text-sm font-semibold text-white mb-2 line-clamp-1">{related.title}</h3>
+                    <div className="flex items-center justify-between">
+                      <span className="flex items-center gap-1 text-xs text-amber-400">
+                        <Star className="w-3.5 h-3.5 fill-amber-400" /> {related.rating}
+                      </span>
+                      <span className="text-xs font-bold text-emerald-400">₹{related.startingPrice.toLocaleString()}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+          </div>
+        </section>
       </div>
     </div>
   );

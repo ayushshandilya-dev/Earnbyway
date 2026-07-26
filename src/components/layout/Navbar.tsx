@@ -1,55 +1,54 @@
 import React, { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
 import { NotificationDrawer } from '../notifications/NotificationDrawer';
-import { 
-  Hexagon, 
-  Sparkles, 
-  Bell, 
-  MessageSquare, 
-  Search, 
-  PlusCircle, 
-  Briefcase, 
-  User as UserIcon, 
-  ShieldCheck, 
-  LogOut,
-  Wallet,
+import {
+  Hexagon,
+  Sparkles,
+  Bell,
+  MessageSquare,
+  Search,
+  PlusCircle,
   Menu,
   X
 } from 'lucide-react';
 
 interface Props {
-  activeTab: string;
-  setActiveTab: (tab: string) => void;
   onOpenAuth: () => void;
   onOpenAITools: () => void;
   onOpenPostProject: () => void;
   onOpenCreateGig: () => void;
-  searchQuery: string;
-  setSearchQuery: (query: string) => void;
 }
 
+const NAV_ITEMS = [
+  { path: '/gigs', label: 'Explore Gigs' },
+  { path: '/projects', label: 'Projects Board' },
+  { path: '/dashboard', label: 'Dashboard', requiresAuth: true },
+  { path: '/admin', label: 'Admin Moderation', requiresAdmin: true },
+];
+
 export const Navbar: React.FC<Props> = ({
-  activeTab,
-  setActiveTab,
   onOpenAuth,
   onOpenAITools,
   onOpenPostProject,
   onOpenCreateGig,
-  searchQuery,
-  setSearchQuery
 }) => {
   const { currentUser, currentRole, notifications, conversations } = useApp();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [searchInput, setSearchInput] = useState('');
 
   const unreadNotifs = notifications.filter(n => (n.userId === currentUser.id || currentRole === 'admin') && !n.read).length;
   const unreadMessages = conversations.reduce((acc, c) => acc + c.unreadCount, 0);
 
+  const isActive = (path: string) => location.pathname === path;
+
   return (
     <header className="glass-panel border-b border-zinc-800/80 sticky top-9 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
-        {/* Brand Logo */}
-        <div className="flex items-center gap-3 cursor-pointer select-none" onClick={() => setActiveTab('landing')}>
+        <div className="flex items-center gap-3 cursor-pointer select-none" onClick={() => navigate('/')}>
           <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 p-0.5 shadow-lg shadow-emerald-500/20">
             <div className="w-full h-full bg-zinc-950 rounded-[10px] flex items-center justify-center">
               <Hexagon className="w-6 h-6 text-emerald-400 fill-emerald-400/20" />
@@ -64,15 +63,15 @@ export const Navbar: React.FC<Props> = ({
           </div>
         </div>
 
-        {/* Global Search Bar with AI Indicator */}
         <div className="flex-1 max-w-md hidden md:block">
           <div className="relative">
             <Search className="w-4 h-4 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="AI Natural Search: 'React dev under ₹25k' or 'Figma UX'..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter' && searchInput.trim()) navigate(`/gigs?q=${encodeURIComponent(searchInput.trim())}`); }}
+              placeholder="AI Natural Search: 'React dev under ₹25k'..."
               className="w-full pl-10 pr-12 py-2 text-xs bg-zinc-900/90 border border-zinc-800 rounded-xl text-slate-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/30 transition-all"
             />
             <button
@@ -85,43 +84,23 @@ export const Navbar: React.FC<Props> = ({
           </div>
         </div>
 
-        {/* Desktop Nav Links */}
         <nav className="hidden lg:flex items-center gap-1 text-xs font-medium text-zinc-300">
-          <button
-            onClick={() => setActiveTab('gigs')}
-            className={`px-3 py-2 rounded-lg transition-colors ${activeTab === 'gigs' ? 'text-emerald-400 bg-emerald-500/10 font-semibold' : 'hover:text-white hover:bg-zinc-800/50'}`}
-          >
-            Explore Gigs
-          </button>
-          <button
-            onClick={() => setActiveTab('projects')}
-            className={`px-3 py-2 rounded-lg transition-colors ${activeTab === 'projects' ? 'text-emerald-400 bg-emerald-500/10 font-semibold' : 'hover:text-white hover:bg-zinc-800/50'}`}
-          >
-            Projects Board
-          </button>
-
-          {currentRole !== 'guest' && (
-            <button
-              onClick={() => setActiveTab('dashboard')}
-              className={`px-3 py-2 rounded-lg transition-colors ${activeTab === 'dashboard' ? 'text-emerald-400 bg-emerald-500/10 font-semibold' : 'hover:text-white hover:bg-zinc-800/50'}`}
-            >
-              Dashboard
-            </button>
-          )}
-
-          {currentRole === 'admin' && (
-            <button
-              onClick={() => setActiveTab('admin')}
-              className={`px-3 py-2 rounded-lg transition-colors ${activeTab === 'admin' ? 'text-amber-400 bg-amber-500/10 font-semibold' : 'hover:text-white hover:bg-zinc-800/50'}`}
-            >
-              Admin Moderation
-            </button>
-          )}
+          {NAV_ITEMS.map(item => {
+            if (item.requiresAdmin && currentRole !== 'admin') return null;
+            if (item.requiresAuth && currentRole === 'guest') return null;
+            return (
+              <button
+                key={item.path}
+                onClick={() => navigate(item.path)}
+                className={`px-3 py-2 rounded-lg transition-colors ${isActive(item.path) ? 'text-emerald-400 bg-emerald-500/10 font-semibold' : 'hover:text-white hover:bg-zinc-800/50'}`}
+              >
+                {item.label}
+              </button>
+            );
+          })}
         </nav>
 
-        {/* Action Buttons & Profile Controls */}
         <div className="flex items-center gap-2.5">
-          {/* AI Tools Modal Button */}
           <button
             onClick={onOpenAITools}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600/20 to-teal-600/20 border border-emerald-500/40 text-emerald-300 text-xs font-semibold hover:border-emerald-400 transition-all glow-emerald"
@@ -130,7 +109,6 @@ export const Navbar: React.FC<Props> = ({
             <span className="hidden sm:inline">AI Tools</span>
           </button>
 
-          {/* Conditional Role Action Button */}
           {currentRole === 'client' && (
             <button
               onClick={onOpenPostProject}
@@ -151,10 +129,9 @@ export const Navbar: React.FC<Props> = ({
             </button>
           )}
 
-          {/* Messages Counter Icon */}
           {currentRole !== 'guest' && (
             <button
-              onClick={() => setActiveTab('chat')}
+              onClick={() => navigate('/chat')}
               className="relative p-2 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white hover:border-zinc-700 transition-colors"
             >
               <MessageSquare className="w-4 h-4" />
@@ -166,7 +143,6 @@ export const Navbar: React.FC<Props> = ({
             </button>
           )}
 
-          {/* Notification Bell */}
           {currentRole !== 'guest' && (
             <div className="relative">
               <button
@@ -175,17 +151,15 @@ export const Navbar: React.FC<Props> = ({
               >
                 <Bell className="w-4 h-4" />
                 {unreadNotifs > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 text-black text-[10px] font-extrabold rounded-full flex items-center justify-center animate-ping-once">
+                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 text-black text-[10px] font-extrabold rounded-full flex items-center justify-center">
                     {unreadNotifs}
                   </span>
                 )}
               </button>
-
               <NotificationDrawer isOpen={isNotifOpen} onClose={() => setIsNotifOpen(false)} />
             </div>
           )}
 
-          {/* User Profile Avatar / Login Button */}
           {currentRole === 'guest' ? (
             <button
               onClick={onOpenAuth}
@@ -194,8 +168,8 @@ export const Navbar: React.FC<Props> = ({
               Sign In
             </button>
           ) : (
-            <div 
-              onClick={() => setActiveTab('profile')}
+            <div
+              onClick={() => navigate('/profile')}
               className="flex items-center gap-2 cursor-pointer p-1 rounded-xl hover:bg-zinc-900 transition-colors border border-transparent hover:border-zinc-800"
             >
               <img
@@ -210,7 +184,6 @@ export const Navbar: React.FC<Props> = ({
             </div>
           )}
 
-          {/* Mobile Menu Toggle */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className="lg:hidden p-2 rounded-xl bg-zinc-900 text-zinc-300 border border-zinc-800"
@@ -220,21 +193,21 @@ export const Navbar: React.FC<Props> = ({
         </div>
       </div>
 
-      {/* Mobile Drawer Navigation */}
       {isMobileMenuOpen && (
         <div className="lg:hidden bg-zinc-950 border-b border-zinc-800 px-4 py-3 space-y-2 animate-in fade-in slide-in-from-top-2">
           <input
             type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter' && searchInput.trim()) { navigate(`/gigs?q=${encodeURIComponent(searchInput.trim())}`); setIsMobileMenuOpen(false); } }}
             placeholder="Search gigs or projects..."
             className="w-full px-3 py-2 text-xs bg-zinc-900 border border-zinc-800 rounded-xl text-white mb-2"
           />
           <div className="grid grid-cols-2 gap-2 text-xs">
-            <button onClick={() => { setActiveTab('gigs'); setIsMobileMenuOpen(false); }} className="p-2 bg-zinc-900 rounded-lg text-left text-zinc-300">Explore Gigs</button>
-            <button onClick={() => { setActiveTab('projects'); setIsMobileMenuOpen(false); }} className="p-2 bg-zinc-900 rounded-lg text-left text-zinc-300">Projects Board</button>
-            <button onClick={() => { setActiveTab('dashboard'); setIsMobileMenuOpen(false); }} className="p-2 bg-zinc-900 rounded-lg text-left text-zinc-300">Dashboard</button>
-            <button onClick={() => { setActiveTab('chat'); setIsMobileMenuOpen(false); }} className="p-2 bg-zinc-900 rounded-lg text-left text-zinc-300">Messages</button>
+            <button onClick={() => { navigate('/gigs'); setIsMobileMenuOpen(false); }} className="p-2 bg-zinc-900 rounded-lg text-left text-zinc-300">Explore Gigs</button>
+            <button onClick={() => { navigate('/projects'); setIsMobileMenuOpen(false); }} className="p-2 bg-zinc-900 rounded-lg text-left text-zinc-300">Projects Board</button>
+            <button onClick={() => { navigate('/dashboard'); setIsMobileMenuOpen(false); }} className="p-2 bg-zinc-900 rounded-lg text-left text-zinc-300">Dashboard</button>
+            <button onClick={() => { navigate('/chat'); setIsMobileMenuOpen(false); }} className="p-2 bg-zinc-900 rounded-lg text-left text-zinc-300">Messages</button>
           </div>
         </div>
       )}

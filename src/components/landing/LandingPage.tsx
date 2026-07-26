@@ -1,17 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
 import {
   Search, Code, Brain, Palette, PenTool, Video, Megaphone, Shield,
   Star, ArrowRight, CheckCircle, Wallet, Users, Trophy, Clock,
   Sparkles, Lock, ChevronRight, Layers, Eye, Zap, Globe
 } from 'lucide-react';
-
-interface Props {
-  onExploreGigs: () => void;
-  onExploreProjects: () => void;
-  searchQuery: string;
-  setSearchQuery: (q: string) => void;
-}
 
 const CATEGORIES = [
   { name: 'Development', icon: Code, jobs: 1240, color: 'from-blue-500 to-cyan-400' },
@@ -59,8 +53,10 @@ const TESTIMONIALS = [
   }
 ];
 
-export const LandingPage: React.FC<Props> = ({ onExploreGigs, onExploreProjects, searchQuery, setSearchQuery }) => {
+export const LandingPage: React.FC = () => {
+  const navigate = useNavigate();
   const { gigs, users, profiles } = useApp();
+  const [searchQuery, setSearchQuery] = useState('');
   const freelancers = users.filter(u => u.role === 'freelancer' && profiles[u.id]);
 
   return (
@@ -100,10 +96,11 @@ export const LandingPage: React.FC<Props> = ({ onExploreGigs, onExploreProjects,
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter' && searchQuery.trim()) navigate(`/gigs?q=${encodeURIComponent(searchQuery.trim())}`); }}
               placeholder="Try: 'React developer under ₹25k' or 'Logo designer with 5★ rating'..."
               className="w-full pl-12 pr-14 py-4 bg-zinc-900/80 border border-zinc-800 rounded-2xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500/60 focus:ring-2 focus:ring-emerald-500/20 transition-all shadow-lg"
             />
-            <button className="absolute right-2 top-1/2 -translate-y-1/2 p-2.5 bg-emerald-500 hover:bg-emerald-400 rounded-xl transition-colors">
+            <button onClick={() => { if (searchQuery.trim()) navigate(`/gigs?q=${encodeURIComponent(searchQuery.trim())}`); else navigate('/gigs'); }} className="absolute right-2 top-1/2 -translate-y-1/2 p-2.5 bg-emerald-500 hover:bg-emerald-400 rounded-xl transition-colors">
               <Sparkles className="w-4 h-4 text-black" />
             </button>
           </div>
@@ -111,14 +108,14 @@ export const LandingPage: React.FC<Props> = ({ onExploreGigs, onExploreProjects,
           {/* CTA Buttons */}
           <div className="flex flex-wrap items-center justify-center gap-4 mb-14">
             <button
-              onClick={onExploreGigs}
+              onClick={() => navigate('/gigs')}
               className="flex items-center gap-2 px-8 py-3 bg-emerald-500 hover:bg-emerald-400 text-black font-bold rounded-xl transition-all shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:scale-105"
             >
               Explore Gigs
               <ArrowRight className="w-4 h-4" />
             </button>
             <button
-              onClick={onExploreProjects}
+              onClick={() => navigate('/projects')}
               className="flex items-center gap-2 px-8 py-3 bg-zinc-900 hover:bg-zinc-800 text-white font-semibold rounded-xl border border-zinc-700 hover:border-zinc-600 transition-all hover:scale-105"
             >
               Post a Project
@@ -155,7 +152,7 @@ export const LandingPage: React.FC<Props> = ({ onExploreGigs, onExploreProjects,
           {CATEGORIES.map(cat => (
             <button
               key={cat.name}
-              onClick={onExploreGigs}
+              onClick={() => navigate('/gigs')}
               className="glass-card glass-card-hover rounded-2xl p-6 text-left group"
             >
               <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${cat.color} p-0.5 mb-4 group-hover:scale-110 transition-transform`}>
@@ -177,7 +174,7 @@ export const LandingPage: React.FC<Props> = ({ onExploreGigs, onExploreProjects,
             <h2 className="text-3xl font-heading font-bold text-white mb-2">Top Freelancers</h2>
             <p className="text-sm text-zinc-400">Verified experts ready to start today</p>
           </div>
-          <button onClick={onExploreGigs} className="flex items-center gap-1 text-sm text-emerald-400 hover:underline font-medium">
+          <button onClick={() => navigate('/gigs')} className="flex items-center gap-1 text-sm text-emerald-400 hover:underline font-medium">
             View All <ArrowRight className="w-4 h-4" />
           </button>
         </div>
@@ -242,7 +239,7 @@ export const LandingPage: React.FC<Props> = ({ onExploreGigs, onExploreProjects,
             <h2 className="text-3xl font-heading font-bold text-white mb-2">Popular Gigs</h2>
             <p className="text-sm text-zinc-400">Trending services from top-rated sellers</p>
           </div>
-          <button onClick={onExploreGigs} className="flex items-center gap-1 text-sm text-emerald-400 hover:underline font-medium">
+          <button onClick={() => navigate('/gigs')} className="flex items-center gap-1 text-sm text-emerald-400 hover:underline font-medium">
             Browse All <ArrowRight className="w-4 h-4" />
           </button>
         </div>
@@ -251,7 +248,7 @@ export const LandingPage: React.FC<Props> = ({ onExploreGigs, onExploreProjects,
           {gigs.map(gig => (
             <button
               key={gig.id}
-              onClick={onExploreGigs}
+              onClick={() => navigate('/gigs')}
               className="glass-card glass-card-hover rounded-2xl overflow-hidden text-left group"
             >
               <div className="relative h-44 overflow-hidden">
@@ -355,10 +352,10 @@ export const LandingPage: React.FC<Props> = ({ onExploreGigs, onExploreProjects,
             <h2 className="text-3xl sm:text-4xl font-heading font-bold text-white mb-4">Ready to get started?</h2>
             <p className="text-sm text-zinc-400 max-w-md mx-auto mb-8">Join thousands of clients and freelancers already growing their businesses on Earn By Way.</p>
             <div className="flex flex-wrap items-center justify-center gap-4">
-              <button onClick={onExploreGigs} className="px-8 py-3 bg-emerald-500 hover:bg-emerald-400 text-black font-bold rounded-xl transition-all shadow-lg shadow-emerald-500/25">
+              <button onClick={() => navigate('/gigs')} className="px-8 py-3 bg-emerald-500 hover:bg-emerald-400 text-black font-bold rounded-xl transition-all shadow-lg shadow-emerald-500/25">
                 Find a Freelancer
               </button>
-              <button onClick={onExploreProjects} className="px-8 py-3 bg-zinc-800 hover:bg-zinc-700 text-white font-semibold rounded-xl border border-zinc-700 transition-all">
+              <button onClick={() => navigate('/projects')} className="px-8 py-3 bg-zinc-800 hover:bg-zinc-700 text-white font-semibold rounded-xl border border-zinc-700 transition-all">
                 Become a Seller
               </button>
             </div>
