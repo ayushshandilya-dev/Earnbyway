@@ -14,8 +14,8 @@
 | 1 | July 25, 2026 | Foundation & Core Infrastructure | ✅ **COMPLETED** |
 | 2 | August 1, 2026 | Marketplace Discovery — Gig Browsing | ✅ **COMPLETED** |
 | 3 | August 8, 2026 | Profiles, Gig Creation & Search | ⬜ Not Started |
-| 4 | August 15, 2026 | Projects, Proposals & Escrow Workflow | ✅ **COMPLETED** |
-| 5 | August 22, 2026 | Messaging, Dashboards & Earnings | ✅ **COMPLETED** |
+| 4 | August 15, 2026 | Projects, Proposals & Escrow Workflow | 🔄 **Partial** (Board + Detail done; wizard, mgmt, orders pending) |
+| 5 | August 22, 2026 | Messaging, Dashboards & Earnings | 🔄 **Partial** (Dashboards done; chat, earnings, reviews pending) |
 | 6 | August 29, 2026 | AI Tools, Admin Panel & Final Polish | ⬜ Not Started |
 
 ---
@@ -368,45 +368,28 @@ Build the admin panel, integrate all AI features into a showcase playground, and
 earnbyway/
 ├── src/
 │   ├── components/
-│   │   ├── admin/          ← Week 6: AdminDashboard, UserMgmt, Disputes, Withdrawals
-│   │   ├── ai/             ← Week 6: AIToolsPlayground
+│   │   ├── admin/          ← Week 6: TBD
+│   │   ├── ai/             ← Week 6: TBD
 │   │   ├── auth/           ← Week 1 ✅: AuthModal
-│   │   ├── bookmarks/      ← Week 3: BookmarksPage
-│   │   ├── chat/           ← Week 5: MessagingPage
-│   │   ├── dashboards/     ← Week 5: ClientDashboard, FreelancerDashboard
-│   │   ├── earnings/       ← Week 5: EarningsPage
-│   │   ├── gigs/           ← Week 2+3: GigCatalog, GigDetail, GigCard, CreateGigWizard
+│   │   ├── chat/           ← Week 5: TBD
+│   │   ├── dashboards/     ← Week 5 ✅: ClientDashboard, FreelancerDashboard
+│   │   ├── gigs/           ← Week 2 ✅: GigCard, GigCatalog, GigDetail
 │   │   ├── landing/        ← Week 1 ✅: LandingPage
 │   │   ├── layout/         ← Week 1 ✅: Navbar, Footer, RoleSwitcher
-│   │   ├── notifications/  ← Week 1 ✅ + Week 5: NotificationDrawer, NotificationCenter
-│   │   ├── orders/         ← Week 4: OrderDashboard, MilestoneTracker
-│   │   ├── profiles/       ← Week 3: FreelancerProfile
-│   │   ├── projects/       ← Week 4: ProjectsBoard, ProjectDetail, PostProjectWizard
-│   │   ├── proposals/      ← Week 4: SubmitProposal, ProposalManagement
-│   │   ├── reviews/        ← Week 5: ReviewForm
-│   │   ├── search/         ← Week 3: SearchResults
-│   │   └── settings/       ← Week 6: SettingsPage
+│   │   ├── notifications/  ← Week 1 ✅: NotificationDrawer
+│   │   ├── projects/       ← Week 4 ✅: ProjectsBoard, ProjectDetail
+│   │   ├── profiles/       ← Week 3: TBD
+│   │   └── settings/       ← Week 6: TBD
 │   ├── context/
-│   │   └── AppContext.tsx   ← Week 1 ✅ (extend as needed)
+│   │   └── AppContext.tsx   ← Week 1 ✅
 │   ├── services/
 │   │   ├── aiService.ts     ← Week 1 ✅
-│   │   └── mockData.ts      ← Week 1 ✅ (extend as needed)
+│   │   └── mockData.ts      ← Week 1 ✅
 │   ├── types/
-│   │   └── index.ts         ← Week 1 ✅ (extend as needed)
-│   ├── App.tsx              ← Week 1 ✅ → Refactor Week 2 (add Router)
+│   │   └── index.ts         ← Week 1 ✅
+│   ├── App.tsx              ← Week 2 ✅ (BrowserRouter)
 │   ├── main.tsx
 │   └── index.css
 ```
 
 ---
-
-## Open Questions
-
-> [!IMPORTANT]
-> Please confirm before we start Week 2:
-
-1. **Ready to start building?** Shall I begin with Week 2 (Gig Catalog, Gig Detail, routing setup) now?
-
-2. **Router vs Tabs:** Should we add `react-router-dom` for proper URL routes (e.g., `/gigs/gig_1`), or keep the current tab switching in `App.tsx`?
-
-3. **Charts:** Use `recharts` for dashboard charts? (lightweight, React-native)
