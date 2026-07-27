@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Routes, Route, Outlet } from 'react-router-dom';
+import { Clock } from 'lucide-react';
 import { RoleSwitcher } from './components/layout/RoleSwitcher';
 import { Navbar } from './components/layout/Navbar';
 import { Footer } from './components/layout/Footer';
@@ -9,6 +10,8 @@ import { GigCatalog } from './components/gigs/GigCatalog';
 import { ProjectsBoard } from './components/projects/ProjectsBoard';
 import { ClientDashboard } from './components/dashboards/ClientDashboard';
 import { FreelancerDashboard } from './components/dashboards/FreelancerDashboard';
+import { PlaceholderModal } from './components/ui/PlaceholderModal';
+import { NotFoundPage } from './components/ui/NotFoundPage';
 import { AppProvider, useApp } from './context/AppContext';
 
 const AppLayout: React.FC = () => {
@@ -31,33 +34,27 @@ const AppLayout: React.FC = () => {
       </main>
       <Footer />
       <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
-      {isAIToolsOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-[#121215] p-8 rounded-xl border border-zinc-800 text-center max-w-md w-full relative">
-            <button onClick={() => setIsAIToolsOpen(false)} className="absolute top-4 right-4 text-zinc-500 hover:text-white">✕</button>
-            <h2 className="text-xl font-bold mb-2">AI Tools Suite</h2>
-            <p className="text-zinc-400">Interactive AI playground is scheduled for Week 6 development.</p>
-          </div>
-        </div>
-      )}
-      {isPostProjectOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-[#121215] p-8 rounded-xl border border-zinc-800 text-center max-w-md w-full relative">
-            <button onClick={() => setIsPostProjectOpen(false)} className="absolute top-4 right-4 text-zinc-500 hover:text-white">✕</button>
-            <h2 className="text-xl font-bold mb-2">Post a Project</h2>
-            <p className="text-zinc-400">Project Posting Wizard is scheduled for Week 3 development.</p>
-          </div>
-        </div>
-      )}
-      {isCreateGigOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-[#121215] p-8 rounded-xl border border-zinc-800 text-center max-w-md w-full relative">
-            <button onClick={() => setIsCreateGigOpen(false)} className="absolute top-4 right-4 text-zinc-500 hover:text-white">✕</button>
-            <h2 className="text-xl font-bold mb-2">Create a Gig</h2>
-            <p className="text-zinc-400">Gig Creation Wizard is scheduled for Week 3 development.</p>
-          </div>
-        </div>
-      )}
+      <PlaceholderModal
+        isOpen={isAIToolsOpen}
+        onClose={() => setIsAIToolsOpen(false)}
+        title="AI Tools Suite"
+        description="Interactive AI playground is scheduled for Week 6 development."
+        week="Week 6"
+      />
+      <PlaceholderModal
+        isOpen={isPostProjectOpen}
+        onClose={() => setIsPostProjectOpen(false)}
+        title="Post a Project"
+        description="Project Posting Wizard is scheduled for Week 3 development."
+        week="Week 3"
+      />
+      <PlaceholderModal
+        isOpen={isCreateGigOpen}
+        onClose={() => setIsCreateGigOpen(false)}
+        title="Create a Gig"
+        description="Gig Creation Wizard is scheduled for Week 3 development."
+        week="Week 3"
+      />
     </div>
   );
 };
@@ -75,6 +72,16 @@ const DashboardPage: React.FC = () => {
   );
 };
 
+const ComingSoon: React.FC<{ title: string; week: string }> = ({ title, week }) => (
+  <div className="p-8 text-center">
+    <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center mx-auto mb-4">
+      <Clock className="w-8 h-8 text-emerald-400" />
+    </div>
+    <h2 className="text-2xl font-bold text-zinc-300 mb-2">{title}</h2>
+    <p className="text-sm text-zinc-600">Coming in {week}</p>
+  </div>
+);
+
 export default function App() {
   return (
     <AppProvider>
@@ -84,24 +91,10 @@ export default function App() {
           <Route path="/gigs" element={<GigCatalog />} />
           <Route path="/projects" element={<ProjectsBoard />} />
           <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/chat" element={
-            <div className="p-8 text-center">
-              <h2 className="text-2xl font-bold text-zinc-400">Messages</h2>
-              <p className="text-sm text-zinc-600 mt-2">Coming in Week 5</p>
-            </div>
-          } />
-          <Route path="/profile" element={
-            <div className="p-8 text-center">
-              <h2 className="text-2xl font-bold text-zinc-400">Profile View</h2>
-              <p className="text-sm text-zinc-600 mt-2">Coming in Week 3</p>
-            </div>
-          } />
-          <Route path="/admin" element={
-            <div className="p-8 text-center">
-              <h2 className="text-2xl font-bold text-zinc-400">Admin Panel</h2>
-              <p className="text-sm text-zinc-600 mt-2">Coming in Week 6</p>
-            </div>
-          } />
+          <Route path="/chat" element={<ComingSoon title="Messages" week="Week 5" />} />
+          <Route path="/profile" element={<ComingSoon title="Profile View" week="Week 3" />} />
+          <Route path="/admin" element={<ComingSoon title="Admin Panel" week="Week 6" />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>
     </AppProvider>

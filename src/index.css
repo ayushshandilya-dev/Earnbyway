@@ -3,11 +3,19 @@
 @tailwind utilities;
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+  }
   body {
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
   h1, h2, h3, h4, .font-heading {
     font-family: 'Outfit', 'Inter', sans-serif;
+  }
+  *:focus-visible {
+    outline: 2px solid #10b981;
+    outline-offset: 2px;
+    border-radius: 8px;
   }
 }
 

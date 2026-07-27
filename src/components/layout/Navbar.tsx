@@ -76,7 +76,7 @@ export const Navbar: React.FC<Props> = ({
             />
             <button
               onClick={onOpenAITools}
-              title="Use AI Smart Natural Search Assistant"
+              aria-label="Open AI Tools"
               className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 rounded-lg border border-emerald-500/20"
             >
               <Sparkles className="w-3.5 h-3.5" />
@@ -132,6 +132,7 @@ export const Navbar: React.FC<Props> = ({
           {currentRole !== 'guest' && (
             <button
               onClick={() => navigate('/chat')}
+              aria-label="Open messages"
               className="relative p-2 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white hover:border-zinc-700 transition-colors"
             >
               <MessageSquare className="w-4 h-4" />
@@ -147,6 +148,7 @@ export const Navbar: React.FC<Props> = ({
             <div className="relative">
               <button
                 onClick={() => setIsNotifOpen(!isNotifOpen)}
+                aria-label="Toggle notifications"
                 className="relative p-2 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white hover:border-zinc-700 transition-colors"
               >
                 <Bell className="w-4 h-4" />
@@ -186,6 +188,7 @@ export const Navbar: React.FC<Props> = ({
 
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
             className="lg:hidden p-2 rounded-xl bg-zinc-900 text-zinc-300 border border-zinc-800"
           >
             {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
