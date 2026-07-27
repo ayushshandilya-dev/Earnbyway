@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Routes, Route, Outlet } from 'react-router-dom';
-import { Clock } from 'lucide-react';
+import { Loader2, X } from 'lucide-react';
 import { RoleSwitcher } from './components/layout/RoleSwitcher';
 import { Navbar } from './components/layout/Navbar';
 import { Footer } from './components/layout/Footer';
@@ -15,15 +15,25 @@ import { EarningsPage } from './components/earnings/EarningsPage';
 import { SearchResults } from './components/search/SearchResults';
 import { BookmarksPage } from './components/bookmarks/BookmarksPage';
 import { CreateGigWizard } from './components/gigs/CreateGigWizard';
+import { PostProjectWizard } from './components/projects/PostProjectWizard';
 import { AdminDashboard } from './components/admin/AdminDashboard';
 import { UserManagement } from './components/admin/UserManagement';
 import { DisputePanel } from './components/admin/DisputePanel';
 import { WithdrawalApprovals } from './components/admin/WithdrawalApprovals';
 import { OrderDashboard } from './components/orders/OrderDashboard';
+import { ProposalManagement } from './components/proposals/ProposalManagement';
 import { SettingsPage } from './components/settings/SettingsPage';
-import { PlaceholderModal } from './components/ui/PlaceholderModal';
+import { AIToolsPlayground } from './components/ai/AIToolsPlayground';
 import { NotFoundPage } from './components/ui/NotFoundPage';
+import { ErrorBoundary } from './components/ui/ErrorBoundary';
+import { ProfilePage } from './components/profiles/ProfilePage';
 import { AppProvider, useApp } from './context/AppContext';
+
+const PageLoader: React.FC = () => (
+  <div className="flex items-center justify-center py-20">
+    <Loader2 className="w-8 h-8 text-emerald-400 animate-spin" />
+  </div>
+);
 
 const AppLayout: React.FC = () => {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
@@ -41,23 +51,26 @@ const AppLayout: React.FC = () => {
         onOpenCreateGig={() => setIsCreateGigOpen(true)}
       />
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-in fade-in duration-300">
-        <Outlet />
+        <ErrorBoundary>
+          <Outlet />
+        </ErrorBoundary>
       </main>
       <Footer />
       <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
-      <PlaceholderModal
-        isOpen={isAIToolsOpen}
-        onClose={() => setIsAIToolsOpen(false)}
-        title="AI Tools Suite"
-        description="Interactive AI playground is scheduled for Week 6 development."
-        week="Week 6"
-      />
-      <PlaceholderModal
+      {isAIToolsOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto" onClick={() => setIsAIToolsOpen(false)}>
+          <div className="bg-[#121215] border border-zinc-800 rounded-3xl max-w-4xl w-full p-6 max-h-[90vh] overflow-y-auto shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-xl font-heading font-bold text-white">AI Tools Playground</h2>
+              <button onClick={() => setIsAIToolsOpen(false)} className="p-1.5 bg-zinc-900 rounded-full text-zinc-400 hover:text-white"><X className="w-5 h-5" /></button>
+            </div>
+            <AIToolsPlayground />
+          </div>
+        </div>
+      )}
+      <PostProjectWizard
         isOpen={isPostProjectOpen}
         onClose={() => setIsPostProjectOpen(false)}
-        title="Post a Project"
-        description="Project Posting Wizard is scheduled for Week 3 development."
-        week="Week 3"
       />
       <CreateGigWizard
         isOpen={isCreateGigOpen}
@@ -75,16 +88,6 @@ const DashboardPage: React.FC = () => {
   return <AdminDashboard />;
 };
 
-const ComingSoon: React.FC<{ title: string; week: string }> = ({ title, week }) => (
-  <div className="p-8 text-center">
-    <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center mx-auto mb-4">
-      <Clock className="w-8 h-8 text-emerald-400" />
-    </div>
-    <h2 className="text-2xl font-bold text-zinc-300 mb-2">{title}</h2>
-    <p className="text-sm text-zinc-600">Coming in {week}</p>
-  </div>
-);
-
 export default function App() {
   return (
     <AppProvider>
@@ -98,8 +101,10 @@ export default function App() {
           <Route path="/earnings" element={<EarningsPage />} />
           <Route path="/search" element={<SearchResults />} />
           <Route path="/bookmarks" element={<BookmarksPage />} />
-          <Route path="/profile" element={<ComingSoon title="Profile View" week="Week 3" />} />
+          <Route path="/profile" element={<ProfilePage />} />
           <Route path="/orders" element={<OrderDashboard />} />
+          <Route path="/proposals" element={<ProposalManagement />} />
+          <Route path="/ai" element={<AIToolsPlayground />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/users" element={<UserManagement />} />

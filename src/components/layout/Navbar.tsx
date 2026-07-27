@@ -26,8 +26,10 @@ const NAV_ITEMS = [
   { path: '/search', label: 'Search' },
   { path: '/bookmarks', label: 'Bookmarks', requiresAuth: true },
   { path: '/orders', label: 'Orders', requiresAuth: true },
+  { path: '/proposals', label: 'Proposals', requiresAuth: true, hideForFreelancer: true },
   { path: '/dashboard', label: 'Dashboard', requiresAuth: true },
   { path: '/earnings', label: 'Earnings', requiresAuth: true, hideForClient: true },
+  { path: '/ai', label: 'AI Playground' },
   { path: '/admin', label: 'Admin', requiresAdmin: true },
   { path: '/settings', label: 'Settings', requiresAuth: true },
 ];
@@ -94,6 +96,7 @@ export const Navbar: React.FC<Props> = ({
             if (item.requiresAdmin && currentRole !== 'admin') return null;
             if (item.requiresAuth && currentRole === 'guest') return null;
             if ((item as any).hideForClient && currentRole === 'client') return null;
+            if ((item as any).hideForFreelancer && currentRole === 'freelancer') return null;
             return (
               <button
                 key={item.path}
@@ -218,9 +221,11 @@ export const Navbar: React.FC<Props> = ({
             <button onClick={() => { navigate('/search'); setIsMobileMenuOpen(false); }} className="p-2 bg-zinc-900 rounded-lg text-left text-zinc-300">Search</button>
             <button onClick={() => { navigate('/bookmarks'); setIsMobileMenuOpen(false); }} className="p-2 bg-zinc-900 rounded-lg text-left text-zinc-300">Bookmarks</button>
             <button onClick={() => { navigate('/orders'); setIsMobileMenuOpen(false); }} className="p-2 bg-zinc-900 rounded-lg text-left text-zinc-300">Orders</button>
+            <button onClick={() => { navigate('/proposals'); setIsMobileMenuOpen(false); }} className="p-2 bg-zinc-900 rounded-lg text-left text-zinc-300">Proposals</button>
             <button onClick={() => { navigate('/dashboard'); setIsMobileMenuOpen(false); }} className="p-2 bg-zinc-900 rounded-lg text-left text-zinc-300">Dashboard</button>
             <button onClick={() => { navigate('/chat'); setIsMobileMenuOpen(false); }} className="p-2 bg-zinc-900 rounded-lg text-left text-zinc-300">Messages</button>
             <button onClick={() => { navigate('/earnings'); setIsMobileMenuOpen(false); }} className="p-2 bg-zinc-900 rounded-lg text-left text-zinc-300">Earnings</button>
+            <button onClick={() => { navigate('/ai'); setIsMobileMenuOpen(false); }} className="p-2 bg-zinc-900 rounded-lg text-left text-zinc-300">AI Playground</button>
             <button onClick={() => { navigate('/settings'); setIsMobileMenuOpen(false); }} className="p-2 bg-zinc-900 rounded-lg text-left text-zinc-300">Settings</button>
           </div>
         </div>

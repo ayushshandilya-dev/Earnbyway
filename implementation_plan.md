@@ -14,9 +14,9 @@
 | 1 | July 25, 2026 | Foundation & Core Infrastructure | ✅ **COMPLETED** |
 | 2 | August 1, 2026 | Marketplace Discovery — Gig Browsing | ✅ **COMPLETED** |
 | 3 | August 8, 2026 | Profiles, Gig Creation & Search | ✅ **COMPLETED** (FreelancerProfile, CreateGigWizard, SearchResults, Bookmarks) |
-| 4 | August 15, 2026 | Projects, Proposals & Escrow Workflow | 🔄 **Partial** (Board + Detail + OrderDashboard done; wizard, mgmt pending) |
+| 4 | August 15, 2026 | Projects, Proposals & Escrow Workflow | ✅ **COMPLETED** (Board, Detail, OrderDashboard, PostProjectWizard, ProposalManagement) |
 | 5 | August 22, 2026 | Messaging, Dashboards & Earnings | ✅ **COMPLETED** (Chat, Earnings, Reviews built) |
-| 6 | August 29, 2026 | AI Tools, Admin Panel & Final Polish | 🔄 **Partial** (Admin Dashboard, User Mgmt, Disputes, Withdrawals, Settings built; AI Playground pending) |
+| 6 | August 29, 2026 | AI Tools, Admin Panel & Final Polish | 🔄 **Partial** (Admin Dashboard, User Mgmt, Disputes, Withdrawals, Settings, AI Playground built; final polish pending) |
 
 ---
 
@@ -467,6 +467,59 @@ earnbyway/
 | `/admin/users` | UserManagement (new) |
 | `/admin/disputes` | DisputePanel (new) |
 | `/admin/withdrawals` | WithdrawalApprovals (new) |
+| `/proposals` | ProposalManagement (new) |
+| `/ai` | AIToolsPlayground (new) |
 | `*` (catch-all) | NotFoundPage (new) |
+
+---
+
+## Post-Phase-3 Changes Log (July 27, 2026 — Continued)
+
+### ✅ Week 6 — AI Tools Playground (Now Complete)
+
+| Component | File | Status |
+|-----------|------|--------|
+| **AI Tools Playground** | `src/components/ai/AIToolsPlayground.tsx` | Interactive 6-tab UI showcasing all AI services: Smart Search (parses natural language in real-time), Proposal Generator (select project → see bid + milestones), Gig Description Generator (title → AI description + packages), Freelancer Matcher (paste brief → ranked matches with %), Resume Analyzer (select profile → score + recommendations), Fraud Detector (paste text → risk analysis with color-coded alerts) |
+
+### ✅ Week 4 — Post Project Wizard & Proposal Management (Now Complete)
+
+| Component | File | Status |
+|-----------|------|--------|
+| **Post Project Wizard** | `src/components/projects/PostProjectWizard.tsx` | 5-step form (Title → Description with AI fraud check → Skills with auto-complete → Budget/Duration → Preview), replaces PlaceholderModal in App.tsx, wires into `AppContext.postProject()` |
+| **Proposal Management** | `src/components/proposals/ProposalManagement.tsx` | Client-side proposal review, search/filter by status, expandable project cards, accept/reject/shortlist/chat buttons, accept triggers escrow order via `AppContext.acceptProposal()` |
+
+### 🧩 Infrastructure & Polish
+
+| Improvement | Details |
+|-------------|---------|
+| **Lazy loading** | Added `PageLoader` component with spinner, Suspense-ready architecture |
+| **AI Playground modal** | Accessible from Navbar AI Tools button — shows full interactive playground in a modal |
+| **Navbar links** | Added Proposals (clients), AI Playground (all roles) to desktop + mobile nav |
+| **New routes** | `/ai`, `/proposals` |
+
+### ✅ Week 6 — Error Boundaries, Skeletons & Profile Page (Now Complete)
+
+| Component | File | Status |
+|-----------|------|--------|
+| **ErrorBoundary** | `src/components/ui/ErrorBoundary.tsx` | Class-based React error boundary wrapping all routes in App.tsx, with "Try Again" reset + "Go Home" fallback UI, error message display, optional custom fallback prop |
+| **Skeleton Loading Components** | `src/components/ui/Skeletons.tsx` | 6 reusable skeleton variants with shimmer animation: GigCardSkeleton, ProfileCardSkeleton, OrderCardSkeleton, StatsCardSkeleton, ChatBubbleSkeleton — ready to swap into data-heavy pages with loading states |
+| **Profile Page** | `src/components/profiles/ProfilePage.tsx` | Full profile route (`/profile`) replacing the ComingSoon placeholder — shows user avatar, name, role badge, stats (balance, active orders, posted projects, reviews), quick-link cards to Orders/Bookmarks/Settings, recent activity list for clients, delegates to FreelancerProfile when role=freelancer |
+
+### 📁 Updated Directory Structure
+
+```
+src/components/
+├── admin/          ← Week 6 ✅: AdminDashboard, UserManagement, DisputePanel, WithdrawalApprovals
+├── ai/             ← Week 6 ✅: AIToolsPlayground
+├── proposals/      ← Week 4 ✅: ProposalManagement
+├── profiles/       ← Week 3 ✅: FreelancerProfile + ProfilePage
+└── ui/             ← Week 1 ✅: PlaceholderModal, NotFoundPage, ErrorBoundary, Skeletons
+```
+
+### 📁 New Routes Added
+
+| Route | Component |
+|-------|-----------|
+| `/profile` | ProfilePage (was ComingSoon placeholder) |
 
 ---
