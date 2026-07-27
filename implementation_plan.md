@@ -13,9 +13,9 @@
 |------|--------------------|-------|--------|
 | 1 | July 25, 2026 | Foundation & Core Infrastructure | ✅ **COMPLETED** |
 | 2 | August 1, 2026 | Marketplace Discovery — Gig Browsing | ✅ **COMPLETED** |
-| 3 | August 8, 2026 | Profiles, Gig Creation & Search | ⬜ Not Started |
+| 3 | August 8, 2026 | Profiles, Gig Creation & Search | ✅ **COMPLETED** (FreelancerProfile, CreateGigWizard, SearchResults, Bookmarks) |
 | 4 | August 15, 2026 | Projects, Proposals & Escrow Workflow | 🔄 **Partial** (Board + Detail done; wizard, mgmt, orders pending) |
-| 5 | August 22, 2026 | Messaging, Dashboards & Earnings | 🔄 **Partial** (Dashboards done; chat, earnings, reviews pending) |
+| 5 | August 22, 2026 | Messaging, Dashboards & Earnings | 🔄 **Partial** (Dashboards done; MessagingPage, EarningsPage built; reviews pending) |
 | 6 | August 29, 2026 | AI Tools, Admin Panel & Final Polish | ⬜ Not Started |
 
 ---
@@ -371,25 +371,74 @@ earnbyway/
 │   │   ├── admin/          ← Week 6: TBD
 │   │   ├── ai/             ← Week 6: TBD
 │   │   ├── auth/           ← Week 1 ✅: AuthModal
-│   │   ├── chat/           ← Week 5: TBD
+│   │   ├── bookmarks/      ← Week 3 ✅: BookmarksPage
+│   │   ├── chat/           ← Week 5 ✅: MessagingPage
 │   │   ├── dashboards/     ← Week 5 ✅: ClientDashboard, FreelancerDashboard
+│   │   ├── earnings/       ← Week 5 ✅: EarningsPage
 │   │   ├── gigs/           ← Week 2 ✅: GigCard, GigCatalog, GigDetail
+│   │   ├── gigs/           ← Week 3 ✅: CreateGigWizard
 │   │   ├── landing/        ← Week 1 ✅: LandingPage
 │   │   ├── layout/         ← Week 1 ✅: Navbar, Footer, RoleSwitcher
 │   │   ├── notifications/  ← Week 1 ✅: NotificationDrawer
+│   │   ├── profiles/       ← Week 3 ✅: FreelancerProfile
 │   │   ├── projects/       ← Week 4 ✅: ProjectsBoard, ProjectDetail
-│   │   ├── profiles/       ← Week 3: TBD
+│   │   ├── reviews/        ← Built: ReviewForm
+│   │   ├── search/         ← Week 3 ✅: SearchResults
+│   │   ├── ui/             ← Built: PlaceholderModal, NotFoundPage
 │   │   └── settings/       ← Week 6: TBD
 │   ├── context/
-│   │   └── AppContext.tsx   ← Week 1 ✅
+│   │   └── AppContext.tsx   ← Week 1 ✅ (+ bookmarks state added)
 │   ├── services/
 │   │   ├── aiService.ts     ← Week 1 ✅
 │   │   └── mockData.ts      ← Week 1 ✅
 │   ├── types/
 │   │   └── index.ts         ← Week 1 ✅
-│   ├── App.tsx              ← Week 2 ✅ (BrowserRouter)
+│   ├── App.tsx              ← Week 2 ✅ (BrowserRouter, new routes)
 │   ├── main.tsx
 │   └── index.css
 ```
+
+---
+
+## Post-Phase-2 Changes Log (July 27, 2026)
+
+### ✅ Week 3 — Profiles, Gig Creation & Search (Now Complete)
+
+| Component | File | Status |
+|-----------|------|--------|
+| **Freelancer Profile** | `src/components/profiles/FreelancerProfile.tsx` | Full profile page with banner, avatar, stats bar, bio, skills, experience timeline, education, certifications, portfolio gallery, social links, resume download, reviews tab, AI Profile Analyzer widget, bookmark support |
+| **Gig Creation Wizard** | `src/components/gigs/CreateGigWizard.tsx` | 5-step wizard (Title → Description with AI Generate → Pricing → FAQs → Preview), category/subcategory selection, tag auto-suggestion, AI description generator (via `AIService.generateGigDetails`), preview before publish, wires into `AppContext.createGig()` |
+| **Search Results Page** | `src/components/search/SearchResults.tsx` | Combined gig + freelancer search with AI natural language parsing, filter panel (price, rating), tabbed results (Gigs / Freelancers), AI match percentage on freelancer cards, deep-links to GigDetail / FreelancerProfile |
+| **Bookmarks Page** | `src/components/bookmarks/BookmarksPage.tsx` | Saved gigs/freelancers grid, tab switcher, wires into `AppContext.toggleBookmark()` and `AppContext.isBookmarked()`, localStorage persistence |
+
+### ✅ Week 5 — Messaging & Earnings (Now Built)
+
+| Component | File | Status |
+|-----------|------|--------|
+| **Messaging Page** | `src/components/chat/MessagingPage.tsx` | Full chat UI with conversation sidebar (online indicators, search, unread badges), chat window with sent/received bubbles, read receipts, file attachment display, message input with Enter-to-send, mobile-responsive layout (sidebar toggle) |
+| **Earnings & Wallet Page** | `src/components/earnings/EarningsPage.tsx` | Balance cards (Available/Pending/Withdrawn), withdrawal modal with preset amounts (₹5k/10k/25k/50k/Max), payment method selection (UPI/Bank/Razorpay/PayPal), pending & history tables, wires into `AppContext.requestWithdrawal()` |
+
+### 🧩 Infrastructure Improvements
+
+| Improvement | Details |
+|-------------|---------|
+| **Bookmarks state** | Added `bookmarks`, `toggleBookmark()`, `isBookmarked()` to `AppContext` with localStorage persistence |
+| **SEO meta tags** | Open Graph, Twitter Card, keywords, robots, theme-color in `index.html` |
+| **Smooth scroll** | `scroll-behavior: smooth` on `html` in `index.css` |
+| **Focus-visible ring** | Accessibility focus ring on all interactive elements |
+| **404 Not Found page** | `src/components/ui/NotFoundPage.tsx` with go-home/browse/back CTAs, routed as catch-all `path="*"` |
+| **PlaceholderModal** | `src/components/ui/PlaceholderModal.tsx` — reusable coming-soon modal (DRY replacement for 3 duplicate modals in App.tsx) |
+| **Accessibility** | `aria-label` attributes on all icon-only buttons in Navbar (AI tools, messages, notifications, mobile menu) |
+| **Navbar links** | Added Search, Bookmarks, Earnings to desktop nav + mobile menu |
+
+### 📁 New Routes
+
+| Route | Component |
+|-------|-----------|
+| `/chat` | MessagingPage (was ComingSoon) |
+| `/earnings` | EarningsPage (new) |
+| `/search` | SearchResults (new) |
+| `/bookmarks` | BookmarksPage (new) |
+| `*` (catch-all) | NotFoundPage (new) |
 
 ---

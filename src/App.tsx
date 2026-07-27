@@ -12,6 +12,9 @@ import { ClientDashboard } from './components/dashboards/ClientDashboard';
 import { FreelancerDashboard } from './components/dashboards/FreelancerDashboard';
 import { MessagingPage } from './components/chat/MessagingPage';
 import { EarningsPage } from './components/earnings/EarningsPage';
+import { SearchResults } from './components/search/SearchResults';
+import { BookmarksPage } from './components/bookmarks/BookmarksPage';
+import { CreateGigWizard } from './components/gigs/CreateGigWizard';
 import { PlaceholderModal } from './components/ui/PlaceholderModal';
 import { NotFoundPage } from './components/ui/NotFoundPage';
 import { AppProvider, useApp } from './context/AppContext';
@@ -50,12 +53,9 @@ const AppLayout: React.FC = () => {
         description="Project Posting Wizard is scheduled for Week 3 development."
         week="Week 3"
       />
-      <PlaceholderModal
+      <CreateGigWizard
         isOpen={isCreateGigOpen}
         onClose={() => setIsCreateGigOpen(false)}
-        title="Create a Gig"
-        description="Gig Creation Wizard is scheduled for Week 3 development."
-        week="Week 3"
       />
     </div>
   );
@@ -95,6 +95,8 @@ export default function App() {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/chat" element={<MessagingPage />} />
           <Route path="/earnings" element={<EarningsPage />} />
+          <Route path="/search" element={<SearchResults />} />
+          <Route path="/bookmarks" element={<BookmarksPage />} />
           <Route path="/profile" element={<ComingSoon title="Profile View" week="Week 3" />} />
           <Route path="/admin" element={<ComingSoon title="Admin Panel" week="Week 6" />} />
           <Route path="*" element={<NotFoundPage />} />

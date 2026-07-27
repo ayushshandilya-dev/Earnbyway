@@ -23,6 +23,8 @@ interface Props {
 const NAV_ITEMS = [
   { path: '/gigs', label: 'Explore Gigs' },
   { path: '/projects', label: 'Projects Board' },
+  { path: '/search', label: 'Search' },
+  { path: '/bookmarks', label: 'Bookmarks', requiresAuth: true },
   { path: '/dashboard', label: 'Dashboard', requiresAuth: true },
   { path: '/earnings', label: 'Earnings', requiresAuth: true, hideForClient: true },
   { path: '/admin', label: 'Admin Moderation', requiresAdmin: true },
@@ -211,6 +213,8 @@ export const Navbar: React.FC<Props> = ({
           <div className="grid grid-cols-2 gap-2 text-xs">
             <button onClick={() => { navigate('/gigs'); setIsMobileMenuOpen(false); }} className="p-2 bg-zinc-900 rounded-lg text-left text-zinc-300">Explore Gigs</button>
             <button onClick={() => { navigate('/projects'); setIsMobileMenuOpen(false); }} className="p-2 bg-zinc-900 rounded-lg text-left text-zinc-300">Projects Board</button>
+            <button onClick={() => { navigate('/search'); setIsMobileMenuOpen(false); }} className="p-2 bg-zinc-900 rounded-lg text-left text-zinc-300">Search</button>
+            <button onClick={() => { navigate('/bookmarks'); setIsMobileMenuOpen(false); }} className="p-2 bg-zinc-900 rounded-lg text-left text-zinc-300">Bookmarks</button>
             <button onClick={() => { navigate('/dashboard'); setIsMobileMenuOpen(false); }} className="p-2 bg-zinc-900 rounded-lg text-left text-zinc-300">Dashboard</button>
             <button onClick={() => { navigate('/chat'); setIsMobileMenuOpen(false); }} className="p-2 bg-zinc-900 rounded-lg text-left text-zinc-300">Messages</button>
             <button onClick={() => { navigate('/earnings'); setIsMobileMenuOpen(false); }} className="p-2 bg-zinc-900 rounded-lg text-left text-zinc-300">Earnings</button>

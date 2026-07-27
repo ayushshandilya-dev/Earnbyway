@@ -42,6 +42,7 @@ interface AppContextType {
   reviews: Review[];
   disputes: Dispute[];
   withdrawals: WithdrawalRequest[];
+  bookmarks: string[];
   
   // Actions
   switchRole: (role: UserRole) => void;
@@ -58,6 +59,8 @@ interface AppContextType {
   adminResolveDispute: (id: string, resolution: string) => void;
   adminToggleVerifyUser: (userId: string) => void;
   markNotificationsAsRead: () => void;
+  toggleBookmark: (id: string) => void;
+  isBookmarked: (id: string) => boolean;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -84,6 +87,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [reviews, setReviews] = useState<Review[]>(INITIAL_REVIEWS);
   const [disputes, setDisputes] = useState<Dispute[]>(INITIAL_DISPUTES);
   const [withdrawals, setWithdrawals] = useState<WithdrawalRequest[]>(INITIAL_WITHDRAWALS);
+  const [bookmarks, setBookmarks] = useState<string[]>(() => {
+    const saved = localStorage.getItem('earnbyway_bookmarks');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  useEffect(() => {
+    localStorage.setItem('earnbyway_bookmarks', JSON.stringify(bookmarks));
+  }, [bookmarks]);
 
   // Sync users in state when role changes
   const switchRole = (role: UserRole) => {
@@ -483,6 +494,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
   };
 
+  const toggleBookmark = (id: string) => {
+    setBookmarks(prev => prev.includes(id) ? prev.filter(b => b !== id) : [...prev, id]);
+  };
+
+  const isBookmarked = (id: string) => bookmarks.includes(id);
+
   return (
     <AppContext.Provider value={{
       currentUser,
@@ -498,6 +515,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       reviews,
       disputes,
       withdrawals,
+      bookmarks,
       switchRole,
       createGig,
       postProject,
@@ -511,7 +529,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       adminApproveWithdrawal,
       adminResolveDispute,
       adminToggleVerifyUser,
-      markNotificationsAsRead
+      markNotificationsAsRead,
+      toggleBookmark,
+      isBookmarked
     }}>
       {children}
     </AppContext.Provider>
