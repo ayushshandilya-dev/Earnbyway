@@ -10,6 +10,8 @@ import { GigCatalog } from './components/gigs/GigCatalog';
 import { ProjectsBoard } from './components/projects/ProjectsBoard';
 import { ClientDashboard } from './components/dashboards/ClientDashboard';
 import { FreelancerDashboard } from './components/dashboards/FreelancerDashboard';
+import { MessagingPage } from './components/chat/MessagingPage';
+import { EarningsPage } from './components/earnings/EarningsPage';
 import { PlaceholderModal } from './components/ui/PlaceholderModal';
 import { NotFoundPage } from './components/ui/NotFoundPage';
 import { AppProvider, useApp } from './context/AppContext';
@@ -91,7 +93,8 @@ export default function App() {
           <Route path="/gigs" element={<GigCatalog />} />
           <Route path="/projects" element={<ProjectsBoard />} />
           <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/chat" element={<ComingSoon title="Messages" week="Week 5" />} />
+          <Route path="/chat" element={<MessagingPage />} />
+          <Route path="/earnings" element={<EarningsPage />} />
           <Route path="/profile" element={<ComingSoon title="Profile View" week="Week 3" />} />
           <Route path="/admin" element={<ComingSoon title="Admin Panel" week="Week 6" />} />
           <Route path="*" element={<NotFoundPage />} />

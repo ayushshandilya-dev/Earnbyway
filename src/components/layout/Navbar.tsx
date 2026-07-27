@@ -24,6 +24,7 @@ const NAV_ITEMS = [
   { path: '/gigs', label: 'Explore Gigs' },
   { path: '/projects', label: 'Projects Board' },
   { path: '/dashboard', label: 'Dashboard', requiresAuth: true },
+  { path: '/earnings', label: 'Earnings', requiresAuth: true, hideForClient: true },
   { path: '/admin', label: 'Admin Moderation', requiresAdmin: true },
 ];
 
@@ -88,6 +89,7 @@ export const Navbar: React.FC<Props> = ({
           {NAV_ITEMS.map(item => {
             if (item.requiresAdmin && currentRole !== 'admin') return null;
             if (item.requiresAuth && currentRole === 'guest') return null;
+            if ((item as any).hideForClient && currentRole === 'client') return null;
             return (
               <button
                 key={item.path}
@@ -211,6 +213,7 @@ export const Navbar: React.FC<Props> = ({
             <button onClick={() => { navigate('/projects'); setIsMobileMenuOpen(false); }} className="p-2 bg-zinc-900 rounded-lg text-left text-zinc-300">Projects Board</button>
             <button onClick={() => { navigate('/dashboard'); setIsMobileMenuOpen(false); }} className="p-2 bg-zinc-900 rounded-lg text-left text-zinc-300">Dashboard</button>
             <button onClick={() => { navigate('/chat'); setIsMobileMenuOpen(false); }} className="p-2 bg-zinc-900 rounded-lg text-left text-zinc-300">Messages</button>
+            <button onClick={() => { navigate('/earnings'); setIsMobileMenuOpen(false); }} className="p-2 bg-zinc-900 rounded-lg text-left text-zinc-300">Earnings</button>
           </div>
         </div>
       )}
