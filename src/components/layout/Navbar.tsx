@@ -25,9 +25,11 @@ const NAV_ITEMS = [
   { path: '/projects', label: 'Projects Board' },
   { path: '/search', label: 'Search' },
   { path: '/bookmarks', label: 'Bookmarks', requiresAuth: true },
+  { path: '/orders', label: 'Orders', requiresAuth: true },
   { path: '/dashboard', label: 'Dashboard', requiresAuth: true },
   { path: '/earnings', label: 'Earnings', requiresAuth: true, hideForClient: true },
-  { path: '/admin', label: 'Admin Moderation', requiresAdmin: true },
+  { path: '/admin', label: 'Admin', requiresAdmin: true },
+  { path: '/settings', label: 'Settings', requiresAuth: true },
 ];
 
 export const Navbar: React.FC<Props> = ({
@@ -215,9 +217,11 @@ export const Navbar: React.FC<Props> = ({
             <button onClick={() => { navigate('/projects'); setIsMobileMenuOpen(false); }} className="p-2 bg-zinc-900 rounded-lg text-left text-zinc-300">Projects Board</button>
             <button onClick={() => { navigate('/search'); setIsMobileMenuOpen(false); }} className="p-2 bg-zinc-900 rounded-lg text-left text-zinc-300">Search</button>
             <button onClick={() => { navigate('/bookmarks'); setIsMobileMenuOpen(false); }} className="p-2 bg-zinc-900 rounded-lg text-left text-zinc-300">Bookmarks</button>
+            <button onClick={() => { navigate('/orders'); setIsMobileMenuOpen(false); }} className="p-2 bg-zinc-900 rounded-lg text-left text-zinc-300">Orders</button>
             <button onClick={() => { navigate('/dashboard'); setIsMobileMenuOpen(false); }} className="p-2 bg-zinc-900 rounded-lg text-left text-zinc-300">Dashboard</button>
             <button onClick={() => { navigate('/chat'); setIsMobileMenuOpen(false); }} className="p-2 bg-zinc-900 rounded-lg text-left text-zinc-300">Messages</button>
             <button onClick={() => { navigate('/earnings'); setIsMobileMenuOpen(false); }} className="p-2 bg-zinc-900 rounded-lg text-left text-zinc-300">Earnings</button>
+            <button onClick={() => { navigate('/settings'); setIsMobileMenuOpen(false); }} className="p-2 bg-zinc-900 rounded-lg text-left text-zinc-300">Settings</button>
           </div>
         </div>
       )}

@@ -14,9 +14,9 @@
 | 1 | July 25, 2026 | Foundation & Core Infrastructure | ✅ **COMPLETED** |
 | 2 | August 1, 2026 | Marketplace Discovery — Gig Browsing | ✅ **COMPLETED** |
 | 3 | August 8, 2026 | Profiles, Gig Creation & Search | ✅ **COMPLETED** (FreelancerProfile, CreateGigWizard, SearchResults, Bookmarks) |
-| 4 | August 15, 2026 | Projects, Proposals & Escrow Workflow | 🔄 **Partial** (Board + Detail done; wizard, mgmt, orders pending) |
-| 5 | August 22, 2026 | Messaging, Dashboards & Earnings | 🔄 **Partial** (Dashboards done; MessagingPage, EarningsPage built; reviews pending) |
-| 6 | August 29, 2026 | AI Tools, Admin Panel & Final Polish | ⬜ Not Started |
+| 4 | August 15, 2026 | Projects, Proposals & Escrow Workflow | 🔄 **Partial** (Board + Detail + OrderDashboard done; wizard, mgmt pending) |
+| 5 | August 22, 2026 | Messaging, Dashboards & Earnings | ✅ **COMPLETED** (Chat, Earnings, Reviews built) |
+| 6 | August 29, 2026 | AI Tools, Admin Panel & Final Polish | 🔄 **Partial** (Admin Dashboard, User Mgmt, Disputes, Withdrawals, Settings built; AI Playground pending) |
 
 ---
 
@@ -368,8 +368,8 @@ Build the admin panel, integrate all AI features into a showcase playground, and
 earnbyway/
 ├── src/
 │   ├── components/
-│   │   ├── admin/          ← Week 6: TBD
-│   │   ├── ai/             ← Week 6: TBD
+│   │   ├── admin/          ← Week 6 ✅: AdminDashboard, UserManagement, DisputePanel, WithdrawalApprovals
+│   │   ├── ai/             ← Week 6: ⬜
 │   │   ├── auth/           ← Week 1 ✅: AuthModal
 │   │   ├── bookmarks/      ← Week 3 ✅: BookmarksPage
 │   │   ├── chat/           ← Week 5 ✅: MessagingPage
@@ -380,20 +380,21 @@ earnbyway/
 │   │   ├── landing/        ← Week 1 ✅: LandingPage
 │   │   ├── layout/         ← Week 1 ✅: Navbar, Footer, RoleSwitcher
 │   │   ├── notifications/  ← Week 1 ✅: NotificationDrawer
+│   │   ├── orders/         ← Week 4 ✅: OrderDashboard
 │   │   ├── profiles/       ← Week 3 ✅: FreelancerProfile
 │   │   ├── projects/       ← Week 4 ✅: ProjectsBoard, ProjectDetail
 │   │   ├── reviews/        ← Built: ReviewForm
 │   │   ├── search/         ← Week 3 ✅: SearchResults
-│   │   ├── ui/             ← Built: PlaceholderModal, NotFoundPage
-│   │   └── settings/       ← Week 6: TBD
+│   │   ├── settings/       ← Week 6 ✅: SettingsPage
+│   │   └── ui/             ← Built: PlaceholderModal, NotFoundPage
 │   ├── context/
-│   │   └── AppContext.tsx   ← Week 1 ✅ (+ bookmarks state added)
+│   │   └── AppContext.tsx   ← Week 1 ✅ (+ bookmarks state)
 │   ├── services/
 │   │   ├── aiService.ts     ← Week 1 ✅
 │   │   └── mockData.ts      ← Week 1 ✅
 │   ├── types/
 │   │   └── index.ts         ← Week 1 ✅
-│   ├── App.tsx              ← Week 2 ✅ (BrowserRouter, new routes)
+│   ├── App.tsx              ← Week 2 ✅ (BrowserRouter, 15+ routes)
 │   ├── main.tsx
 │   └── index.css
 ```
@@ -431,6 +432,27 @@ earnbyway/
 | **Accessibility** | `aria-label` attributes on all icon-only buttons in Navbar (AI tools, messages, notifications, mobile menu) |
 | **Navbar links** | Added Search, Bookmarks, Earnings to desktop nav + mobile menu |
 
+### ✅ Week 6 — Admin Panel & Settings (Now Partial)
+
+| Component | File | Status |
+|-----------|------|--------|
+| **Admin Dashboard** | `src/components/admin/AdminDashboard.tsx` | Stats cards (users, projects, revenue, withdrawals), revenue bar chart, category pie chart, pending actions summary, quick links |
+| **User Management** | `src/components/admin/UserManagement.tsx` | Users table with search + role filter, expandable detail rows (rating, jobs, skills, availability), verify/unverify toggle, suspend button (mock) |
+| **Dispute Resolution** | `src/components/admin/DisputePanel.tsx` | Open disputes list with order info, freelancer vs client, resolution text input + resolve button, resolved disputes history |
+| **Withdrawal Approvals** | `src/components/admin/WithdrawalApprovals.tsx` | Pending requests with copy account details, approve/reject buttons, approved history, total pending amount banner |
+
+### ✅ Week 4 — Order & Milestone Dashboard (Now Built)
+
+| Component | File | Status |
+|-----------|------|--------|
+| **Order Dashboard** | `src/components/orders/OrderDashboard.tsx` | Orders list with expand/collapse, milestone progress per order (funded → submitted → released), escrow balance indicator, freelancer submit deliverable modal, client approve & release escrow button |
+
+### ✅ Settings Page
+
+| Component | File | Status |
+|-----------|------|--------|
+| **Settings Page** | `src/components/settings/SettingsPage.tsx` | 4-tab layout (Profile, Notifications, Payments, Security), profile edit form, notification toggle switches, payment methods display, 2FA toggle, password change mock |
+
 ### 📁 New Routes
 
 | Route | Component |
@@ -439,6 +461,12 @@ earnbyway/
 | `/earnings` | EarningsPage (new) |
 | `/search` | SearchResults (new) |
 | `/bookmarks` | BookmarksPage (new) |
+| `/orders` | OrderDashboard (new) |
+| `/settings` | SettingsPage (new) |
+| `/admin` | AdminDashboard (was ComingSoon) |
+| `/admin/users` | UserManagement (new) |
+| `/admin/disputes` | DisputePanel (new) |
+| `/admin/withdrawals` | WithdrawalApprovals (new) |
 | `*` (catch-all) | NotFoundPage (new) |
 
 ---

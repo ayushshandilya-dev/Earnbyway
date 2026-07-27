@@ -15,6 +15,12 @@ import { EarningsPage } from './components/earnings/EarningsPage';
 import { SearchResults } from './components/search/SearchResults';
 import { BookmarksPage } from './components/bookmarks/BookmarksPage';
 import { CreateGigWizard } from './components/gigs/CreateGigWizard';
+import { AdminDashboard } from './components/admin/AdminDashboard';
+import { UserManagement } from './components/admin/UserManagement';
+import { DisputePanel } from './components/admin/DisputePanel';
+import { WithdrawalApprovals } from './components/admin/WithdrawalApprovals';
+import { OrderDashboard } from './components/orders/OrderDashboard';
+import { SettingsPage } from './components/settings/SettingsPage';
 import { PlaceholderModal } from './components/ui/PlaceholderModal';
 import { NotFoundPage } from './components/ui/NotFoundPage';
 import { AppProvider, useApp } from './context/AppContext';
@@ -66,12 +72,7 @@ const DashboardPage: React.FC = () => {
 
   if (currentRole === 'client') return <ClientDashboard />;
   if (currentRole === 'freelancer') return <FreelancerDashboard />;
-  return (
-    <div className="p-8 text-center">
-      <h2 className="text-2xl font-bold text-zinc-400">Admin Dashboard</h2>
-      <p className="text-sm text-zinc-600 mt-2">Coming in Week 6</p>
-    </div>
-  );
+  return <AdminDashboard />;
 };
 
 const ComingSoon: React.FC<{ title: string; week: string }> = ({ title, week }) => (
@@ -98,7 +99,12 @@ export default function App() {
           <Route path="/search" element={<SearchResults />} />
           <Route path="/bookmarks" element={<BookmarksPage />} />
           <Route path="/profile" element={<ComingSoon title="Profile View" week="Week 3" />} />
-          <Route path="/admin" element={<ComingSoon title="Admin Panel" week="Week 6" />} />
+          <Route path="/orders" element={<OrderDashboard />} />
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/users" element={<UserManagement />} />
+          <Route path="/admin/disputes" element={<DisputePanel />} />
+          <Route path="/admin/withdrawals" element={<WithdrawalApprovals />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>
