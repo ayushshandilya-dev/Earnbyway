@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
+import { useToast } from '../../context/ToastContext';
 import { Wallet, TrendingUp, ArrowUpRight, CheckCircle, Clock, X, Copy, ExternalLink } from 'lucide-react';
 
 export const EarningsPage: React.FC = () => {
   const { currentUser, withdrawals, requestWithdrawal } = useApp();
+  const { addToast } = useToast();
   const [showWithdraw, setShowWithdraw] = useState(false);
   const [amount, setAmount] = useState(0);
   const [method, setMethod] = useState<'UPI' | 'Bank Transfer' | 'Razorpay' | 'PayPal'>('UPI');
@@ -16,6 +18,7 @@ export const EarningsPage: React.FC = () => {
   const handleWithdraw = () => {
     if (amount <= 0 || amount > currentUser.balance || !accountDetails.trim()) return;
     requestWithdrawal(amount, method, accountDetails);
+    addToast(`₹${amount.toLocaleString()} withdrawal requested!`, 'success');
     setShowWithdraw(false);
     setAmount(0);
     setAccountDetails('');

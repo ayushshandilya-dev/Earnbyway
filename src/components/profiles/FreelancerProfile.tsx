@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
+import { useToast } from '../../context/ToastContext';
 import { AIService } from '../../services/aiService';
 import { User } from '../../types';
 import {
@@ -17,6 +18,7 @@ interface Props {
 export const FreelancerProfile: React.FC<Props> = ({ freelancerUser, onBack }) => {
   const navigate = useNavigate();
   const { profiles, reviews, users, currentRole, bookmarks, toggleBookmark, isBookmarked } = useApp();
+  const { addToast } = useToast();
   const profile = profiles[freelancerUser.id];
   const [activeTab, setActiveTab] = useState<'portfolio' | 'reviews' | 'ai'>('portfolio');
   const [showAI, setShowAI] = useState(false);
@@ -300,7 +302,7 @@ export const FreelancerProfile: React.FC<Props> = ({ freelancerUser, onBack }) =
             <div className="glass-panel rounded-2xl p-5 sticky top-28 space-y-5">
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => toggleBookmark(freelancerUser.id)}
+                  onClick={() => { toggleBookmark(freelancerUser.id); addToast(saved ? 'Removed from bookmarks' : 'Saved to bookmarks!', 'success'); }}
                   className={`p-2 rounded-xl border transition-all ${
                     saved ? 'bg-red-500/10 border-red-500/40 text-red-400' : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white'
                   }`}

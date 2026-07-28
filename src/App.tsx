@@ -10,6 +10,7 @@ import { PostProjectWizard } from './components/projects/PostProjectWizard';
 import { AIToolsPlayground } from './components/ai/AIToolsPlayground';
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
 import { AppProvider, useApp } from './context/AppContext';
+import { ToastProvider } from './context/ToastContext';
 
 const LandingPage = lazy(() => import('./components/landing/LandingPage').then(m => ({ default: m.LandingPage })));
 const GigCatalog = lazy(() => import('./components/gigs/GigCatalog').then(m => ({ default: m.GigCatalog })));
@@ -96,6 +97,7 @@ const DashboardPage: React.FC = () => {
 export default function App() {
   return (
     <AppProvider>
+      <ToastProvider>
       <Routes>
         <Route element={<AppLayout />}>
           <Route path="/" element={<LandingPage />} />
@@ -118,6 +120,7 @@ export default function App() {
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>
+      </ToastProvider>
     </AppProvider>
   );
 }

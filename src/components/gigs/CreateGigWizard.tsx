@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
 import { AIService } from '../../services/aiService';
+import { useToast } from '../../context/ToastContext';
 import {
   X, Sparkles, ChevronLeft, ChevronRight, CheckCircle, Send,
   Hash, AlignLeft, Tag, Package, HelpCircle, Eye, Layers
@@ -40,6 +41,7 @@ type Step = 'title' | 'description' | 'pricing' | 'faqs' | 'preview';
 export const CreateGigWizard: React.FC<Props> = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
   const { currentUser, createGig } = useApp();
+  const { addToast } = useToast();
   const [step, setStep] = useState<Step>('title');
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('');
@@ -95,6 +97,7 @@ export const CreateGigWizard: React.FC<Props> = ({ isOpen, onClose }) => {
       requirements: requirements.length > 0 ? requirements : ['Project brief', 'Brand assets', 'Reference examples'],
     });
     setPublishSuccess(true);
+    addToast('Gig published successfully!', 'success');
   };
 
   const handleClose = () => {

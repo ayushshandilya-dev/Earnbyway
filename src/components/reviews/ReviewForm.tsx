@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
+import { useToast } from '../../context/ToastContext';
 import { Star, Send, ThumbsUp } from 'lucide-react';
 
 interface Props {
@@ -10,6 +11,7 @@ interface Props {
 
 export const ReviewForm: React.FC<Props> = ({ targetId, orderId, onSubmitted }) => {
   const { currentUser, postReview } = useApp();
+  const { addToast } = useToast();
   const [rating, setRating] = useState(0);
   const [hoveredStar, setHoveredStar] = useState(0);
   const [comment, setComment] = useState('');
@@ -32,6 +34,7 @@ export const ReviewForm: React.FC<Props> = ({ targetId, orderId, onSubmitted }) 
       wouldHireAgain,
     });
     setSubmitted(true);
+    addToast('Review submitted!', 'success');
     onSubmitted?.();
   };
 

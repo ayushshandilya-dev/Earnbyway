@@ -10,7 +10,7 @@ import {
 
 export const ProfilePage: React.FC = () => {
   const navigate = useNavigate();
-  const { currentUser, currentRole, profiles, orders, projects, reviews, bookmarks, toggleBookmark, isBookmarked } = useApp();
+  const { currentUser, currentRole, profiles, orders, projects, reviews, bookmarks } = useApp();
   const myProfile = profiles[currentUser.id];
   const [viewingFreelancer, setViewingFreelancer] = useState<string | null>(null);
 

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
+import { useToast } from '../../context/ToastContext';
 import { Project } from '../../types';
 import {
   CheckCircle, XCircle, Star, MessageSquare, ChevronDown, ChevronUp,
@@ -8,6 +9,7 @@ import {
 
 export const ProposalManagement: React.FC = () => {
   const { projects, currentUser, acceptProposal } = useApp();
+  const { addToast } = useToast();
   const [expandedProject, setExpandedProject] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'accepted' | 'rejected'>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -27,6 +29,7 @@ export const ProposalManagement: React.FC = () => {
 
   const handleAccept = (projectId: string, proposalId: string) => {
     acceptProposal(projectId, proposalId);
+    addToast('Proposal accepted — escrow order created!', 'success');
   };
 
   return (

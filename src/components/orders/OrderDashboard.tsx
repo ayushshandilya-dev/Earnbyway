@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
+import { useToast } from '../../context/ToastContext';
 import { Order } from '../../types';
 import { CheckCircle, Clock, Upload, Send, FileText, X, ChevronDown, ChevronUp, ShieldCheck, DollarSign } from 'lucide-react';
 import { EmptyState } from '../ui/EmptyState';
 
 export const OrderDashboard: React.FC = () => {
   const { orders, currentUser, submitMilestoneDeliverable, approveMilestoneEscrow } = useApp();
+  const { addToast } = useToast();
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
   const [submitModal, setSubmitModal] = useState<{ orderId: string; milestoneId: string } | null>(null);
   const [deliverableNote, setDeliverableNote] = useState('');
@@ -17,6 +19,7 @@ export const OrderDashboard: React.FC = () => {
   const handleSubmit = () => {
     if (!submitModal || !deliverableNote.trim()) return;
     submitMilestoneDeliverable(submitModal.orderId, submitModal.milestoneId, deliverableNote, deliverableFile || undefined);
+    addToast('Deliverable submitted!', 'success');
     setSubmitModal(null);
     setDeliverableNote('');
     setDeliverableFile('');
@@ -130,7 +133,7 @@ export const OrderDashboard: React.FC = () => {
                                   </button>
                                 )}
                                 {canApprove && (
-                                  <button onClick={() => approveMilestoneEscrow(order.id, m.id)}
+                                  <button onClick={() => { approveMilestoneEscrow(order.id, m.id); addToast('Milestone approved — payment released!', 'success'); }}
                                     className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-black font-bold rounded-xl transition-all text-xs">
                                     <CheckCircle className="w-3.5 h-3.5" /> Approve & Release
                                   </button>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
+import { useToast } from '../../context/ToastContext';
 import { AIService } from '../../services/aiService';
 import {
   X, ChevronLeft, ChevronRight, CheckCircle, Send, AlertTriangle,
@@ -19,6 +20,7 @@ type Step = 'title' | 'description' | 'skills' | 'budget' | 'preview';
 export const PostProjectWizard: React.FC<Props> = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
   const { currentUser, postProject } = useApp();
+  const { addToast } = useToast();
   const [step, setStep] = useState<Step>('title');
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('');
@@ -56,6 +58,7 @@ export const PostProjectWizard: React.FC<Props> = ({ isOpen, onClose }) => {
       duration,
     });
     setPublishSuccess(true);
+    addToast('Project posted successfully!', 'success');
   };
 
   const handleClose = () => {
