@@ -5,7 +5,8 @@ import { GigCard } from './GigCard';
 import { GigDetail } from './GigDetail';
 import { Gig } from '../../types';
 import { AIService } from '../../services/aiService';
-import { Search, SlidersHorizontal, X, Code, Brain, Palette, PenTool, Video, Megaphone, Layers, Shield, Sparkles, ArrowUpDown } from 'lucide-react';
+import { Search, SlidersHorizontal, X, Code, Brain, Palette, PenTool, Video, Megaphone, Layers, Shield } from 'lucide-react';
+import { EmptyState } from '../ui/EmptyState';
 
 const CATEGORIES = [
   { name: 'All', icon: null },
@@ -189,11 +190,7 @@ export const GigCatalog: React.FC = () => {
       )}
 
       {filteredGigs.length === 0 ? (
-        <div className="text-center py-20">
-          <Sparkles className="w-12 h-12 text-zinc-600 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-zinc-400 mb-2">No gigs found</h3>
-          <p className="text-sm text-zinc-600">Try adjusting your filters or search query.</p>
-        </div>
+        <EmptyState icon="search" title="No gigs found" description="Try adjusting your filters or search query." />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredGigs.map(gig => (

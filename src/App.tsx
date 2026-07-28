@@ -1,39 +1,49 @@
-import React, { useState } from 'react';
-import { Routes, Route, Outlet } from 'react-router-dom';
+import React, { useState, lazy, Suspense } from 'react';
+import { Routes, Route, Outlet, useLocation } from 'react-router-dom';
 import { Loader2, X } from 'lucide-react';
 import { RoleSwitcher } from './components/layout/RoleSwitcher';
 import { Navbar } from './components/layout/Navbar';
 import { Footer } from './components/layout/Footer';
 import { AuthModal } from './components/auth/AuthModal';
-import { LandingPage } from './components/landing/LandingPage';
-import { GigCatalog } from './components/gigs/GigCatalog';
-import { ProjectsBoard } from './components/projects/ProjectsBoard';
-import { ClientDashboard } from './components/dashboards/ClientDashboard';
-import { FreelancerDashboard } from './components/dashboards/FreelancerDashboard';
-import { MessagingPage } from './components/chat/MessagingPage';
-import { EarningsPage } from './components/earnings/EarningsPage';
-import { SearchResults } from './components/search/SearchResults';
-import { BookmarksPage } from './components/bookmarks/BookmarksPage';
 import { CreateGigWizard } from './components/gigs/CreateGigWizard';
 import { PostProjectWizard } from './components/projects/PostProjectWizard';
-import { AdminDashboard } from './components/admin/AdminDashboard';
-import { UserManagement } from './components/admin/UserManagement';
-import { DisputePanel } from './components/admin/DisputePanel';
-import { WithdrawalApprovals } from './components/admin/WithdrawalApprovals';
-import { OrderDashboard } from './components/orders/OrderDashboard';
-import { ProposalManagement } from './components/proposals/ProposalManagement';
-import { SettingsPage } from './components/settings/SettingsPage';
 import { AIToolsPlayground } from './components/ai/AIToolsPlayground';
-import { NotFoundPage } from './components/ui/NotFoundPage';
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
-import { ProfilePage } from './components/profiles/ProfilePage';
 import { AppProvider, useApp } from './context/AppContext';
+
+const LandingPage = lazy(() => import('./components/landing/LandingPage').then(m => ({ default: m.LandingPage })));
+const GigCatalog = lazy(() => import('./components/gigs/GigCatalog').then(m => ({ default: m.GigCatalog })));
+const ProjectsBoard = lazy(() => import('./components/projects/ProjectsBoard').then(m => ({ default: m.ProjectsBoard })));
+const ClientDashboard = lazy(() => import('./components/dashboards/ClientDashboard').then(m => ({ default: m.ClientDashboard })));
+const FreelancerDashboard = lazy(() => import('./components/dashboards/FreelancerDashboard').then(m => ({ default: m.FreelancerDashboard })));
+const MessagingPage = lazy(() => import('./components/chat/MessagingPage').then(m => ({ default: m.MessagingPage })));
+const EarningsPage = lazy(() => import('./components/earnings/EarningsPage').then(m => ({ default: m.EarningsPage })));
+const SearchResults = lazy(() => import('./components/search/SearchResults').then(m => ({ default: m.SearchResults })));
+const BookmarksPage = lazy(() => import('./components/bookmarks/BookmarksPage').then(m => ({ default: m.BookmarksPage })));
+const OrderDashboard = lazy(() => import('./components/orders/OrderDashboard').then(m => ({ default: m.OrderDashboard })));
+const ProposalManagement = lazy(() => import('./components/proposals/ProposalManagement').then(m => ({ default: m.ProposalManagement })));
+const SettingsPage = lazy(() => import('./components/settings/SettingsPage').then(m => ({ default: m.SettingsPage })));
+const ProfilePage = lazy(() => import('./components/profiles/ProfilePage').then(m => ({ default: m.ProfilePage })));
+const AdminDashboard = lazy(() => import('./components/admin/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
+const UserManagement = lazy(() => import('./components/admin/UserManagement').then(m => ({ default: m.UserManagement })));
+const DisputePanel = lazy(() => import('./components/admin/DisputePanel').then(m => ({ default: m.DisputePanel })));
+const WithdrawalApprovals = lazy(() => import('./components/admin/WithdrawalApprovals').then(m => ({ default: m.WithdrawalApprovals })));
+const NotFoundPage = lazy(() => import('./components/ui/NotFoundPage').then(m => ({ default: m.NotFoundPage })));
 
 const PageLoader: React.FC = () => (
   <div className="flex items-center justify-center py-20">
     <Loader2 className="w-8 h-8 text-emerald-400 animate-spin" />
   </div>
 );
+
+const AnimatedOutlet: React.FC = () => {
+  const location = useLocation();
+  return (
+    <div key={location.pathname} className="animate-page-in">
+      <Outlet />
+    </div>
+  );
+};
 
 const AppLayout: React.FC = () => {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
@@ -50,9 +60,11 @@ const AppLayout: React.FC = () => {
         onOpenPostProject={() => setIsPostProjectOpen(true)}
         onOpenCreateGig={() => setIsCreateGigOpen(true)}
       />
-      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-in fade-in duration-300">
+      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <ErrorBoundary>
-          <Outlet />
+          <Suspense fallback={<PageLoader />}>
+            <AnimatedOutlet />
+          </Suspense>
         </ErrorBoundary>
       </main>
       <Footer />
@@ -68,21 +80,14 @@ const AppLayout: React.FC = () => {
           </div>
         </div>
       )}
-      <PostProjectWizard
-        isOpen={isPostProjectOpen}
-        onClose={() => setIsPostProjectOpen(false)}
-      />
-      <CreateGigWizard
-        isOpen={isCreateGigOpen}
-        onClose={() => setIsCreateGigOpen(false)}
-      />
+      <PostProjectWizard isOpen={isPostProjectOpen} onClose={() => setIsPostProjectOpen(false)} />
+      <CreateGigWizard isOpen={isCreateGigOpen} onClose={() => setIsCreateGigOpen(false)} />
     </div>
   );
 };
 
 const DashboardPage: React.FC = () => {
   const { currentRole } = useApp();
-
   if (currentRole === 'client') return <ClientDashboard />;
   if (currentRole === 'freelancer') return <FreelancerDashboard />;
   return <AdminDashboard />;

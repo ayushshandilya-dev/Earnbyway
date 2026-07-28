@@ -97,11 +97,7 @@ export const ProjectsBoard: React.FC = () => {
       </div>
 
       {filteredProjects.length === 0 ? (
-        <div className="text-center py-20">
-          <Briefcase className="w-12 h-12 text-zinc-600 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-zinc-400 mb-2">No open projects</h3>
-          <p className="text-sm text-zinc-600">Check back later for new opportunities.</p>
-        </div>
+        <EmptyState icon="project" title="No open projects" description="Check back later for new opportunities." />
       ) : (
         <div className="space-y-4">
           {filteredProjects.map(project => (

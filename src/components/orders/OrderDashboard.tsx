@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Order } from '../../types';
 import { CheckCircle, Clock, Upload, Send, FileText, X, ChevronDown, ChevronUp, ShieldCheck, DollarSign } from 'lucide-react';
+import { EmptyState } from '../ui/EmptyState';
 
 export const OrderDashboard: React.FC = () => {
   const { orders, currentUser, submitMilestoneDeliverable, approveMilestoneEscrow } = useApp();
@@ -48,11 +49,7 @@ export const OrderDashboard: React.FC = () => {
       </div>
 
       {myOrders.length === 0 ? (
-        <div className="text-center py-16">
-          <FileText className="w-12 h-12 text-zinc-600 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-zinc-400 mb-2">No orders yet</h3>
-          <p className="text-sm text-zinc-600">Orders will appear once a proposal is accepted and escrow is funded.</p>
-        </div>
+        <EmptyState icon="order" title="No orders yet" description="Orders will appear once a proposal is accepted and escrow is funded." />
       ) : (
         <div className="space-y-4">
           {myOrders.map(order => {
