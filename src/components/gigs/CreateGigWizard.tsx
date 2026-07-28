@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
 import { AIService } from '../../services/aiService';
 import { useToast } from '../../context/ToastContext';
+import { FormField } from '../ui/FormField';
+import { required, minLength } from '../../utils/validation';
 import {
   X, Sparkles, ChevronLeft, ChevronRight, CheckCircle, Send,
   Hash, AlignLeft, Tag, Package, HelpCircle, Eye, Layers
@@ -54,8 +56,32 @@ export const CreateGigWizard: React.FC<Props> = ({ isOpen, onClose }) => {
   const [faqs, setFaqs] = useState<{ q: string; a: string }[]>([]);
   const [requirements, setRequirements] = useState<string[]>([]);
   const [publishSuccess, setPublishSuccess] = useState(false);
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
 
   if (!isOpen) return null;
+
+  const validateStep = (s: Step): boolean => {
+    const errs: Record<string, string | null> = {};
+    if (s === 'title') {
+      errs.title = title.trim() ? null : 'Enter a gig title';
+      errs.category = category ? null : 'Select a category';
+    }
+    if (s === 'description') {
+      errs.description = description.trim().length >= 20 ? null : 'Description must be at least 20 characters';
+    }
+    if (s === 'pricing') {
+      errs.basicPrice = basicPrice >= 100 ? null : 'Minimum price is ₹100';
+    }
+    const hasErrors = Object.values(errs).some(Boolean);
+    setTouched(prev => ({ ...prev, ...Object.fromEntries(Object.keys(errs).map(k => [k, true])) }));
+    return !hasErrors;
+  };
+
+  const handleNext = () => {
+    if (!validateStep(step)) return;
+    const idx = steps.findIndex(s => s.key === step);
+    if (idx < steps.length - 1) setStep(steps[idx + 1].key);
+  };
 
   const steps: { key: Step; label: string; icon: React.ReactNode }[] = [
     { key: 'title', label: 'Title & Category', icon: <Hash className="w-4 h-4" /> },
@@ -75,6 +101,13 @@ export const CreateGigWizard: React.FC<Props> = ({ isOpen, onClose }) => {
   };
 
   const handlePublish = () => {
+    if (!title.trim() || !category || description.trim().length < 20) {
+      if (!title.trim()) setTouched(p => ({ ...p, title: true }));
+      if (!category) setTouched(p => ({ ...p, category: true }));
+      if (description.trim().length < 20) setTouched(p => ({ ...p, description: true }));
+      addToast('Please fix validation errors before publishing', 'error');
+      return;
+    }
     createGig({
       title,
       freelancerId: currentUser.id,
@@ -115,35 +148,32 @@ export const CreateGigWizard: React.FC<Props> = ({ isOpen, onClose }) => {
       case 'title':
         return (
           <div className="space-y-5">
-            <div>
-              <label className="text-xs font-medium text-zinc-400 mb-1.5 block">Gig Title</label>
+            <FormField label="Gig Title" error={touched.title ? (!title.trim() ? 'Enter a gig title' : null) : null} touched required>
               <input type="text" value={title} onChange={e => setTitle(e.target.value)}
                 placeholder="e.g., I will build a modern React & Node.js web application"
                 className="w-full px-4 py-2.5 bg-zinc-900/50 border border-zinc-800 rounded-xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500" />
-            </div>
-            <div>
-              <label className="text-xs font-medium text-zinc-400 mb-1.5 block">Category</label>
+            </FormField>
+            <FormField label="Category" error={touched.category ? (!category ? 'Select a category' : null) : null} touched required>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {CATEGORIES.map(c => (
-                  <button key={c} onClick={() => { setCategory(c); setSubcategory(''); }}
+                  <button key={c} type="button" onClick={() => { setCategory(c); setSubcategory(''); }}
                     className={`p-2.5 rounded-xl text-xs font-medium border transition-all ${
                       category === c ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-400' : 'bg-zinc-900/50 border-zinc-800 text-zinc-400 hover:text-white'
                     }`}>{c}</button>
                 ))}
               </div>
-            </div>
+            </FormField>
             {category && (
-              <div>
-                <label className="text-xs font-medium text-zinc-400 mb-1.5 block">Subcategory</label>
+              <FormField label="Subcategory">
                 <div className="flex flex-wrap gap-2">
                   {SUBCATEGORIES[category]?.map(s => (
-                    <button key={s} onClick={() => setSubcategory(s)}
+                    <button key={s} type="button" onClick={() => setSubcategory(s)}
                       className={`px-3 py-1.5 rounded-xl text-xs border transition-all ${
                         subcategory === s ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-400' : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white'
                       }`}>{s}</button>
                   ))}
                 </div>
-              </div>
+              </FormField>
             )}
           </div>
         );
@@ -151,16 +181,18 @@ export const CreateGigWizard: React.FC<Props> = ({ isOpen, onClose }) => {
       case 'description':
         return (
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-medium text-zinc-400">Description</label>
-              <button onClick={handleAIGenerate}
-                className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-gradient-to-r from-emerald-600/20 to-teal-600/20 border border-emerald-500/40 text-emerald-300 text-xs font-semibold hover:border-emerald-400 transition-all">
-                <Sparkles className="w-3 h-3" /> AI Generate
-              </button>
-            </div>
-            <textarea value={description} onChange={e => setDescription(e.target.value)}
-              placeholder="Describe your gig in detail..."
-              rows={6} className="w-full px-4 py-3 bg-zinc-900/50 border border-zinc-800 rounded-xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500 resize-none" />
+            <FormField label="Description" error={touched.description ? (description.trim().length < 20 ? 'Description must be at least 20 characters' : null) : null} touched required>
+              <div className="flex items-center justify-between mb-1">
+                <span />
+                <button type="button" onClick={handleAIGenerate}
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-gradient-to-r from-emerald-600/20 to-teal-600/20 border border-emerald-500/40 text-emerald-300 text-xs font-semibold hover:border-emerald-400 transition-all">
+                  <Sparkles className="w-3 h-3" /> AI Generate
+                </button>
+              </div>
+              <textarea value={description} onChange={e => setDescription(e.target.value)}
+                placeholder="Describe your gig in detail..."
+                rows={6} className="w-full px-4 py-3 bg-zinc-900/50 border border-zinc-800 rounded-xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500 resize-none" />
+            </FormField>
             <div>
               <label className="text-xs font-medium text-zinc-400 mb-1.5 block">Tags</label>
               <div className="flex flex-wrap gap-2 mb-2">
@@ -325,7 +357,7 @@ export const CreateGigWizard: React.FC<Props> = ({ isOpen, onClose }) => {
               <Send className="w-3.5 h-3.5" /> Publish Gig
             </button>
           ) : (
-            <button onClick={() => setStep(steps[currentIdx + 1].key)}
+            <button onClick={handleNext}
               className="flex items-center gap-1.5 px-6 py-2 bg-emerald-500 hover:bg-emerald-400 text-black font-bold rounded-xl transition-all text-xs">
               Next <ChevronRight className="w-3.5 h-3.5" />
             </button>

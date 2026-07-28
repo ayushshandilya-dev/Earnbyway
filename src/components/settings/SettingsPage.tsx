@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
+import { useToast } from '../../context/ToastContext';
+import { FormField } from '../ui/FormField';
 import { User, Bell, Shield, CreditCard, Save, CheckCircle, Smartphone, Eye, EyeOff } from 'lucide-react';
 
 export const SettingsPage: React.FC = () => {
@@ -10,6 +12,8 @@ export const SettingsPage: React.FC = () => {
   const [email, setEmail] = useState(currentUser.email);
   const [bio, setBio] = useState('Full-stack developer passionate about building scalable web applications.');
   const [saved, setSaved] = useState(false);
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const { addToast } = useToast();
 
   const [notifPrefs, setNotifPrefs] = useState({
     proposals: true,
@@ -23,7 +27,14 @@ export const SettingsPage: React.FC = () => {
   const [twoFA, setTwoFA] = useState(false);
 
   const handleSave = () => {
+    if (!name.trim() || !email.trim() || !/\S+@\S+\.\S+/.test(email)) {
+      if (!name.trim()) setTouched(p => ({ ...p, name: true }));
+      if (!email.trim() || !/\S+@\S+\.\S+/.test(email)) setTouched(p => ({ ...p, email: true }));
+      addToast('Please fix validation errors', 'error');
+      return;
+    }
     setSaved(true);
+    addToast('Settings saved successfully!', 'success');
     setTimeout(() => setSaved(false), 2000);
   };
 
@@ -61,16 +72,14 @@ export const SettingsPage: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="text-xs font-medium text-zinc-400 mb-1.5 block">Full Name</label>
+            <FormField label="Full Name" error={touched.name ? (!name.trim() ? 'Name is required' : null) : null} touched required>
               <input type="text" value={name} onChange={e => setName(e.target.value)}
                 className="w-full px-4 py-2.5 bg-zinc-900/50 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none focus:border-emerald-500" />
-            </div>
-            <div>
-              <label className="text-xs font-medium text-zinc-400 mb-1.5 block">Email</label>
+            </FormField>
+            <FormField label="Email" error={touched.email ? (!email.trim() ? 'Email is required' : !/\S+@\S+\.\S+/.test(email) ? 'Enter a valid email' : null) : null} touched required>
               <input type="email" value={email} onChange={e => setEmail(e.target.value)}
                 className="w-full px-4 py-2.5 bg-zinc-900/50 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none focus:border-emerald-500" />
-            </div>
+            </FormField>
           </div>
 
           <div>

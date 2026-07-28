@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
 import { AIService } from '../../services/aiService';
+import { FormField } from '../ui/FormField';
 import {
   X, ChevronLeft, ChevronRight, CheckCircle, Send, AlertTriangle,
-  Sparkles, Clock, DollarSign, Hash, AlignLeft, Tag, ListTodo
+  Sparkles, Hash, AlignLeft, Tag
 } from 'lucide-react';
 
 interface Props {
@@ -30,8 +31,19 @@ export const PostProjectWizard: React.FC<Props> = ({ isOpen, onClose }) => {
   const [budget, setBudget] = useState(25000);
   const [duration, setDuration] = useState('2-3 Weeks');
   const [publishSuccess, setPublishSuccess] = useState(false);
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
 
   const scamCheck = description ? AIService.analyzeScamRisk(description) : null;
+
+  const validateStep = (s: Step): boolean => {
+    const errs: Record<string, string | null> = {};
+    if (s === 'title') { errs.title = title.trim() ? null : 'Enter a project title'; errs.category = category ? null : 'Select a category'; }
+    if (s === 'description') errs.description = description.trim().length >= 20 ? null : 'Description must be at least 20 characters';
+    if (s === 'budget') errs.budget = budget >= 1000 ? null : 'Minimum budget is ₹1,000';
+    const hasErrors = Object.values(errs).some(Boolean);
+    setTouched(prev => ({ ...prev, ...Object.fromEntries(Object.keys(errs).map(k => [k, true])) }));
+    return !hasErrors;
+  };
 
   if (!isOpen) return null;
 
@@ -45,6 +57,14 @@ export const PostProjectWizard: React.FC<Props> = ({ isOpen, onClose }) => {
   const currentIdx = steps.findIndex(s => s.key === step);
 
   const handlePublish = () => {
+    if (!title.trim() || !category || description.trim().length < 20 || budget < 1000) {
+      if (!title.trim()) setTouched(p => ({ ...p, title: true }));
+      if (!category) setTouched(p => ({ ...p, category: true }));
+      if (description.trim().length < 20) setTouched(p => ({ ...p, description: true }));
+      if (budget < 1000) setTouched(p => ({ ...p, budget: true }));
+      addToast('Please fix validation errors before publishing', 'error');
+      return;
+    }
     postProject({
       title,
       clientId: currentUser.id,
@@ -93,35 +113,32 @@ export const PostProjectWizard: React.FC<Props> = ({ isOpen, onClose }) => {
       case 'title':
         return (
           <div className="space-y-5">
-            <div>
-              <label className="text-xs font-medium text-zinc-400 mb-1.5 block">Project Title</label>
+            <FormField label="Project Title" error={touched.title ? (!title.trim() ? 'Enter a project title' : null) : null} touched required>
               <input type="text" value={title} onChange={e => setTitle(e.target.value)}
                 placeholder="e.g., Need a React developer for e-commerce platform"
                 className="w-full px-4 py-2.5 bg-zinc-900/50 border border-zinc-800 rounded-xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500" />
-            </div>
-            <div>
-              <label className="text-xs font-medium text-zinc-400 mb-1.5 block">Category</label>
+            </FormField>
+            <FormField label="Category" error={touched.category ? (!category ? 'Select a category' : null) : null} touched required>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {CATEGORIES.map(c => (
-                  <button key={c} onClick={() => setCategory(c)}
+                  <button key={c} type="button" onClick={() => setCategory(c)}
                     className={`p-2.5 rounded-xl text-xs font-medium border transition-all ${
                       category === c ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-400' : 'bg-zinc-900/50 border-zinc-800 text-zinc-400 hover:text-white'
                     }`}>{c}</button>
                 ))}
               </div>
-            </div>
+            </FormField>
           </div>
         );
 
       case 'description':
         return (
           <div className="space-y-4">
-            <div>
-              <label className="text-xs font-medium text-zinc-400 mb-1.5 block">Detailed Description</label>
+            <FormField label="Detailed Description" error={touched.description ? (description.trim().length < 20 ? 'Description must be at least 20 characters' : null) : null} touched required>
               <textarea value={description} onChange={e => setDescription(e.target.value)} rows={6}
                 placeholder="Describe your project in detail — what you need, tech stack, goals..."
                 className="w-full px-4 py-3 bg-zinc-900/50 border border-zinc-800 rounded-xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500 resize-none" />
-            </div>
+            </FormField>
             {scamCheck && description.length > 20 && (
               <div className={`p-4 rounded-xl border flex items-start gap-3 ${
                 scamCheck.riskScore === 'High' ? 'bg-red-500/10 border-red-500/30' :
@@ -175,19 +192,18 @@ export const PostProjectWizard: React.FC<Props> = ({ isOpen, onClose }) => {
       case 'budget':
         return (
           <div className="space-y-5">
-            <div>
-              <label className="text-xs font-medium text-zinc-400 mb-1.5 block">Budget (₹)</label>
+            <FormField label="Budget (₹)" error={touched.budget ? (budget < 1000 ? 'Minimum budget is ₹1,000' : null) : null} touched required>
               <input type="number" value={budget} onChange={e => setBudget(Number(e.target.value))} min={1000}
                 className="w-full px-4 py-2.5 bg-zinc-900/50 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none focus:border-emerald-500" />
               <div className="flex gap-1.5 mt-2">
                 {[10000, 25000, 50000, 100000].map(v => (
-                  <button key={v} onClick={() => setBudget(v)}
+                  <button key={v} type="button" onClick={() => setBudget(v)}
                     className={`px-3 py-1 rounded-lg text-[10px] border transition-colors ${
                       budget === v ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400' : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-white'
                     }`}>₹{v.toLocaleString()}</button>
                 ))}
               </div>
-            </div>
+            </FormField>
             <div>
               <label className="text-xs font-medium text-zinc-400 mb-1.5 block">Estimated Duration</label>
               <div className="grid grid-cols-2 gap-2">
@@ -265,7 +281,7 @@ export const PostProjectWizard: React.FC<Props> = ({ isOpen, onClose }) => {
               <Send className="w-3.5 h-3.5" /> Post Project
             </button>
           ) : (
-            <button onClick={() => setStep(steps[currentIdx + 1].key)}
+            <button onClick={() => { if (validateStep(step)) setStep(steps[currentIdx + 1].key); }}
               className="flex items-center gap-1.5 px-6 py-2 bg-emerald-500 hover:bg-emerald-400 text-black font-bold rounded-xl transition-all text-xs">
               Next <ChevronRight className="w-3.5 h-3.5" />
             </button>
