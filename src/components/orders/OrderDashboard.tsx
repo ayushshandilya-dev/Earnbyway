@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
 import { Order } from '../../types';
-import { CheckCircle, Clock, Upload, Send, FileText, X, ChevronDown, ChevronUp, ShieldCheck, DollarSign } from 'lucide-react';
+import { CheckCircle, Clock, Upload, Send, FileText, X, ChevronDown, ChevronUp, ShieldCheck, DollarSign, Trello } from 'lucide-react';
 import { EmptyState } from '../ui/EmptyState';
 
 export const OrderDashboard: React.FC = () => {
   const { orders, currentUser, submitMilestoneDeliverable, approveMilestoneEscrow } = useApp();
   const { addToast } = useToast();
+  const navigate = useNavigate();
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
   const [submitModal, setSubmitModal] = useState<{ orderId: string; milestoneId: string } | null>(null);
   const [deliverableNote, setDeliverableNote] = useState('');
@@ -83,11 +85,17 @@ export const OrderDashboard: React.FC = () => {
 
                 {isExpanded && (
                   <div className="px-5 pb-5 border-t border-zinc-800/60 pt-4 animate-in fade-in slide-in-from-top-1">
-                    <div className="mb-4 p-3 rounded-xl bg-zinc-900/50 border border-zinc-800 flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-xs text-zinc-300">
-                        <ShieldCheck className="w-4 h-4 text-emerald-400" /> Escrow Balance
+                    <div className="mb-4 flex flex-col sm:flex-row items-center gap-3">
+                      <div className="flex-1 w-full p-3 rounded-xl bg-zinc-900/50 border border-zinc-800 flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-xs text-zinc-300">
+                          <ShieldCheck className="w-4 h-4 text-emerald-400" /> Escrow Balance
+                        </div>
+                        <span className="text-sm font-bold text-emerald-400">₹{order.escrowBalance.toLocaleString()}</span>
                       </div>
-                      <span className="text-sm font-bold text-emerald-400">₹{order.escrowBalance.toLocaleString()}</span>
+                      <button onClick={() => navigate(`/workspace/${order.id}`)}
+                        className="w-full sm:w-auto px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-black font-extrabold text-xs rounded-xl flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/10 transition-all h-[46px]">
+                        <Trello className="w-4 h-4" /> Go to Shared Workspace
+                      </button>
                     </div>
 
                     <div className="space-y-3">
