@@ -34,8 +34,11 @@ const WithdrawalApprovals = lazy(() => import('./components/admin/WithdrawalAppr
 const NotFoundPage = lazy(() => import('./components/ui/NotFoundPage').then(m => ({ default: m.NotFoundPage })));
 
 const PageLoader: React.FC = () => (
-  <div className="flex items-center justify-center py-20">
-    <Loader2 className="w-8 h-8 text-emerald-400 animate-spin" />
+  <div className="flex items-center justify-center py-32">
+    <div className="relative">
+      <div className="w-10 h-10 border-2 border-zinc-800 rounded-full" />
+      <div className="absolute inset-0 w-10 h-10 border-2 border-emerald-400 rounded-full border-t-transparent animate-spin" />
+    </div>
   </div>
 );
 
@@ -56,35 +59,38 @@ const AppLayout: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#09090b] text-slate-100 font-sans flex flex-col selection:bg-emerald-500 selection:text-black">
-      <RoleSwitcher />
-      <Navbar
-        onOpenAuth={() => setIsAuthOpen(true)}
-        onOpenAITools={() => setIsAIToolsOpen(true)}
-        onOpenPostProject={() => setIsPostProjectOpen(true)}
-        onOpenCreateGig={() => setIsCreateGigOpen(true)}
-      />
-      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <ErrorBoundary>
-          <Suspense fallback={<PageLoader />}>
-            <AnimatedOutlet />
-          </Suspense>
-        </ErrorBoundary>
-      </main>
-      <Footer />
-      <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
-      {isAIToolsOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto" onClick={() => setIsAIToolsOpen(false)}>
-          <div className="bg-[#121215] border border-zinc-800 rounded-3xl max-w-4xl w-full p-6 max-h-[90vh] overflow-y-auto shadow-2xl" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-2">
-              <h2 className="text-xl font-heading font-bold text-white">AI Tools Playground</h2>
-              <button onClick={() => setIsAIToolsOpen(false)} className="p-1.5 bg-zinc-900 rounded-full text-zinc-400 hover:text-white"><X className="w-5 h-5" /></button>
+      <div className="fixed inset-0 pointer-events-none bg-grid opacity-40 z-0" />
+      <div className="relative z-10 flex flex-col min-h-screen">
+        <RoleSwitcher />
+        <Navbar
+          onOpenAuth={() => setIsAuthOpen(true)}
+          onOpenAITools={() => setIsAIToolsOpen(true)}
+          onOpenPostProject={() => setIsPostProjectOpen(true)}
+          onOpenCreateGig={() => setIsCreateGigOpen(true)}
+        />
+        <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <ErrorBoundary>
+            <Suspense fallback={<PageLoader />}>
+              <AnimatedOutlet />
+            </Suspense>
+          </ErrorBoundary>
+        </main>
+        <Footer />
+        <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
+        {isAIToolsOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md overflow-y-auto" onClick={() => setIsAIToolsOpen(false)}>
+            <div className="bg-[#121215] border border-zinc-800 rounded-3xl max-w-4xl w-full p-6 max-h-[90vh] overflow-y-auto shadow-2xl animate-scale-in" onClick={e => e.stopPropagation()}>
+              <div className="flex items-center justify-between mb-2">
+                <h2 className="text-xl font-heading font-bold text-white">AI Tools Playground</h2>
+                <button onClick={() => setIsAIToolsOpen(false)} className="p-1.5 bg-zinc-900 rounded-full text-zinc-400 hover:text-white"><X className="w-5 h-5" /></button>
+              </div>
+              <AIToolsPlayground />
             </div>
-            <AIToolsPlayground />
           </div>
-        </div>
-      )}
-      <PostProjectWizard isOpen={isPostProjectOpen} onClose={() => setIsPostProjectOpen(false)} />
-      <CreateGigWizard isOpen={isCreateGigOpen} onClose={() => setIsCreateGigOpen(false)} />
+        )}
+        <PostProjectWizard isOpen={isPostProjectOpen} onClose={() => setIsPostProjectOpen(false)} />
+        <CreateGigWizard isOpen={isCreateGigOpen} onClose={() => setIsCreateGigOpen(false)} />
+      </div>
     </div>
   );
 };
