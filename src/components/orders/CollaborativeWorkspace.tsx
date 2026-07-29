@@ -19,8 +19,19 @@ import {
   FileArchive,
   User as UserIcon,
   Sparkles,
-  Send
+  Send,
+  MessageCircle,
+  X
 } from 'lucide-react';
+
+interface TaskComment {
+  id: string;
+  taskId: string;
+  userName: string;
+  userAvatar: string;
+  text: string;
+  createdAt: string;
+}
 
 export const CollaborativeWorkspace: React.FC = () => {
   const { orderId } = useParams<{ orderId: string }>();
@@ -55,6 +66,30 @@ export const CollaborativeWorkspace: React.FC = () => {
   const orderNotes = orderId ? (workspaceNotes[orderId] || '') : '';
   const [editedNotes, setEditedNotes] = useState(orderNotes);
   const [isEditingNotes, setIsEditingNotes] = useState(false);
+
+  // Task comments
+  const [taskComments, setTaskComments] = useState<Record<string, TaskComment[]>>({});
+  const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
+  const [commentInputs, setCommentInputs] = useState<Record<string, string>>({});
+
+  const handleAddComment = (taskId: string) => {
+    const text = commentInputs[taskId]?.trim();
+    if (!text) return;
+    const comment: TaskComment = {
+      id: `tc_${Date.now()}`,
+      taskId,
+      userName: currentUser.name,
+      userAvatar: currentUser.avatar,
+      text,
+      createdAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    };
+    setTaskComments(prev => ({
+      ...prev,
+      [taskId]: [...(prev[taskId] || []), comment]
+    }));
+    setCommentInputs(prev => ({ ...prev, [taskId]: '' }));
+    addToast('Comment added to task', 'success');
+  };
 
   // Escrow deliverable inputs
   const [deliverableModal, setDeliverableModal] = useState<string | null>(null); // milestoneId
@@ -285,7 +320,10 @@ export const CollaborativeWorkspace: React.FC = () => {
                     </div>
 
                     <div className="space-y-2.5 flex-1 overflow-y-auto">
-                      {columnTasks.map(task => (
+                      {columnTasks.map(task => {
+                        const taskCommentCount = taskComments[task.id]?.length || 0;
+                        const isExpanded = expandedTaskId === task.id;
+                        return (
                         <div key={task.id} className="p-3 bg-zinc-900/60 border border-zinc-850 rounded-xl space-y-2 hover:border-zinc-750 transition-all">
                           <h4 className="text-xs font-medium text-white line-clamp-2 leading-relaxed">{task.title}</h4>
                           <div className="flex items-center justify-between text-[10px] text-zinc-500 pt-1.5 border-t border-zinc-850">
@@ -307,12 +345,50 @@ export const CollaborativeWorkspace: React.FC = () => {
                               <option value="in_review">In Review</option>
                               <option value="done">Done</option>
                             </select>
-                            <button onClick={() => handleDeleteTask(task.id)} className="text-zinc-600 hover:text-rose-400 transition-colors p-1">
-                              <Trash2 className="w-3 h-3" />
-                            </button>
+                            <div className="flex items-center gap-1">
+                              <button onClick={() => setExpandedTaskId(isExpanded ? null : task.id)}
+                                className="text-zinc-500 hover:text-emerald-400 transition-colors p-1 flex items-center gap-1">
+                                <MessageCircle className="w-3 h-3" />
+                                {taskCommentCount > 0 && <span className="text-[8px]">{taskCommentCount}</span>}
+                              </button>
+                              <button onClick={() => handleDeleteTask(task.id)} className="text-zinc-600 hover:text-rose-400 transition-colors p-1">
+                                <Trash2 className="w-3 h-3" />
+                              </button>
+                            </div>
                           </div>
+
+                          {/* Task Comments */}
+                          {isExpanded && (
+                            <div className="mt-2 pt-2 border-t border-zinc-850 space-y-2">
+                              <div className="space-y-1.5 max-h-24 overflow-y-auto">
+                                {(taskComments[task.id] || []).map(c => (
+                                  <div key={c.id} className="flex items-start gap-1.5 text-[10px]">
+                                    <img src={c.userAvatar} alt="" className="w-4 h-4 rounded object-cover mt-0.5" />
+                                    <div>
+                                      <span className="text-zinc-400 font-medium">{c.userName}</span>{' '}
+                                      <span className="text-zinc-500">{c.text}</span>
+                                      <div className="text-zinc-600 text-[8px]">{c.createdAt}</div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                              <div className="flex gap-1.5">
+                                <input type="text" value={commentInputs[task.id] || ''}
+                                  onChange={e => setCommentInputs(prev => ({ ...prev, [task.id]: e.target.value }))}
+                                  onKeyDown={e => { if (e.key === 'Enter') handleAddComment(task.id); }}
+                                  placeholder="Add comment..."
+                                  className="flex-1 px-2 py-1 bg-zinc-950 border border-zinc-800 rounded text-[9px] text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500/60"
+                                />
+                                <button onClick={() => handleAddComment(task.id)}
+                                  disabled={!commentInputs[task.id]?.trim()}
+                                  className="p-1 bg-emerald-500/20 text-emerald-400 rounded disabled:opacity-50">
+                                  <Send className="w-3 h-3" />
+                                </button>
+                              </div>
+                            </div>
+                          )}
                         </div>
-                      ))}
+                      );})}
                       {columnTasks.length === 0 && (
                         <div className="h-20 border border-dashed border-zinc-800/80 rounded-xl flex items-center justify-center text-[10px] text-zinc-600">
                           Empty
@@ -471,6 +547,9 @@ export const CollaborativeWorkspace: React.FC = () => {
               {order.milestones.map((m, idx) => {
                 const isNextAction = isFreelancer && m.status === 'funded' && idx === order.milestones.findIndex(mm => mm.status === 'funded');
                 const canApprove = isClient && m.status === 'submitted';
+                const depMilestones = m.dependsOn?.map(depId => order.milestones.find(dm => dm.id === depId)).filter(Boolean) || [];
+                const depsMet = depMilestones.every(dm => dm?.status === 'released');
+                const depsBlocking = depMilestones.length > 0 && !depsMet;
                 
                 return (
                   <div 
@@ -502,6 +581,27 @@ export const CollaborativeWorkspace: React.FC = () => {
                           </span>
                         </div>
 
+                        {/* Dependency info */}
+                        {depMilestones.length > 0 && (
+                          <div className="ml-7 mt-1.5 flex flex-wrap gap-1.5">
+                            {depMilestones.map(dm => dm && (
+                              <span key={dm.id} className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-semibold ${
+                                dm.status === 'released'
+                                  ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                                  : 'bg-zinc-900 text-zinc-500 border border-zinc-800'
+                              }`}>
+                                <CheckCircle className="w-2 h-2" />
+                                Dep: {dm.title.slice(0, 20)}...
+                              </span>
+                            ))}
+                            {depsBlocking && (
+                              <span className="text-[8px] text-amber-400 font-semibold flex items-center gap-0.5">
+                                ⏳ Waiting on dependencies
+                              </span>
+                            )}
+                          </div>
+                        )}
+
                         {/* Submitted deliverable details */}
                         {m.deliverableNote && (
                           <div className="mt-2.5 ml-7 p-3 rounded-lg bg-zinc-950 border border-zinc-850 text-xs text-zinc-400 space-y-1">
@@ -518,7 +618,7 @@ export const CollaborativeWorkspace: React.FC = () => {
                       </div>
 
                       <div className="flex items-center gap-2 pl-7 sm:pl-0">
-                        {isNextAction && (
+                        {isNextAction && !depsBlocking && (
                           <button
                             onClick={() => setDeliverableModal(m.id)}
                             className="px-3.5 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-black font-bold rounded-xl text-xs flex items-center gap-1.5 transition-all shadow-md"
@@ -526,7 +626,12 @@ export const CollaborativeWorkspace: React.FC = () => {
                             <Upload className="w-3.5 h-3.5" /> Submit Work
                           </button>
                         )}
-                        {canApprove && (
+                        {isNextAction && depsBlocking && (
+                          <span className="px-3.5 py-1.5 bg-zinc-800 text-zinc-500 rounded-xl text-xs font-medium cursor-not-allowed">
+                            Blocked
+                          </span>
+                        )}
+                        {canApprove && !depsBlocking && (
                           <button
                             onClick={() => {
                               approveMilestoneEscrow(order.id, m.id);
@@ -536,6 +641,11 @@ export const CollaborativeWorkspace: React.FC = () => {
                           >
                             <CheckCircle className="w-3.5 h-3.5" /> Release Escrow
                           </button>
+                        )}
+                        {canApprove && depsBlocking && (
+                          <span className="px-3.5 py-1.5 bg-zinc-800 text-zinc-500 rounded-xl text-xs font-medium cursor-not-allowed">
+                            Deps Not Met
+                          </span>
                         )}
                       </div>
                     </div>

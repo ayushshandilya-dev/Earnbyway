@@ -6,7 +6,7 @@ import { AIService } from '../../services/aiService';
 import { FormField } from '../ui/FormField';
 import {
   X, ChevronLeft, ChevronRight, CheckCircle, Send, AlertTriangle,
-  Sparkles, Hash, AlignLeft, Tag
+  Sparkles, Hash, AlignLeft, Tag, Clock
 } from 'lucide-react';
 
 interface Props {

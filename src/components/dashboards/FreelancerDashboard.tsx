@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
-import { DollarSign, TrendingUp, Briefcase, Eye, Star, Clock, CheckCircle, ArrowRight, PlusCircle, Users, Award } from 'lucide-react';
+import { AIService } from '../../services/aiService';
+import { DollarSign, TrendingUp, Briefcase, Eye, Star, Clock, CheckCircle, ArrowRight, PlusCircle, Users, Award, Sparkles, Zap } from 'lucide-react';
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 
 const earningsData = [
@@ -182,6 +183,64 @@ export const FreelancerDashboard: React.FC = () => {
             Browse Projects <ArrowRight className="w-3 h-3" />
           </button>
         </div>
+      </div>
+
+      {/* AI Talent Recommendations */}
+      <AITalentRecommendations />
+    </div>
+  );
+};
+
+const AITalentRecommendations: React.FC = () => {
+  const navigate = useNavigate();
+  const { projects, currentUser, users, profiles } = useApp();
+  
+  const recommendations = useMemo(() => {
+    const openProjs = projects.filter(p => p.status === 'open');
+    if (openProjs.length === 0 || !currentUser) return [];
+    
+    const currentProfile = profiles[currentUser.id];
+    if (!currentProfile) return [];
+    
+    const user = users.find(u => u.id === currentUser.id);
+    if (!user) return [];
+    
+    return openProjs.slice(0, 3).map(proj => ({
+      project: proj,
+      match: AIService.generateProposal(proj, currentProfile, user)
+    }));
+  }, [projects, currentUser, users, profiles]);
+
+  if (recommendations.length === 0) return null;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-2">
+        <Sparkles className="w-5 h-5 text-emerald-400" />
+        <h2 className="text-lg font-heading font-bold text-white">AI Recommended Projects</h2>
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {recommendations.map(({ project, match }) => (
+          <div key={project.id} className="glass-card rounded-2xl p-5 hover:border-emerald-500/40 transition-all group">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-semibold text-white group-hover:text-emerald-400 transition-colors">{project.title}</h3>
+              <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-semibold border border-emerald-500/30">
+                ₹{project.budget.toLocaleString()}
+              </span>
+            </div>
+            <p className="text-xs text-zinc-400 mb-3 line-clamp-2">{project.description}</p>
+            <div className="flex items-center gap-2 mb-3">
+              <span className="flex items-center gap-1 text-[10px] text-emerald-400">
+                <Zap className="w-3 h-3" /> {match.suggestedBid.toLocaleString()} suggested bid
+              </span>
+              <span className="text-[10px] text-zinc-500">· {match.suggestedDays} days</span>
+            </div>
+            <button onClick={() => navigate(`/projects`)}
+              className="w-full py-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-xl text-xs text-white transition-colors flex items-center justify-center gap-1.5">
+              View Project <ArrowRight className="w-3 h-3" />
+            </button>
+          </div>
+        ))}
       </div>
     </div>
   );

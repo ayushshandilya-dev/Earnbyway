@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useApp } from '../../context/AppContext';
-import { Search, Send, Paperclip, Circle, ChevronLeft } from 'lucide-react';
+import { Search, Send, Paperclip, Circle, ChevronLeft, Loader2, Sparkles } from 'lucide-react';
 
 export const MessagingPage: React.FC = () => {
   const { conversations, messages, currentUser, sendMessage } = useApp();
@@ -8,6 +8,8 @@ export const MessagingPage: React.FC = () => {
   const [messageInput, setMessageInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [showSidebar, setShowSidebar] = useState(true);
+  const [isTyping, setIsTyping] = useState(false);
+  const [typingUserName, setTypingUserName] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const filteredConvs = conversations.filter(c =>
@@ -21,11 +23,25 @@ export const MessagingPage: React.FC = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [activeMessages]);
 
-  const handleSend = () => {
+  // Simulate typing indicator when user starts typing
+  useEffect(() => {
+    if (!messageInput.trim() || !activeConversation) {
+      setIsTyping(false);
+      return;
+    }
+    // Show typing indicator for the other participant
+    setIsTyping(true);
+    setTypingUserName(activeConversation.participant.name);
+    const timer = setTimeout(() => setIsTyping(false), 3000);
+    return () => clearTimeout(timer);
+  }, [messageInput, activeConversation]);
+
+  const handleSend = useCallback(() => {
     if (!messageInput.trim() || !activeConv) return;
+    setIsTyping(false);
     sendMessage(activeConv, messageInput.trim());
     setMessageInput('');
-  };
+  }, [messageInput, activeConv, sendMessage]);
 
   return (
     <div className="py-4 h-[calc(100vh-12rem)]">
@@ -108,6 +124,12 @@ export const MessagingPage: React.FC = () => {
               </div>
 
               <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                {isTyping && typingUserName && (
+                  <div className="flex items-start gap-2 text-xs text-zinc-500 italic">
+                    <Loader2 className="w-3 h-3 animate-spin text-emerald-400" />
+                    <span>{typingUserName} is typing...</span>
+                  </div>
+                )}
                 {activeMessages.map(msg => {
                   const isMine = msg.senderId === currentUser.id;
                   return (

@@ -1,4 +1,16 @@
 export type UserRole = 'client' | 'freelancer' | 'admin' | 'guest';
+export type SubscriptionTier = 'none' | 'standard' | 'pro' | 'elite';
+
+export interface SubscriptionPlan {
+  tier: SubscriptionTier;
+  name: string;
+  price: number;
+  priceYearly: number;
+  badge: string;
+  features: string[];
+  color: string;
+  popular?: boolean;
+}
 
 export interface User {
   id: string;
@@ -14,7 +26,7 @@ export interface User {
   balance: number;
   pendingBalance: number;
   withdrawnBalance: number;
-  proTier?: 'none' | 'standard' | 'pro' | 'elite';
+  proTier?: SubscriptionTier;
 }
 
 export interface PortfolioItem {
@@ -159,6 +171,7 @@ export interface Milestone {
   deliverableFile?: string;
   deliverableNote?: string;
   submittedAt?: string;
+  dependsOn?: string[];
 }
 
 export interface Order {

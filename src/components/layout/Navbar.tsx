@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
 import { NotificationDrawer } from '../notifications/NotificationDrawer';
+import { requestNotificationPermission } from '../../utils/notifications';
 import {
   Hexagon,
   Sparkles,
@@ -23,7 +24,9 @@ import {
   ShieldCheck,
   Bot,
   AppWindow,
-  ArrowUpRight
+  ArrowUpRight,
+  Crown,
+  BellRing
 } from 'lucide-react';
 
 interface Props {
@@ -45,6 +48,7 @@ const NAV_ITEMS = [
   { path: '/profile', label: 'Profile', icon: Users, requiresAuth: true },
   { path: '/ai', label: 'AI Playground', icon: Bot },
   { path: '/admin', label: 'Admin', icon: ShieldCheck, requiresAdmin: true },
+  { path: '/subscription', label: 'Subscription', icon: Crown, requiresAuth: true },
   { path: '/settings', label: 'Settings', icon: Settings, requiresAuth: true },
 ];
 
@@ -60,6 +64,14 @@ export const Navbar: React.FC<Props> = ({
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchInput, setSearchInput] = useState('');
+  const [pushEnabled, setPushEnabled] = useState(() => {
+    if (typeof Notification !== 'undefined') return Notification.permission === 'granted';
+    return false;
+  });
+
+  useEffect(() => {
+    if (pushEnabled) requestNotificationPermission();
+  }, []);
 
   const unreadNotifs = notifications.filter(n => (n.userId === currentUser.id || currentRole === 'admin') && !n.read).length;
   const unreadMessages = conversations.reduce((acc, c) => acc + c.unreadCount, 0);
@@ -163,11 +175,20 @@ export const Navbar: React.FC<Props> = ({
           )}
 
           {currentRole === 'freelancer' && (
-            <button onClick={onOpenCreateGig}
-              className="hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-500 text-black text-xs font-bold hover:bg-emerald-400 transition-all shadow-md">
-              <PlusCircle className="w-3.5 h-3.5" />
-              <span>Create Gig</span>
-            </button>
+            <>
+              {(!currentUser.proTier || currentUser.proTier === 'none') && (
+                <button onClick={() => navigate('/subscription')}
+                  className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-400 text-black text-xs font-bold hover:shadow-lg hover:shadow-amber-500/20 transition-all">
+                  <Crown className="w-3.5 h-3.5" />
+                  <span>Upgrade</span>
+                </button>
+              )}
+              <button onClick={onOpenCreateGig}
+                className="hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-500 text-black text-xs font-bold hover:bg-emerald-400 transition-all shadow-md">
+                <PlusCircle className="w-3.5 h-3.5" />
+                <span>Create Gig</span>
+              </button>
+            </>
           )}
 
           {currentRole !== 'guest' && (
@@ -176,6 +197,17 @@ export const Navbar: React.FC<Props> = ({
                 className="relative p-2 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white hover:border-zinc-700 transition-colors">
                 <MessageSquare className="w-4 h-4" />
                 {unreadMessages > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 text-black text-[10px] font-extrabold rounded-full flex items-center justify-center">{unreadMessages}</span>}
+              </button>
+              <button
+                onClick={async () => {
+                  const granted = await requestNotificationPermission();
+                  setPushEnabled(granted);
+                }}
+                aria-label="Toggle push notifications"
+                className={`p-2 rounded-xl border transition-colors ${pushEnabled ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-400' : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white'}`}
+                title={pushEnabled ? 'Push notifications enabled' : 'Enable push notifications'}
+              >
+                <BellRing className={`w-4 h-4 ${pushEnabled ? 'animate-pulse' : ''}`} />
               </button>
               <div className="relative">
                 <button onClick={() => setIsNotifOpen(!isNotifOpen)} aria-label="Toggle notifications"
@@ -194,15 +226,26 @@ export const Navbar: React.FC<Props> = ({
               Sign In
             </button>
           ) : (
-            <div onClick={() => navigate('/profile')}
-              className="flex items-center gap-2 cursor-pointer p-1 rounded-xl hover:bg-zinc-900 transition-colors border border-transparent hover:border-zinc-800">
-              <img src={currentUser.avatar} alt={currentUser.name}
-                className="w-8 h-8 rounded-lg object-cover ring-2 ring-emerald-500/40" />
-              <div className="hidden lg:block text-left">
-                <span className="text-xs font-semibold text-white block leading-tight">{currentUser.name}</span>
-                <span className="text-[10px] text-emerald-400 font-medium">₹{currentUser.balance.toLocaleString()} Available</span>
+              <div onClick={() => navigate('/profile')}
+                className="flex items-center gap-2 cursor-pointer p-1 rounded-xl hover:bg-zinc-900 transition-colors border border-transparent hover:border-zinc-800">
+                <div className="relative">
+                  <img src={currentUser.avatar} alt={currentUser.name}
+                    className="w-8 h-8 rounded-lg object-cover ring-2 ring-emerald-500/40" />
+                  {currentUser.proTier && currentUser.proTier !== 'none' && (
+                    <span className={`absolute -top-1 -right-1 text-[7px] font-extrabold px-1 rounded-sm ${
+                      currentUser.proTier === 'pro' ? 'bg-amber-500 text-black' :
+                      currentUser.proTier === 'elite' ? 'bg-purple-500 text-white' :
+                      'bg-emerald-500 text-black'
+                    }`}>
+                      {currentUser.proTier === 'pro' ? 'PRO' : currentUser.proTier === 'elite' ? 'ELITE' : 'STD'}
+                    </span>
+                  )}
+                </div>
+                <div className="hidden lg:block text-left">
+                  <span className="text-xs font-semibold text-white block leading-tight">{currentUser.name}</span>
+                  <span className="text-[10px] text-emerald-400 font-medium">₹{currentUser.balance.toLocaleString()} Available</span>
+                </div>
               </div>
-            </div>
           )}
 
           <button onClick={() => setIsMobileMenuOpen(true)} aria-label="Open menu"
@@ -263,6 +306,10 @@ export const Navbar: React.FC<Props> = ({
                   <PlusCircle className="w-4 h-4" /> Create a Gig
                 </button>
               )}
+              <button onClick={() => { navigate('/subscription'); setIsMobileMenuOpen(false); }}
+                className="w-full flex items-center justify-center gap-2 py-2.5 bg-gradient-to-r from-amber-500 to-orange-400 text-black font-bold rounded-xl text-sm">
+                <Crown className="w-4 h-4" /> {currentUser.proTier && currentUser.proTier !== 'none' ? 'Manage Plan' : 'Upgrade to PRO'}
+              </button>
               <button onClick={() => { onOpenAITools(); setIsMobileMenuOpen(false); }}
                 className="w-full flex items-center justify-center gap-2 py-2.5 bg-zinc-900 border border-zinc-800 text-emerald-300 rounded-xl text-sm font-semibold">
                 <Sparkles className="w-4 h-4" /> AI Tools

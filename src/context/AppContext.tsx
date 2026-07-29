@@ -1,7 +1,10 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { requestNotificationPermission, sendBrowserNotification } from '../utils/notifications';
 import { 
   User, 
   UserRole, 
+  SubscriptionTier,
+  SubscriptionPlan,
   Gig, 
   Project, 
   Order, 
@@ -45,6 +48,7 @@ interface AppContextType {
   disputes: Dispute[];
   withdrawals: WithdrawalRequest[];
   bookmarks: string[];
+  subscriptionPlans: SubscriptionPlan[];
   
   workspaceTasks: WorkspaceTask[];
   workspaceNotes: Record<string, string>;
@@ -110,6 +114,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const saved = localStorage.getItem('earnbyway_bookmarks');
     return saved ? JSON.parse(saved) : [];
   });
+
+  const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
+    { tier: 'none', name: 'Free', price: 0, priceYearly: 0, badge: '', features: ['Basic profile', 'Standard search ranking', '5 proposals/month', 'Basic analytics'], color: 'zinc' },
+    { tier: 'standard', name: 'Standard', price: 299, priceYearly: 2999, badge: 'STD', features: ['Featured profile badge', 'Boosted search ranking', '50 proposals/month', 'Advanced analytics', 'Priority support'], color: 'emerald' },
+    { tier: 'pro', name: 'Pro', price: 999, priceYearly: 9999, badge: 'PRO', features: ['Verified PRO badge', 'Top search placement', 'Unlimited proposals', 'Pro analytics & insights', '24/7 priority support', 'Bid boost (2x visibility)'], color: 'amber', popular: true },
+    { tier: 'elite', name: 'Elite', price: 2499, priceYearly: 24999, badge: 'ELITE', features: ['Elite verified badge', '#1 search placement', 'Unlimited everything', 'Elite analytics suite', 'Dedicated account manager', 'Bid boost (5x visibility)', 'Featured on homepage'], color: 'purple' },
+  ];
 
   // Phase 3 States
   const [workspaceTasks, setWorkspaceTasks] = useState<WorkspaceTask[]>(() => {
@@ -367,10 +378,32 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  // Approve Milestone Escrow Release
+  // Approve Milestone Escrow Release (with dependency checking)
   const approveMilestoneEscrow = (orderId: string, milestoneId: string) => {
     let releasedAmount = 0;
     let freelancerId = '';
+
+    const order = orders.find(o => o.id === orderId);
+    if (!order) return;
+
+    const milestone = order.milestones.find(m => m.id === milestoneId);
+    if (!milestone) return;
+
+    // Check dependencies: all depended-on milestones must be 'released'
+    if (milestone.dependsOn && milestone.dependsOn.length > 0) {
+      for (const depId of milestone.dependsOn) {
+        const depMilestone = order.milestones.find(m => m.id === depId);
+        if (depMilestone && depMilestone.status !== 'released') {
+          addNotification({
+            userId: currentUser.id,
+            type: 'order',
+            title: 'Milestone Dependency Not Met',
+            message: `"${milestone.title}" depends on "${depMilestone?.title}" which has not been released yet.`
+          });
+          return; // Block release
+        }
+      }
+    }
 
     setOrders(prev => prev.map(o => {
       if (o.id === orderId) {
@@ -560,6 +593,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       timestamp: 'Just now'
     };
     setNotifications(prev => [notif, ...prev]);
+
+    // Send browser push notification
+    requestNotificationPermission().then(granted => {
+      if (granted) {
+        sendBrowserNotification(item.title, {
+          body: item.message,
+          tag: notif.id,
+        });
+      }
+    });
   };
 
   const markNotificationsAsRead = () => {
@@ -654,7 +697,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
   };
 
-  const upgradeSubscription = (tier: 'none' | 'standard' | 'pro' | 'elite', price: number): boolean => {
+  const upgradeSubscription = (tier: SubscriptionTier, price: number): boolean => {
     let success = false;
     setUsers(prev => prev.map(u => {
       if (u.id === currentUser.id) {
@@ -697,6 +740,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       disputes,
       withdrawals,
       bookmarks,
+      subscriptionPlans: SUBSCRIPTION_PLANS,
       switchRole,
       createGig,
       postProject,

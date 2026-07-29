@@ -25,6 +25,7 @@ const OrderDashboard = lazy(() => import('./components/orders/OrderDashboard').t
 const CollaborativeWorkspace = lazy(() => import('./components/orders/CollaborativeWorkspace').then(m => ({ default: m.CollaborativeWorkspace })));
 const ProposalManagement = lazy(() => import('./components/proposals/ProposalManagement').then(m => ({ default: m.ProposalManagement })));
 const SettingsPage = lazy(() => import('./components/settings/SettingsPage').then(m => ({ default: m.SettingsPage })));
+const SubscriptionPage = lazy(() => import('./components/subscriptions/SubscriptionPage').then(m => ({ default: m.SubscriptionPage })));
 const ProfilePage = lazy(() => import('./components/profiles/ProfilePage').then(m => ({ default: m.ProfilePage })));
 const AdminDashboard = lazy(() => import('./components/admin/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
 const UserManagement = lazy(() => import('./components/admin/UserManagement').then(m => ({ default: m.UserManagement })));
@@ -115,6 +116,7 @@ export default function App() {
           <Route path="/proposals" element={<ProposalManagement />} />
           <Route path="/ai" element={<AIToolsPlayground />} />
           <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/subscription" element={<SubscriptionPage />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/users" element={<UserManagement />} />
           <Route path="/admin/disputes" element={<DisputePanel />} />

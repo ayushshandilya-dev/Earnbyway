@@ -360,6 +360,7 @@ export const INITIAL_ORDERS: Order[] = [
         amount: 10000,
         dueDate: '2024-07-28',
         status: 'submitted',
+        dependsOn: ['m1'],
         deliverableFile: 'https://github.com/example/resume-ai-core.zip',
         deliverableNote: 'Implemented React UI components, OpenAI resume parsing parser, and live scoring charts.',
         submittedAt: '2024-07-24'
@@ -370,7 +371,8 @@ export const INITIAL_ORDERS: Order[] = [
         percentage: 20,
         amount: 4000,
         dueDate: '2024-08-02',
-        status: 'funded'
+        status: 'funded',
+        dependsOn: ['m2']
       }
     ]
   }

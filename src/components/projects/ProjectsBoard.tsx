@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useApp } from '../../context/AppContext';
 import { ProjectDetail } from './ProjectDetail';
 import { Project } from '../../types';
+import { EmptyState } from '../ui/EmptyState';
 import { Search, Code, Brain, Palette, PenTool, Video, Megaphone, Layers, Shield, Briefcase, MapPin, Clock, Users, ChevronRight, ArrowUpDown } from 'lucide-react';
 
 const CATEGORIES = ['All', 'Development', 'AI', 'Graphic Design', 'Content Writing', 'Video Editing', 'Marketing', 'UI/UX Design', 'Cybersecurity'];

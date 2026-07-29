@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
-import { Briefcase, Clock, CheckCircle, DollarSign, TrendingUp, Activity, ArrowRight, PlusCircle } from 'lucide-react';
+import { AIService } from '../../services/aiService';
+import { Briefcase, Clock, CheckCircle, DollarSign, TrendingUp, Activity, ArrowRight, PlusCircle, Sparkles, Star, Users as UsersIcon } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, CartesianGrid } from 'recharts';
 
 const monthlyData = [
@@ -131,6 +132,57 @@ export const ClientDashboard: React.FC = () => {
             ))}
           </div>
         )}
+      </div>
+
+      {/* AI Recommended Freelancers */}
+      <AIRecommendedFreelancers />
+    </div>
+  );
+};
+
+const AIRecommendedFreelancers: React.FC = () => {
+  const navigate = useNavigate();
+  const { users, profiles, projects } = useApp();
+  
+  const freelancers = useMemo(() => {
+    const freelancerUsers = users.filter(u => u.role === 'freelancer' && profiles[u.id]);
+    const lastProject = projects.filter(p => p.status === 'open').slice(0, 1);
+    const brief = lastProject.length > 0 ? lastProject[0].description : 'full stack developer';
+    return AIService.matchFreelancers(brief, profiles, freelancerUsers).slice(0, 3);
+  }, [users, profiles, projects]);
+
+  if (freelancers.length === 0) return null;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Sparkles className="w-5 h-5 text-emerald-400" />
+          <h2 className="text-lg font-heading font-bold text-white">AI Recommended Freelancers</h2>
+        </div>
+        <button onClick={() => navigate('/search')} className="text-xs text-emerald-400 hover:underline flex items-center gap-1">
+          View All <ArrowRight className="w-3 h-3" />
+        </button>
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {freelancers.map(({ user, profile, matchPercentage, reason }) => (
+          <div key={user.id} onClick={() => navigate(`/search`)}
+            className="glass-card rounded-2xl p-5 hover:border-emerald-500/40 transition-all cursor-pointer group">
+            <div className="flex items-center gap-3 mb-3">
+              <img src={user.avatar} alt={user.name} className="w-10 h-10 rounded-xl object-cover ring-2 ring-emerald-500/30" />
+              <div>
+                <h3 className="text-sm font-semibold text-white group-hover:text-emerald-400 transition-colors">{user.name}</h3>
+                <p className="text-[10px] text-zinc-500">{profile.title}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 text-xs mb-3">
+              <span className="flex items-center gap-1 text-amber-400"><Star className="w-3 h-3 fill-amber-400" /> {profile.rating}</span>
+              <span className="text-zinc-500">{profile.completedJobs} jobs</span>
+              <span className="text-emerald-400 font-semibold">{matchPercentage}% Match</span>
+            </div>
+            <p className="text-[10px] text-zinc-500 line-clamp-2">{reason}</p>
+          </div>
+        ))}
       </div>
     </div>
   );
