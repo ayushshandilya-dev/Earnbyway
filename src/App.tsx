@@ -22,6 +22,7 @@ const EarningsPage = lazy(() => import('./components/earnings/EarningsPage').the
 const SearchResults = lazy(() => import('./components/search/SearchResults').then(m => ({ default: m.SearchResults })));
 const BookmarksPage = lazy(() => import('./components/bookmarks/BookmarksPage').then(m => ({ default: m.BookmarksPage })));
 const OrderDashboard = lazy(() => import('./components/orders/OrderDashboard').then(m => ({ default: m.OrderDashboard })));
+const CollaborativeWorkspace = lazy(() => import('./components/orders/CollaborativeWorkspace').then(m => ({ default: m.CollaborativeWorkspace })));
 const ProposalManagement = lazy(() => import('./components/proposals/ProposalManagement').then(m => ({ default: m.ProposalManagement })));
 const SettingsPage = lazy(() => import('./components/settings/SettingsPage').then(m => ({ default: m.SettingsPage })));
 const ProfilePage = lazy(() => import('./components/profiles/ProfilePage').then(m => ({ default: m.ProfilePage })));
@@ -110,6 +111,7 @@ export default function App() {
           <Route path="/bookmarks" element={<BookmarksPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/orders" element={<OrderDashboard />} />
+          <Route path="/workspace/:orderId" element={<CollaborativeWorkspace />} />
           <Route path="/proposals" element={<ProposalManagement />} />
           <Route path="/ai" element={<AIToolsPlayground />} />
           <Route path="/settings" element={<SettingsPage />} />
