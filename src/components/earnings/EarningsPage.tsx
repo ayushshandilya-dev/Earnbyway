@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
-import { Wallet, TrendingUp, ArrowUpRight, CheckCircle, Clock, X, Copy, ExternalLink } from 'lucide-react';
+import { Wallet, TrendingUp, ArrowUpRight, CheckCircle, Clock, X, Copy, ExternalLink, Sparkles } from 'lucide-react';
 
 export const EarningsPage: React.FC = () => {
-  const { currentUser, withdrawals, requestWithdrawal } = useApp();
+  const { currentUser, withdrawals, requestWithdrawal, upgradeSubscription } = useApp();
   const { addToast } = useToast();
   const [showWithdraw, setShowWithdraw] = useState(false);
   const [amount, setAmount] = useState(0);
@@ -59,6 +59,110 @@ export const EarningsPage: React.FC = () => {
           </div>
         ))}
       </div>
+
+      {/* Pro Tiers */}
+      <div className="bg-[#121215] border border-zinc-800 rounded-3xl p-6 space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-zinc-800 pb-4">
+          <div>
+            <h2 className="text-xl font-heading font-extrabold text-white flex items-center gap-1.5">
+              <Sparkles className="w-5 h-5 text-amber-400 animate-pulse" /> WorkHive Pro Memberships
+            </h2>
+            <p className="text-xs text-zinc-400 mt-1">Boost your visibility, rank bids higher, and stand out in searches.</p>
+          </div>
+          {currentUser.proTier && currentUser.proTier !== 'none' && (
+            <span className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30 text-amber-300 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 self-start sm:self-center">
+              Active Tier: {currentUser.proTier}
+            </span>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {[
+            {
+              id: 'none' as const,
+              title: 'Basic Member',
+              price: 0,
+              badgeColor: 'bg-zinc-800 text-zinc-400 border-zinc-700',
+              features: ['Standard search results', 'Default proposal ordering', 'Basic profile design'],
+              btnLabel: 'Default Tier'
+            },
+            {
+              id: 'pro' as const,
+              title: 'Hive Pro',
+              price: 2500,
+              badgeColor: 'bg-gradient-to-r from-amber-500 to-orange-500 text-black',
+              features: ['PRO Badge on all cards', 'Orange profile ring & glowing cards', '2x Proposal list boost multiplier', 'Detailed profile analytics access'],
+              btnLabel: 'Upgrade to Pro'
+            },
+            {
+              id: 'elite' as const,
+              title: 'Hive Elite',
+              price: 5000,
+              badgeColor: 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white',
+              features: ['ELITE Badge on all cards', 'Purple neon glow card style', '5x Proposal list boost (sorted first)', 'Priority admin dispute support', 'Zero commission withdrawals'],
+              btnLabel: 'Upgrade to Elite'
+            }
+          ].map(tier => {
+            const isActive = (currentUser.proTier || 'none') === tier.id;
+            const canAfford = currentUser.balance >= tier.price;
+            return (
+              <div 
+                key={tier.id}
+                className={`p-5 rounded-2xl border transition-all flex flex-col justify-between ${
+                  isActive 
+                    ? 'bg-zinc-900/80 border-emerald-500/50 shadow-md shadow-emerald-500/5 ring-1 ring-emerald-500/20' 
+                    : 'bg-zinc-900/30 border-zinc-800 hover:border-zinc-750 hover:bg-zinc-900/50'
+                }`}
+              >
+                <div>
+                  <div className="flex items-center justify-between gap-2 mb-3">
+                    <h3 className="font-bold text-white text-sm">{tier.title}</h3>
+                    {isActive && <span className="text-[9px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded font-extrabold border border-emerald-500/30">Active</span>}
+                  </div>
+                  <div className="mb-4">
+                    <span className="text-2xl font-black text-white">₹{tier.price.toLocaleString()}</span>
+                    {tier.price > 0 && <span className="text-[10px] text-zinc-500 font-medium"> / month</span>}
+                  </div>
+                  <ul className="space-y-2 mb-6">
+                    {tier.features.map((f, i) => (
+                      <li key={i} className="text-[10px] text-zinc-400 flex items-start gap-1.5">
+                        <CheckCircle className="w-3.5 h-3.5 text-zinc-600 flex-shrink-0 mt-0.5" />
+                        <span>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                {tier.price > 0 && (
+                  <button
+                    onClick={() => {
+                      if (isActive) return;
+                      const ok = upgradeSubscription(tier.id, tier.price);
+                      if (ok) {
+                        addToast(`Successfully upgraded to ${tier.title}!`, 'success');
+                      } else {
+                        addToast('Insufficient wallet balance for this upgrade', 'error');
+                      }
+                    }}
+                    disabled={isActive || !canAfford}
+                    className={`w-full py-2 rounded-xl text-xs font-bold transition-all ${
+                      isActive 
+                        ? 'bg-zinc-850 text-zinc-500 cursor-default border border-zinc-800' 
+                        : canAfford 
+                          ? tier.id === 'elite' 
+                            ? 'bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-400 hover:to-indigo-400 text-white shadow-md' 
+                            : 'bg-emerald-500 hover:bg-emerald-400 text-black shadow-md'
+                          : 'bg-zinc-900 border border-zinc-800 text-zinc-500 cursor-not-allowed'
+                    }`}
+                  >
+                    {isActive ? 'Current Tier' : !canAfford ? 'Insufficient Funds' : tier.btnLabel}
+                  </button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="glass-card rounded-2xl p-6">
