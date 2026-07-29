@@ -12,7 +12,9 @@ import {
   Review, 
   Dispute, 
   WithdrawalRequest,
-  FreelancerProfile
+  FreelancerProfile,
+  WorkspaceTask,
+  WorkspaceAsset
 } from '../types';
 import { 
   INITIAL_USERS, 
@@ -44,6 +46,10 @@ interface AppContextType {
   withdrawals: WithdrawalRequest[];
   bookmarks: string[];
   
+  workspaceTasks: WorkspaceTask[];
+  workspaceNotes: Record<string, string>;
+  workspaceAssets: WorkspaceAsset[];
+
   // Actions
   switchRole: (role: UserRole) => void;
   createGig: (gig: Omit<Gig, 'id' | 'createdAt' | 'ordersCompleted' | 'rating' | 'reviewsCount'>) => void;
@@ -61,6 +67,15 @@ interface AppContextType {
   markNotificationsAsRead: () => void;
   toggleBookmark: (id: string) => void;
   isBookmarked: (id: string) => boolean;
+
+  // Phase 3 Actions
+  addWorkspaceTask: (task: Omit<WorkspaceTask, 'id' | 'createdAt'>) => void;
+  updateWorkspaceTask: (taskId: string, updates: Partial<WorkspaceTask>) => void;
+  deleteWorkspaceTask: (taskId: string) => void;
+  updateWorkspaceNotes: (orderId: string, notes: string) => void;
+  addWorkspaceAsset: (asset: Omit<WorkspaceAsset, 'id' | 'uploadedAt'>) => void;
+  verifySkill: (userId: string, skill: string) => void;
+  upgradeSubscription: (tier: 'none' | 'standard' | 'pro' | 'elite', price: number) => boolean;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -77,7 +92,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return users.find(u => u.role === 'client') || users[0];
   });
 
-  const [profiles, setProfiles] = useState<Record<string, FreelancerProfile>>(MOCK_FREELANCER_PROFILES);
+  const [profiles, setProfiles] = useState<Record<string, FreelancerProfile>>(() => {
+    const saved = localStorage.getItem('earnbyway_profiles');
+    return saved ? JSON.parse(saved) : MOCK_FREELANCER_PROFILES;
+  });
+
   const [gigs, setGigs] = useState<Gig[]>(INITIAL_GIGS);
   const [projects, setProjects] = useState<Project[]>(INITIAL_PROJECTS);
   const [orders, setOrders] = useState<Order[]>(INITIAL_ORDERS);
@@ -92,9 +111,62 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return saved ? JSON.parse(saved) : [];
   });
 
+  // Phase 3 States
+  const [workspaceTasks, setWorkspaceTasks] = useState<WorkspaceTask[]>(() => {
+    const saved = localStorage.getItem('earnbyway_workspace_tasks');
+    if (saved) return JSON.parse(saved);
+    return [
+      { id: 'wt_1', orderId: 'order_101', title: 'Conduct Figma User Research & Interviews', status: 'done', assignedTo: 'Sophia Chen', createdAt: '2024-07-16' },
+      { id: 'wt_2', orderId: 'order_101', title: 'Draft Component Library in Figma', status: 'in_progress', assignedTo: 'Sophia Chen', createdAt: '2024-07-17' },
+      { id: 'wt_3', orderId: 'order_101', title: 'Integrate Tailwind Theme Config', status: 'todo', assignedTo: 'Alex Vance', createdAt: '2024-07-18' },
+      { id: 'wt_4', orderId: 'order_101', title: 'Set up OpenAI API Endpoint Client Routing', status: 'todo', assignedTo: 'Alex Vance', createdAt: '2024-07-19' },
+    ];
+  });
+
+  const [workspaceNotes, setWorkspaceNotes] = useState<Record<string, string>>(() => {
+    const saved = localStorage.getItem('earnbyway_workspace_notes');
+    if (saved) return JSON.parse(saved);
+    return {
+      'order_101': `# Project Specifications\n- Main objective: Redesign the AI resume parsing & feedback tool with dynamic charts.\n- Target Audience: Fresh graduates & professionals.\n- Tech Stack: React, Recharts, Tailwind CSS.\n\n# Access Credentials & APIs\n- API Endpoint: https://api.techscale.io/v1/resume-parser\n- Staging URL: https://staging.techscale-ai.vercel.app`
+    };
+  });
+
+  const [workspaceAssets, setWorkspaceAssets] = useState<WorkspaceAsset[]>(() => {
+    const saved = localStorage.getItem('earnbyway_workspace_assets');
+    if (saved) return JSON.parse(saved);
+    return [
+      { id: 'wa_1', orderId: 'order_101', name: 'UI_Design_System_v1.fig', url: '#', size: '14.2 MB', uploadedBy: 'Sophia Chen', uploadedAt: '2024-07-16' },
+      { id: 'wa_2', orderId: 'order_101', name: 'OpenAI_API_Integration_Specs.pdf', url: '#', size: '2.4 MB', uploadedBy: 'Sarah Jenkins', uploadedAt: '2024-07-17' },
+    ];
+  });
+
+  useEffect(() => {
+    localStorage.setItem('earnbyway_users', JSON.stringify(users));
+    const active = users.find(u => u.id === currentUser.id);
+    if (active && JSON.stringify(active) !== JSON.stringify(currentUser)) {
+      setCurrentUser(active);
+    }
+  }, [users, currentUser.id]);
+
+  useEffect(() => {
+    localStorage.setItem('earnbyway_profiles', JSON.stringify(profiles));
+  }, [profiles]);
+
   useEffect(() => {
     localStorage.setItem('earnbyway_bookmarks', JSON.stringify(bookmarks));
   }, [bookmarks]);
+
+  useEffect(() => {
+    localStorage.setItem('earnbyway_workspace_tasks', JSON.stringify(workspaceTasks));
+  }, [workspaceTasks]);
+
+  useEffect(() => {
+    localStorage.setItem('earnbyway_workspace_notes', JSON.stringify(workspaceNotes));
+  }, [workspaceNotes]);
+
+  useEffect(() => {
+    localStorage.setItem('earnbyway_workspace_assets', JSON.stringify(workspaceAssets));
+  }, [workspaceAssets]);
 
   // Sync users in state when role changes
   const switchRole = (role: UserRole) => {
@@ -500,6 +572,115 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const isBookmarked = (id: string) => bookmarks.includes(id);
 
+  // Phase 3 Actions
+  const addWorkspaceTask = (taskData: Omit<WorkspaceTask, 'id' | 'createdAt'>) => {
+    const newTask: WorkspaceTask = {
+      ...taskData,
+      id: `wt_${Date.now()}`,
+      createdAt: new Date().toISOString().split('T')[0]
+    };
+    setWorkspaceTasks(prev => [...prev, newTask]);
+  };
+
+  const updateWorkspaceTask = (taskId: string, updates: Partial<WorkspaceTask>) => {
+    setWorkspaceTasks(prev => prev.map(t => t.id === taskId ? { ...t, ...updates } : t));
+  };
+
+  const deleteWorkspaceTask = (taskId: string) => {
+    setWorkspaceTasks(prev => prev.filter(t => t.id !== taskId));
+  };
+
+  const updateWorkspaceNotes = (orderId: string, notes: string) => {
+    setWorkspaceNotes(prev => ({
+      ...prev,
+      [orderId]: notes
+    }));
+  };
+
+  const addWorkspaceAsset = (assetData: Omit<WorkspaceAsset, 'id' | 'uploadedAt'>) => {
+    const newAsset: WorkspaceAsset = {
+      ...assetData,
+      id: `wa_${Date.now()}`,
+      uploadedAt: new Date().toISOString().split('T')[0]
+    };
+    setWorkspaceAssets(prev => [...prev, newAsset]);
+  };
+
+  const verifySkill = (userId: string, skill: string) => {
+    setProfiles(prev => {
+      const userProfile = prev[userId] || {
+        userId,
+        banner: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=1200&auto=format&fit=crop&q=80',
+        bio: '',
+        title: 'Freelancer',
+        hourlyRate: 1000,
+        skills: [skill],
+        languages: [],
+        education: [],
+        certificates: [],
+        experience: [],
+        portfolio: [],
+        socialLinks: {},
+        availability: 'Full-time',
+        rating: 5,
+        completedJobs: 0,
+        totalEarned: 0,
+        responseTime: '< 1 hour',
+        avgDeliveryTime: '3 Days',
+        responseRate: 100,
+        proposalSuccessRate: 100,
+        profileViewsThisMonth: 10
+      };
+      
+      const verified = userProfile.verifiedSkills || [];
+      if (!verified.includes(skill)) {
+        return {
+          ...prev,
+          [userId]: {
+            ...userProfile,
+            verifiedSkills: [...verified, skill],
+            skills: userProfile.skills.includes(skill) ? userProfile.skills : [...userProfile.skills, skill]
+          }
+        };
+      }
+      return prev;
+    });
+
+    addNotification({
+      userId,
+      type: 'system',
+      title: 'Skill Verified!',
+      message: `Congratulations! You successfully passed the assessment and verified your skill: ${skill}.`
+    });
+  };
+
+  const upgradeSubscription = (tier: 'none' | 'standard' | 'pro' | 'elite', price: number): boolean => {
+    let success = false;
+    setUsers(prev => prev.map(u => {
+      if (u.id === currentUser.id) {
+        if (u.balance >= price) {
+          success = true;
+          return {
+            ...u,
+            balance: u.balance - price,
+            proTier: tier
+          };
+        }
+      }
+      return u;
+    }));
+
+    if (success) {
+      addNotification({
+        userId: currentUser.id,
+        type: 'system',
+        title: `Upgraded to ${tier.charAt(0).toUpperCase() + tier.slice(1)} Membership`,
+        message: `Your account has been upgraded to ${tier}. ₹${price.toLocaleString()} was deducted from your wallet balance.`
+      });
+    }
+    return success;
+  };
+
   return (
     <AppContext.Provider value={{
       currentUser,
@@ -531,7 +712,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       adminToggleVerifyUser,
       markNotificationsAsRead,
       toggleBookmark,
-      isBookmarked
+      isBookmarked,
+      workspaceTasks,
+      workspaceNotes,
+      workspaceAssets,
+      addWorkspaceTask,
+      updateWorkspaceTask,
+      deleteWorkspaceTask,
+      updateWorkspaceNotes,
+      addWorkspaceAsset,
+      verifySkill,
+      upgradeSubscription
     }}>
       {children}
     </AppContext.Provider>
@@ -543,3 +734,4 @@ export const useApp = () => {
   if (!context) throw new Error('useApp must be used within AppProvider');
   return context;
 };
+

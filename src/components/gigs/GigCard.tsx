@@ -1,6 +1,7 @@
 import React from 'react';
 import { Gig } from '../../types';
-import { Star, Clock, ChevronRight } from 'lucide-react';
+import { Star, Clock, Sparkles } from 'lucide-react';
+import { useApp } from '../../context/AppContext';
 
 interface Props {
   gig: Gig;
@@ -8,10 +9,16 @@ interface Props {
 }
 
 export const GigCard: React.FC<Props> = ({ gig, onSelect }) => {
+  const { users } = useApp();
+  const seller = users.find(u => u.id === gig.freelancerId);
+  const isPro = seller?.proTier && seller.proTier !== 'none';
+
   return (
     <button
       onClick={() => onSelect(gig)}
-      className="glass-card glass-card-hover rounded-2xl overflow-hidden text-left group w-full"
+      className={`glass-card glass-card-hover rounded-2xl overflow-hidden text-left group w-full transition-all duration-300 ${
+        isPro ? 'ring-1 ring-amber-500/30 hover:ring-amber-500/60 shadow-lg shadow-amber-500/5 hover:shadow-amber-500/10' : ''
+      }`}
     >
       <div className="relative h-44 overflow-hidden">
         <img
@@ -22,7 +29,16 @@ export const GigCard: React.FC<Props> = ({ gig, onSelect }) => {
         <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/80 to-transparent" />
         <div className="absolute bottom-3 left-3 flex items-center gap-2">
           <img src={gig.freelancerAvatar} alt="" className="w-7 h-7 rounded-lg object-cover border-2 border-zinc-950" />
-          <span className="text-[11px] text-white font-medium">{gig.freelancerName}</span>
+          <div className="flex flex-col">
+            <span className="text-[11px] text-white font-medium flex items-center gap-1">
+              {gig.freelancerName}
+              {isPro && (
+                <span className="text-[8px] bg-gradient-to-r from-amber-500 to-orange-500 text-black px-1 rounded-sm font-extrabold flex items-center gap-0.5">
+                  <Sparkles className="w-2 h-2" /> PRO
+                </span>
+              )}
+            </span>
+          </div>
         </div>
         <div className="absolute top-3 right-3 px-2 py-1 rounded-lg bg-black/60 backdrop-blur-sm text-[10px] text-emerald-400 font-semibold border border-emerald-500/30">
           {gig.category}
@@ -57,3 +73,4 @@ export const GigCard: React.FC<Props> = ({ gig, onSelect }) => {
     </button>
   );
 };
+

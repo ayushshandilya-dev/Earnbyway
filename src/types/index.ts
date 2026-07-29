@@ -14,6 +14,7 @@ export interface User {
   balance: number;
   pendingBalance: number;
   withdrawnBalance: number;
+  proTier?: 'none' | 'standard' | 'pro' | 'elite';
 }
 
 export interface PortfolioItem {
@@ -69,6 +70,7 @@ export interface FreelancerProfile {
   responseRate: number;
   proposalSuccessRate: number;
   profileViewsThisMonth: number;
+  verifiedSkills?: string[];
 }
 
 export interface Package {
@@ -248,3 +250,23 @@ export interface WithdrawalRequest {
   status: 'pending' | 'approved' | 'rejected';
   createdAt: string;
 }
+
+export interface WorkspaceTask {
+  id: string;
+  orderId: string;
+  title: string;
+  status: 'todo' | 'in_progress' | 'in_review' | 'done';
+  assignedTo?: string;
+  createdAt: string;
+}
+
+export interface WorkspaceAsset {
+  id: string;
+  orderId: string;
+  name: string;
+  url: string;
+  size?: string;
+  uploadedBy: string;
+  uploadedAt: string;
+}
+

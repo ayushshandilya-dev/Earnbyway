@@ -9,6 +9,7 @@ import {
   Award, ExternalLink, Heart, MessageSquare, Download, Sparkles, Shield,
   ChevronRight, Github, Linkedin, Dribbble, Globe as GlobeIcon, Zap
 } from 'lucide-react';
+import { SkillQuiz } from './SkillQuiz';
 
 interface Props {
   freelancerUser: User;
@@ -17,11 +18,13 @@ interface Props {
 
 export const FreelancerProfile: React.FC<Props> = ({ freelancerUser, onBack }) => {
   const navigate = useNavigate();
-  const { profiles, reviews, users, currentRole, bookmarks, toggleBookmark, isBookmarked } = useApp();
+  const { profiles, reviews, users, currentRole, bookmarks, toggleBookmark, isBookmarked, currentUser } = useApp();
   const { addToast } = useToast();
   const profile = profiles[freelancerUser.id];
   const [activeTab, setActiveTab] = useState<'portfolio' | 'reviews' | 'ai'>('portfolio');
   const [showAI, setShowAI] = useState(false);
+  const [isQuizOpen, setIsQuizOpen] = useState(false);
+  const isOwner = currentUser.id === freelancerUser.id;
 
   if (!profile) {
     return (
@@ -100,11 +103,28 @@ export const FreelancerProfile: React.FC<Props> = ({ freelancerUser, onBack }) =
 
             {/* Skills */}
             <div>
-              <h2 className="text-lg font-heading font-bold text-white mb-3">Skills</h2>
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-lg font-heading font-bold text-white">Skills</h2>
+                {isOwner && (
+                  <button onClick={() => setIsQuizOpen(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-semibold border border-emerald-500/20 transition-all">
+                    <Award className="w-3.5 h-3.5 text-emerald-400" /> Verify Skills
+                  </button>
+                )}
+              </div>
               <div className="flex flex-wrap gap-2">
-                {profile.skills.map(s => (
-                  <span key={s} className="px-3 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-zinc-300 hover:border-emerald-500/40 transition-colors">{s}</span>
-                ))}
+                {profile.skills.map(s => {
+                  const isVerified = profile.verifiedSkills?.includes(s);
+                  return (
+                    <span key={s} className={`px-3 py-1.5 rounded-xl border text-xs transition-all flex items-center gap-1.5 ${
+                      isVerified
+                        ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300 font-semibold shadow-sm shadow-emerald-500/5'
+                        : 'bg-zinc-900 border-zinc-800 text-zinc-300 hover:border-emerald-500/40'
+                    }`}>
+                      {s}
+                      {isVerified && <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />}
+                    </span>
+                  );
+                })}
               </div>
             </div>
 
@@ -389,6 +409,7 @@ export const FreelancerProfile: React.FC<Props> = ({ freelancerUser, onBack }) =
           </div>
         </div>
       </div>
+      <SkillQuiz isOpen={isQuizOpen} onClose={() => setIsQuizOpen(false)} />
     </div>
   );
 };
