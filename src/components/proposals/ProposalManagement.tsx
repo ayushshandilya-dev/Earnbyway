@@ -1,30 +1,38 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
 import { Project } from '../../types';
 import {
   CheckCircle, XCircle, Star, MessageSquare, ChevronDown, ChevronUp,
-  Users, Clock, Briefcase, Filter, Search as SearchIcon
+  Users, Clock, Briefcase, Search as SearchIcon
 } from 'lucide-react';
 
 export const ProposalManagement: React.FC = () => {
+  const navigate = useNavigate();
   const { projects, currentUser, acceptProposal } = useApp();
   const { addToast } = useToast();
   const [expandedProject, setExpandedProject] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'accepted' | 'rejected'>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [rejectedIds, setRejectedIds] = useState<string[]>([]);
 
   const myProjects = projects.filter(p => p.clientId === currentUser.id);
   const hasProposals = myProjects.some(p => p.proposals.length > 0);
 
   const getFilteredProposals = (project: Project) => {
-    let props = project.proposals;
+    let props = project.proposals.filter(p => !rejectedIds.includes(p.id));
     if (statusFilter !== 'all') props = props.filter(p => p.status === statusFilter);
     if (searchQuery) props = props.filter(p =>
       p.freelancerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.coverLetter.toLowerCase().includes(searchQuery.toLowerCase())
     );
     return props;
+  };
+
+  const handleReject = (projectId: string, proposalId: string) => {
+    setRejectedIds(prev => [...prev, proposalId]);
+    addToast('Proposal rejected', 'info');
   };
 
   const handleAccept = (projectId: string, proposalId: string) => {
@@ -126,10 +134,12 @@ export const ProposalManagement: React.FC = () => {
                                     className="flex items-center gap-1 px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-black font-bold rounded-xl transition-all text-[10px]">
                                     <CheckCircle className="w-3 h-3" /> Accept
                                   </button>
-                                  <button className="flex items-center gap-1 px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 rounded-xl transition-all text-[10px]">
+                                  <button onClick={() => handleReject(project.id, prop.id)}
+                                    className="flex items-center gap-1 px-3 py-1.5 bg-zinc-800 hover:bg-red-900/50 border border-zinc-700 hover:border-red-500/30 text-zinc-300 hover:text-red-400 rounded-xl transition-all text-[10px]">
                                     <XCircle className="w-3 h-3" /> Reject
                                   </button>
-                                  <button className="flex items-center gap-1 px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 rounded-xl transition-all text-[10px]">
+                                  <button onClick={() => navigate('/chat')}
+                                    className="flex items-center gap-1 px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 rounded-xl transition-all text-[10px]">
                                     <MessageSquare className="w-3 h-3" /> Chat
                                   </button>
                                 </div>

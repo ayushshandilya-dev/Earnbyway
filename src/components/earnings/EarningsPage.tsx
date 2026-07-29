@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
-import { Wallet, TrendingUp, ArrowUpRight, CheckCircle, Clock, X, Copy, ExternalLink, Sparkles } from 'lucide-react';
+import { Wallet, TrendingUp, ArrowUpRight, CheckCircle, Clock, X, ExternalLink, Sparkles } from 'lucide-react';
 
 export const EarningsPage: React.FC = () => {
   const { currentUser, withdrawals, requestWithdrawal, upgradeSubscription } = useApp();

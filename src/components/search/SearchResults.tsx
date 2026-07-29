@@ -7,8 +7,7 @@ import { GigDetail } from '../gigs/GigDetail';
 import { FreelancerProfile } from '../profiles/FreelancerProfile';
 import { Gig, User } from '../../types';
 import {
-  Search, Sparkles, SlidersHorizontal, X, Users, Briefcase, Star,
-  ChevronRight, MapPin, Clock, Filter
+  Search, Sparkles, X, Users, Briefcase, Filter, Star
 } from 'lucide-react';
 
 export const SearchResults: React.FC = () => {
@@ -157,7 +156,7 @@ export const SearchResults: React.FC = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredGigs.map(gig => <GigCard key={gig.id} gig={gig} onSelect={setSelectedGig} />)}
+            {filteredGigs.map(gig => <GigCard key={gig.id} gig={gig} onClick={() => setSelectedGig(gig)} />)}
           </div>
         )
       ) : (

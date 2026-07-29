@@ -45,7 +45,7 @@ export const SubscriptionPage: React.FC = () => {
   const [showConfirm, setShowConfirm] = useState(false);
 
   const currentTier = currentUser.proTier || 'none';
-  const currentPlan = subscriptionPlans.find(p => p.tier === currentTier)!;
+  const currentPlan = subscriptionPlans.find(p => p.tier === currentTier) || subscriptionPlans[0];
 
   const handleUpgrade = (tier: string) => {
     setSelectedTier(tier);

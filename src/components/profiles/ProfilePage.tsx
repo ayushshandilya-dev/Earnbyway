@@ -4,8 +4,8 @@ import { useApp } from '../../context/AppContext';
 import { AIService } from '../../services/aiService';
 import { FreelancerProfile as FreelancerProfileView } from './FreelancerProfile';
 import {
-  User, Mail, MapPin, Calendar, ShieldCheck, Briefcase, Star, Clock,
-  Edit3, Settings, Heart, MessageSquare, ArrowRight, CheckCircle
+  User, Mail, Star, MapPin, Calendar, Briefcase, Heart,
+  Edit3, Settings, CheckCircle, ArrowRight
 } from 'lucide-react';
 
 export const ProfilePage: React.FC = () => {
@@ -15,7 +15,7 @@ export const ProfilePage: React.FC = () => {
   const [viewingFreelancer, setViewingFreelancer] = useState<string | null>(null);
 
   if (currentRole === 'freelancer' && myProfile) {
-    return <FreelancerProfileView freelancerUser={currentUser} onBack={() => {}} />;
+    return <FreelancerProfileView freelancerUser={currentUser} onBack={() => navigate(-1)} />;
   }
 
   const activeOrders = orders.filter(o => o.clientId === currentUser.id && (o.status === 'in_progress' || o.status === 'under_review')).length;

@@ -1,185 +1,88 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
-import { FormField } from '../ui/FormField';
-import { User, Bell, Shield, CreditCard, Save, CheckCircle, Smartphone, Eye, EyeOff } from 'lucide-react';
+import { Card, CardHeader, CardTitle } from '../ui/Card';
+import { Badge } from '../ui/Badge';
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
+import { Settings, Bell, Shield, Smartphone, Save, User, Mail, Lock, Globe, Clock } from 'lucide-react';
 
 export const SettingsPage: React.FC = () => {
-  const { users, currentUser } = useApp();
-  const [activeTab, setActiveTab] = useState<'profile' | 'notifications' | 'payments' | 'security'>('profile');
-
-  const [name, setName] = useState(currentUser.name);
-  const [email, setEmail] = useState(currentUser.email);
-  const [bio, setBio] = useState('Full-stack developer passionate about building scalable web applications.');
-  const [saved, setSaved] = useState(false);
-  const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const { currentUser } = useApp();
   const { addToast } = useToast();
-
-  const [notifPrefs, setNotifPrefs] = useState({
-    proposals: true,
-    payments: true,
-    orders: true,
-    messages: true,
-    reviews: true,
-    marketing: false,
+  const [saved, setSaved] = useState(false);
+  const [form, setForm] = useState({
+    name: currentUser.name,
+    email: currentUser.email,
+    bio: 'Full-stack developer with 5+ years of experience building scalable web applications.',
+    language: 'English',
+    timezone: 'IST (UTC+5:30)',
+    emailNotifs: true,
+    pushNotifs: true,
+    smsNotifs: false,
   });
 
-  const [twoFA, setTwoFA] = useState(false);
-
   const handleSave = () => {
-    if (!name.trim() || !email.trim() || !/\S+@\S+\.\S+/.test(email)) {
-      if (!name.trim()) setTouched(p => ({ ...p, name: true }));
-      if (!email.trim() || !/\S+@\S+\.\S+/.test(email)) setTouched(p => ({ ...p, email: true }));
-      addToast('Please fix validation errors', 'error');
-      return;
-    }
     setSaved(true);
     addToast('Settings saved successfully!', 'success');
     setTimeout(() => setSaved(false), 2000);
   };
 
-  const tabs = [
-    { key: 'profile', label: 'Profile', icon: User },
-    { key: 'notifications', label: 'Notifications', icon: Bell },
-    { key: 'payments', label: 'Payments', icon: CreditCard },
-    { key: 'security', label: 'Security', icon: Shield },
-  ] as const;
-
   return (
-    <div className="py-8 max-w-4xl mx-auto">
-      <h1 className="text-3xl font-heading font-bold text-white mb-8">Settings</h1>
-
-      <div className="flex items-center gap-1 border-b border-zinc-800 mb-8 overflow-x-auto">
-        {tabs.map(tab => (
-          <button key={tab.key} onClick={() => setActiveTab(tab.key)}
-            className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors border-b-2 whitespace-nowrap ${
-              activeTab === tab.key ? 'text-emerald-400 border-emerald-500' : 'text-zinc-500 border-transparent hover:text-zinc-300'
-            }`}>
-            <tab.icon className="w-4 h-4" /> {tab.label}
-          </button>
-        ))}
+    <div className="py-6 space-y-8 animate-fade-in max-w-3xl">
+      <div>
+        <h1 className="text-3xl font-heading font-bold text-white">Settings</h1>
+        <p className="text-sm text-zinc-500 mt-1">Manage your account preferences</p>
       </div>
 
-      {activeTab === 'profile' && (
-        <div className="glass-card rounded-2xl p-6 space-y-5">
-          <div className="flex items-center gap-4 mb-6">
-            <img src={currentUser.avatar} alt="" className="w-16 h-16 rounded-xl object-cover ring-2 ring-emerald-500/40" />
-            <div>
-              <h3 className="text-sm font-semibold text-white">{currentUser.name}</h3>
-              <p className="text-xs text-zinc-500">{currentUser.email}</p>
-              <button className="text-xs text-emerald-400 hover:underline mt-1">Change avatar</button>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <FormField label="Full Name" error={touched.name ? (!name.trim() ? 'Name is required' : null) : null} touched required>
-              <input type="text" value={name} onChange={e => setName(e.target.value)}
-                className="w-full px-4 py-2.5 bg-zinc-900/50 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none focus:border-emerald-500" />
-            </FormField>
-            <FormField label="Email" error={touched.email ? (!email.trim() ? 'Email is required' : !/\S+@\S+\.\S+/.test(email) ? 'Enter a valid email' : null) : null} touched required>
-              <input type="email" value={email} onChange={e => setEmail(e.target.value)}
-                className="w-full px-4 py-2.5 bg-zinc-900/50 border border-zinc-800 rounded-xl text-sm text-white focus:outline-none focus:border-emerald-500" />
-            </FormField>
-          </div>
-
-          <div>
-            <label className="text-xs font-medium text-zinc-400 mb-1.5 block">Bio</label>
-            <textarea value={bio} onChange={e => setBio(e.target.value)} rows={3}
-              className="w-full px-4 py-3 bg-zinc-900/50 border border-zinc-800 rounded-xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500 resize-none" />
-          </div>
-
-          <div className="flex items-center gap-3">
-            <button onClick={handleSave}
-              className="flex items-center gap-2 px-6 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-black font-bold rounded-xl transition-all text-sm">
-              <Save className="w-4 h-4" /> Save Changes
-            </button>
-            {saved && (
-              <span className="flex items-center gap-1.5 text-xs text-emerald-400 animate-in fade-in">
-                <CheckCircle className="w-4 h-4" /> Saved!
-              </span>
-            )}
-          </div>
+      <Card padding="lg">
+        <CardTitle icon={<User className="w-4 h-4 text-emerald-400" />}>Profile Information</CardTitle>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+          <Input label="Full Name" value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} icon={<User className="w-4 h-4" />} />
+          <Input label="Email" value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} icon={<Mail className="w-4 h-4" />} />
         </div>
-      )}
+        <div className="mt-4">
+          <label className="block text-xs font-medium text-zinc-400 mb-1.5">Bio</label>
+          <textarea value={form.bio} onChange={e => setForm(p => ({ ...p, bio: e.target.value }))}
+            className="w-full p-3 text-sm bg-zinc-900/80 border border-zinc-800 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20 resize-none" rows={3} />
+        </div>
+      </Card>
 
-      {activeTab === 'notifications' && (
-        <div className="glass-card rounded-2xl p-6 space-y-4">
-          <p className="text-xs text-zinc-400 mb-4">Choose what notifications you receive.</p>
-          {Object.entries(notifPrefs).map(([key, val]) => (
-            <div key={key} className="flex items-center justify-between p-3 rounded-xl bg-zinc-900/50 border border-zinc-800/60">
-              <span className="text-sm text-zinc-300 capitalize">{key} {key === 'marketing' ? '(optional)' : ''}</span>
-              <button onClick={() => setNotifPrefs(prev => ({ ...prev, [key]: !val }))}
-                className={`relative w-11 h-6 rounded-full transition-colors ${val ? 'bg-emerald-500' : 'bg-zinc-700'}`}>
-                <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${val ? 'translate-x-5' : ''}`} />
+      <Card padding="lg">
+        <CardTitle icon={<Globe className="w-4 h-4 text-emerald-400" />}>Preferences</CardTitle>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+          <Input label="Language" value={form.language} onChange={e => setForm(p => ({ ...p, language: e.target.value }))} icon={<Globe className="w-4 h-4" />} />
+          <Input label="Timezone" value={form.timezone} onChange={e => setForm(p => ({ ...p, timezone: e.target.value }))} icon={<Clock className="w-4 h-4" />} />
+        </div>
+      </Card>
+
+      <Card padding="lg">
+        <CardTitle icon={<Bell className="w-4 h-4 text-emerald-400" />}>Notifications</CardTitle>
+        <div className="space-y-4 mt-4">
+          {[
+            { label: 'Email Notifications', key: 'emailNotifs' as const, desc: 'Receive updates via email' },
+            { label: 'Push Notifications', key: 'pushNotifs' as const, desc: 'Receive browser notifications' },
+            { label: 'SMS Notifications', key: 'smsNotifs' as const, desc: 'Receive text message alerts' },
+          ].map(item => (
+            <div key={item.key} className="flex items-center justify-between p-3 rounded-xl bg-zinc-900/40 border border-zinc-800/60">
+              <div>
+                <div className="text-sm font-medium text-white">{item.label}</div>
+                <div className="text-[11px] text-zinc-500">{item.desc}</div>
+              </div>
+              <button onClick={() => setForm(p => ({ ...p, [item.key]: !p[item.key] }))}
+                className={`relative w-10 h-5 rounded-full transition-colors ${form[item.key] ? 'bg-emerald-500' : 'bg-zinc-700'}`}>
+                <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform shadow ${form[item.key] ? 'translate-x-5' : 'translate-x-0.5'}`} />
               </button>
             </div>
           ))}
-          <button onClick={handleSave}
-            className="flex items-center gap-2 px-6 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-black font-bold rounded-xl transition-all text-sm mt-4">
-            <Save className="w-4 h-4" /> Save Preferences
-          </button>
         </div>
-      )}
+      </Card>
 
-      {activeTab === 'payments' && (
-        <div className="glass-card rounded-2xl p-6 space-y-5">
-          <div className="p-4 rounded-xl bg-zinc-900/50 border border-zinc-800">
-            <span className="text-xs text-zinc-400">Current Balance</span>
-            <div className="text-2xl font-bold text-white mt-1">₹{currentUser.balance.toLocaleString()}</div>
-            <div className="text-xs text-zinc-500 mt-0.5">₹{currentUser.pendingBalance.toLocaleString()} pending</div>
-          </div>
-
-          <div>
-            <h3 className="text-sm font-semibold text-white mb-3">Saved Payment Methods</h3>
-            {[
-              { method: 'UPI', detail: 'user@paytm', default: true },
-              { method: 'Bank Transfer', detail: 'HDFC Bank · xxxx1234', default: false },
-            ].map((p, i) => (
-              <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-zinc-900/50 border border-zinc-800/60 mb-2">
-                <div className="flex items-center gap-3">
-                  <CreditCard className="w-5 h-5 text-emerald-400" />
-                  <div>
-                    <span className="text-sm text-white">{p.method}</span>
-                    <span className="text-xs text-zinc-500 ml-2">{p.detail}</span>
-                  </div>
-                </div>
-                {p.default && <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 text-[10px] font-semibold">Default</span>}
-              </div>
-            ))}
-            <button className="text-xs text-emerald-400 hover:underline mt-2">+ Add payment method</button>
-          </div>
-        </div>
-      )}
-
-      {activeTab === 'security' && (
-        <div className="glass-card rounded-2xl p-6 space-y-5">
-          <div className="flex items-center justify-between p-4 rounded-xl bg-zinc-900/50 border border-zinc-800/60">
-            <div className="flex items-center gap-3">
-              <Smartphone className="w-5 h-5 text-emerald-400" />
-              <div>
-                <span className="text-sm text-white">Two-Factor Authentication</span>
-                <p className="text-xs text-zinc-500">Add an extra layer of security to your account.</p>
-              </div>
-            </div>
-            <button onClick={() => setTwoFA(!twoFA)}
-              className={`relative w-11 h-6 rounded-full transition-colors ${twoFA ? 'bg-emerald-500' : 'bg-zinc-700'}`}>
-              <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${twoFA ? 'translate-x-5' : ''}`} />
-            </button>
-          </div>
-
-          <div className="p-4 rounded-xl bg-zinc-900/50 border border-zinc-800/60">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-white">Password</span>
-              <button className="text-xs text-emerald-400 hover:underline">Change</button>
-            </div>
-            <p className="text-xs text-zinc-500">Last changed 3 months ago</p>
-          </div>
-
-          <div className="p-4 rounded-xl bg-amber-500/5 border border-amber-500/20">
-            <p className="text-xs text-zinc-300">Account security is managed through email verification and password authentication. Enable 2FA for additional protection.</p>
-          </div>
-        </div>
-      )}
+      <div className="flex justify-end pt-2">
+        <Button variant="primary" size="md" icon={<Save className="w-4 h-4" />} onClick={handleSave} btn3d>
+          Save Changes
+        </Button>
+      </div>
     </div>
   );
 };

@@ -1,7 +1,7 @@
 import React from 'react';
 
 const Shimmer: React.FC = () => (
-  <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-zinc-800/40 to-transparent" />
+  <div className="absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-zinc-800/40 to-transparent" />
 );
 
 export const GigCardSkeleton: React.FC = () => (
@@ -72,7 +72,7 @@ export const StatsCardSkeleton: React.FC = () => (
 
 export const ChatBubbleSkeleton: React.FC<{ isMine?: boolean }> = ({ isMine }) => (
   <div className={`flex ${isMine ? 'justify-end' : 'justify-start'} mb-3`}>
-    <div className={`max-w-[70%] ${isMine ? 'order-1' : 'order-1'}`}>
+    <div className="max-w-[70%]">
       <div className={`p-3 rounded-2xl ${isMine ? 'bg-zinc-800/60' : 'bg-zinc-900'} relative overflow-hidden`}>
         <div className="h-3 bg-zinc-700/60 rounded w-48 relative overflow-hidden"><Shimmer /></div>
         <div className="h-3 bg-zinc-700/60 rounded w-32 mt-2 relative overflow-hidden"><Shimmer /></div>

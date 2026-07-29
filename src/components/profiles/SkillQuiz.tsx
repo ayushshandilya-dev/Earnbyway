@@ -519,7 +519,7 @@ export const SkillQuiz: React.FC<Props> = ({ isOpen, onClose, defaultQuizKey }) 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md overflow-y-auto" onClick={onClose}>
       <div className="bg-[#121215] border border-zinc-800 rounded-3xl max-w-2xl w-full p-6 sm:p-8 max-h-[90vh] overflow-y-auto shadow-2xl relative" onClick={e => e.stopPropagation()}>
-        <button onClick={onClose} className="absolute right-5 top-5 p-1.5 bg-zinc-905 rounded-full text-zinc-400 hover:text-white transition-colors">
+        <button onClick={onClose} className="absolute right-5 top-5 p-1.5 bg-zinc-900 rounded-full text-zinc-400 hover:text-white transition-colors">
           <X className="w-5 h-5" />
         </button>
 

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Gig } from '../../types';
 import { useApp } from '../../context/AppContext';
 import { ArrowLeft, Star, CheckCircle, Clock, ChevronDown, ChevronUp, MessageSquare, ShoppingCart, ShieldCheck, ExternalLink } from 'lucide-react';
@@ -9,6 +10,7 @@ interface Props {
 }
 
 export const GigDetail: React.FC<Props> = ({ gig, onBack }) => {
+  const navigate = useNavigate();
   const { reviews, profiles, users, gigs } = useApp();
   const [selectedImage, setSelectedImage] = useState(0);
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
@@ -22,8 +24,7 @@ export const GigDetail: React.FC<Props> = ({ gig, onBack }) => {
 
   return (
     <div className="py-8 animate-in fade-in duration-300">
-      <button
-        onClick={onBack}
+      <button onClick={onBack}
         className="flex items-center gap-2 text-xs text-zinc-400 hover:text-white mb-6 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" /> Back to catalog

@@ -4,7 +4,7 @@ import { GigCard } from '../gigs/GigCard';
 import { GigDetail } from '../gigs/GigDetail';
 import { FreelancerProfile } from '../profiles/FreelancerProfile';
 import { Gig, User } from '../../types';
-import { Heart, Users, Briefcase, Bookmark } from 'lucide-react';
+import { Heart, Users, Briefcase, Bookmark, Star } from 'lucide-react';
 
 export const BookmarksPage: React.FC = () => {
   const { gigs, users, bookmarks, profiles } = useApp();
@@ -55,7 +55,7 @@ export const BookmarksPage: React.FC = () => {
               <div className="text-center py-12 text-zinc-500 text-sm">No gigs saved yet.</div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {bookmarkedGigs.map(gig => <GigCard key={gig.id} gig={gig} onSelect={setSelectedGig} />)}
+                {bookmarkedGigs.map(gig => <GigCard key={gig.id} gig={gig} onClick={() => setSelectedGig(gig)} />)}
               </div>
             )
           ) : (
@@ -77,7 +77,7 @@ export const BookmarksPage: React.FC = () => {
                         <h3 className="font-semibold text-white mb-1">{fl.name}</h3>
                         <p className="text-xs text-zinc-400 mb-3">{p.title}</p>
                         <div className="flex items-center gap-3 text-xs">
-                          <span className="flex items-center gap-1 text-amber-400">⭐ {p.rating}</span>
+                          <span className="flex items-center gap-1 text-amber-400"><Star className="w-3 h-3 fill-amber-400" /> {p.rating}</span>
                           <span className="text-zinc-500">{p.completedJobs} jobs</span>
                           <span className="text-emerald-400 font-semibold">₹{p.hourlyRate}/hr</span>
                         </div>

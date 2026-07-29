@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Project } from '../../types';
 import { AIService } from '../../services/aiService';
-import { ArrowLeft, Clock, Users, MapPin, Star, CheckCircle, Send, Sparkles, X, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Clock, Users, CheckCircle, Send, Sparkles, X, AlertTriangle } from 'lucide-react';
 
 interface Props {
   project: Project;

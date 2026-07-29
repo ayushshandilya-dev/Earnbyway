@@ -194,7 +194,7 @@ export const GigCatalog: React.FC = () => {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredGigs.map(gig => (
-            <GigCard key={gig.id} gig={gig} onSelect={setSelectedGig} />
+            <GigCard key={gig.id} gig={gig} onClick={() => setSelectedGig(gig)} />
           ))}
         </div>
       )}
