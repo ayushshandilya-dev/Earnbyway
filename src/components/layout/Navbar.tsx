@@ -203,7 +203,7 @@ export const Navbar: React.FC<Props> = ({
             {/* AI Tools (mobile) */}
             <button
               onClick={onOpenAITools}
-              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600/20 to-teal-600/20 border border-emerald-500/30 text-emerald-300 text-xs font-semibold hover:border-emerald-400 hover:bg-emerald-500/20 transition-all"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600/20 to-teal-600/20 border border-emerald-500/30 text-emerald-300 text-xs font-semibold hover:border-emerald-400 hover:bg-emerald-500/20 transition-all btn-3d"
             >
               <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
               <span className="hidden sm:inline">AI Tools</span>
@@ -211,7 +211,7 @@ export const Navbar: React.FC<Props> = ({
 
             {currentRole === 'client' && (
               <button onClick={onOpenPostProject}
-                className="hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-500 text-black text-xs font-bold hover:bg-emerald-400 hover:shadow-lg hover:shadow-emerald-500/20 transition-all">
+                className="hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-500 text-black text-xs font-bold hover:bg-emerald-400 hover:shadow-lg hover:shadow-emerald-500/20 transition-all btn-3d">
                 <PlusCircle className="w-3.5 h-3.5" />
                 <span>Post Project</span>
               </button>
@@ -221,13 +221,13 @@ export const Navbar: React.FC<Props> = ({
               <>
                 {(!currentUser.proTier || currentUser.proTier === 'none') && (
                   <button onClick={() => navigate('/subscription')}
-                    className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-400 text-black text-xs font-bold hover:shadow-lg hover:shadow-amber-500/20 transition-all">
+                    className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-400 text-black text-xs font-bold hover:shadow-lg hover:shadow-amber-500/20 transition-all btn-3d">
                     <Crown className="w-3.5 h-3.5" />
                     <span>Upgrade</span>
                   </button>
                 )}
                 <button onClick={onOpenCreateGig}
-                  className="hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-500 text-black text-xs font-bold hover:bg-emerald-400 hover:shadow-lg hover:shadow-emerald-500/20 transition-all">
+                  className="hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-500 text-black text-xs font-bold hover:bg-emerald-400 hover:shadow-lg hover:shadow-emerald-500/20 transition-all btn-3d">
                   <PlusCircle className="w-3.5 h-3.5" />
                   <span>Create Gig</span>
                 </button>

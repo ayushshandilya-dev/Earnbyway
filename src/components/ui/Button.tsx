@@ -8,6 +8,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   size?: Size;
   loading?: boolean;
   icon?: React.ReactNode;
+  btn3d?: boolean;
 }
 
 const variantStyles: Record<Variant, string> = {
@@ -31,13 +32,14 @@ export const Button: React.FC<ButtonProps> = ({
   size = 'sm',
   loading = false,
   icon,
+  btn3d = false,
   children,
   className = '',
   disabled,
   ...props
 }) => (
   <button
-    className={`btn-base ${variantStyles[variant]} ${sizeStyles[size]} ${className}`}
+    className={`btn-base ${variantStyles[variant]} ${sizeStyles[size]} ${btn3d ? 'btn-3d' : ''} ${className}`}
     disabled={disabled || loading}
     {...props}
   >
