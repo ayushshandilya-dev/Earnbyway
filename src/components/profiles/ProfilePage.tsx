@@ -7,6 +7,9 @@ import {
   User, Mail, Star, MapPin, Calendar, Briefcase, Heart,
   Edit3, Settings, CheckCircle, ArrowRight
 } from 'lucide-react';
+import { Button } from '../ui/Button';
+import { Card } from '../ui/Card';
+import { Badge } from '../ui/Badge';
 
 export const ProfilePage: React.FC = () => {
   const navigate = useNavigate();
@@ -32,11 +35,13 @@ export const ProfilePage: React.FC = () => {
             <div className="flex items-center gap-2 mb-1">
               <h1 className="text-2xl font-heading font-bold text-white">{currentUser.name}</h1>
               {currentUser.isVerified && <CheckCircle className="w-5 h-5 text-emerald-400 fill-emerald-400/20" />}
-              <span className={`px-2.5 py-0.5 rounded text-[10px] font-semibold border ${
-                currentUser.role === 'client' ? 'bg-blue-500/10 text-blue-400 border-blue-500/30' :
-                currentUser.role === 'freelancer' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' :
-                'bg-amber-500/10 text-amber-400 border-amber-500/30'
-              }`}>{currentUser.role}</span>
+              <Badge
+                variant={currentUser.role === 'client' ? 'blue' : currentUser.role === 'freelancer' ? 'emerald' : 'amber'}
+                size="md"
+                className="uppercase tracking-wider"
+              >
+                {currentUser.role}
+              </Badge>
             </div>
             {currentUser.company && <p className="text-sm text-zinc-400">{currentUser.company}</p>}
             {currentUser.title && <p className="text-xs text-zinc-500">{currentUser.title}</p>}
@@ -46,10 +51,9 @@ export const ProfilePage: React.FC = () => {
               <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" /> Joined {currentUser.joinedDate}</span>
             </div>
           </div>
-          <button onClick={() => navigate('/settings')}
-            className="flex items-center gap-2 px-4 py-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-xl text-xs text-zinc-300 transition-colors">
+          <Button onClick={() => navigate('/settings')} variant="secondary" size="sm">
             <Edit3 className="w-3.5 h-3.5" /> Edit Profile
-          </button>
+          </Button>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-6 border-t border-zinc-800/60">
@@ -73,30 +77,27 @@ export const ProfilePage: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <button onClick={() => navigate('/orders')}
-          className="glass-card glass-card-hover rounded-2xl p-5 text-left">
+        <Card onClick={() => navigate('/orders')} hover tilt3d className="text-left cursor-pointer">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-400 p-0.5 mb-3">
             <div className="w-full h-full bg-zinc-950 rounded-[10px] flex items-center justify-center"><Briefcase className="w-5 h-5 text-blue-400" /></div>
           </div>
           <h3 className="text-sm font-semibold text-white mb-1">My Orders</h3>
           <p className="text-xs text-zinc-500">Track your active orders and milestones</p>
-        </button>
-        <button onClick={() => navigate('/bookmarks')}
-          className="glass-card glass-card-hover rounded-2xl p-5 text-left">
+        </Card>
+        <Card onClick={() => navigate('/bookmarks')} hover tilt3d className="text-left cursor-pointer">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-pink-400 p-0.5 mb-3">
             <div className="w-full h-full bg-zinc-950 rounded-[10px] flex items-center justify-center"><Heart className="w-5 h-5 text-pink-400" /></div>
           </div>
           <h3 className="text-sm font-semibold text-white mb-1">Saved Items</h3>
           <p className="text-xs text-zinc-500">{bookmarks.length} saved gigs and freelancers</p>
-        </button>
-        <button onClick={() => navigate('/settings')}
-          className="glass-card glass-card-hover rounded-2xl p-5 text-left">
+        </Card>
+        <Card onClick={() => navigate('/settings')} hover tilt3d className="text-left cursor-pointer">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-zinc-500 to-zinc-400 p-0.5 mb-3">
             <div className="w-full h-full bg-zinc-950 rounded-[10px] flex items-center justify-center"><Settings className="w-5 h-5 text-zinc-400" /></div>
           </div>
           <h3 className="text-sm font-semibold text-white mb-1">Settings</h3>
           <p className="text-xs text-zinc-500">Manage your account and preferences</p>
-        </button>
+        </Card>
       </div>
 
       {currentRole === 'client' && (
@@ -125,13 +126,3 @@ export const ProfilePage: React.FC = () => {
                       p.status === 'hired' ? 'bg-blue-500/10 text-blue-400 border-blue-500/30' :
                       'bg-zinc-900 text-zinc-500 border-zinc-800'
                     }`}>{p.status}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </>
-      )}
-    </div>
-  );
-};
