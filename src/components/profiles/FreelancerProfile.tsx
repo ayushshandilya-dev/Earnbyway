@@ -111,26 +111,28 @@ export const FreelancerProfile: React.FC<Props> = ({ freelancerUser, onBack }) =
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-lg font-heading font-bold text-white">Skills</h2>
                 {isOwner && (
-                  <button onClick={() => setIsQuizOpen(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-semibold border border-emerald-500/20 transition-all">
+                  <Button onClick={() => setIsQuizOpen(true)} variant="outline" size="sm" className="text-emerald-400 hover:text-emerald-300 border-emerald-500/30">
                     <Award className="w-3.5 h-3.5 text-emerald-400" /> Verify Skills
-                  </button>
+                  </Button>
                 )}
               </div>
-              <div className="flex flex-wrap gap-2">
-                {profile.skills.map(s => {
-                  const isVerified = profile.verifiedSkills?.includes(s);
-                  return (
-                    <span key={s} className={`px-3 py-1.5 rounded-xl border text-xs transition-all flex items-center gap-1.5 ${
-                      isVerified
-                        ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300 font-semibold shadow-sm shadow-emerald-500/5'
-                        : 'bg-zinc-900 border-zinc-800 text-zinc-300 hover:border-emerald-500/40'
-                    }`}>
-                      {s}
-                      {isVerified && <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />}
-                    </span>
-                  );
-                })}
-              </div>
+                <div className="flex flex-wrap gap-2">
+                  {profile.skills.map(s => {
+                    const isVerified = profile.verifiedSkills?.includes(s);
+                    return (
+                      <Badge
+                        key={s}
+                        variant={isVerified ? 'emerald' : 'zinc'}
+                        size="md"
+                        className="shadow-sm"
+                        dot={isVerified}
+                      >
+                        {s}
+                        {isVerified && <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />}
+                      </Badge>
+                    );
+                  })}
+                </div>
             </div>
 
             {/* Experience */}
@@ -139,7 +141,7 @@ export const FreelancerProfile: React.FC<Props> = ({ freelancerUser, onBack }) =
                 <h2 className="text-lg font-heading font-bold text-white mb-4">Experience</h2>
                 <div className="space-y-4">
                   {profile.experience.map(exp => (
-                    <div key={exp.id} className="glass-card rounded-2xl p-5">
+                    <Card key={exp.id} className="!p-5" hover>
                       <div className="flex items-start gap-3">
                         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 flex items-center justify-center flex-shrink-0">
                           <Briefcase className="w-5 h-5 text-emerald-400" />
@@ -150,7 +152,7 @@ export const FreelancerProfile: React.FC<Props> = ({ freelancerUser, onBack }) =
                           <p className="text-xs text-zinc-500 mt-1">{exp.description}</p>
                         </div>
                       </div>
-                    </div>
+                    </Card>
                   ))}
                 </div>
               </div>
@@ -163,10 +165,10 @@ export const FreelancerProfile: React.FC<Props> = ({ freelancerUser, onBack }) =
                   <h2 className="text-lg font-heading font-bold text-white mb-3">Education</h2>
                   <div className="space-y-3">
                     {profile.education.map((edu, i) => (
-                      <div key={i} className="glass-card rounded-xl p-4 flex items-start gap-3">
+                      <Card key={i} className="!p-4 flex items-start gap-3" hover>
                         <GraduationCap className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
                         <p className="text-xs text-zinc-300">{edu}</p>
-                      </div>
+                      </Card>
                     ))}
                   </div>
                 </div>
@@ -176,13 +178,13 @@ export const FreelancerProfile: React.FC<Props> = ({ freelancerUser, onBack }) =
                   <h2 className="text-lg font-heading font-bold text-white mb-3">Certifications</h2>
                   <div className="space-y-3">
                     {profile.certificates.map(cert => (
-                      <div key={cert.id} className="glass-card rounded-xl p-4 flex items-start gap-3">
+                      <Card key={cert.id} className="!p-4 flex items-start gap-3" hover>
                         <Award className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
                         <div>
                           <p className="text-xs font-semibold text-white">{cert.name}</p>
                           <p className="text-[10px] text-zinc-500">{cert.issuer} · {cert.year}</p>
                         </div>
-                      </div>
+                      </Card>
                     ))}
                   </div>
                 </div>
@@ -195,7 +197,7 @@ export const FreelancerProfile: React.FC<Props> = ({ freelancerUser, onBack }) =
                 <h2 className="text-lg font-heading font-bold text-white mb-4">Portfolio</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {profile.portfolio.map(p => (
-                    <div key={p.id} className="glass-card rounded-2xl overflow-hidden group">
+                    <Card key={p.id} className="overflow-hidden group !p-0" hover>
                       <div className="h-44 overflow-hidden">
                         <img src={p.imageUrl} alt={p.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                       </div>
@@ -204,7 +206,7 @@ export const FreelancerProfile: React.FC<Props> = ({ freelancerUser, onBack }) =
                         <p className="text-xs text-zinc-400 mb-3">{p.description}</p>
                         <div className="flex flex-wrap gap-1.5 mb-3">
                           {p.technologies.map(t => (
-                            <span key={t} className="px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-[10px] text-zinc-400">{t}</span>
+                            <Badge key={t} variant="zinc">{t}</Badge>
                           ))}
                         </div>
                         <div className="flex items-center gap-2">
