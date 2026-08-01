@@ -92,11 +92,11 @@ export const FreelancerProfile: React.FC<Props> = ({ freelancerUser, onBack }) =
                 { label: 'Response', value: profile.responseTime, icon: Clock, color: 'text-blue-400' },
                 { label: 'Earned', value: `₹${(profile.totalEarned / 1000).toFixed(0)}k`, icon: Zap, color: 'text-purple-400' },
               ].map(stat => (
-                <div key={stat.label} className="glass-card rounded-xl p-4 text-center">
+                <Card key={stat.label} className="!p-4 text-center" hover>
                   <stat.icon className={`w-5 h-5 ${stat.color} mx-auto mb-1.5`} />
                   <div className="text-lg font-bold text-white">{stat.value}</div>
                   <div className="text-[10px] text-zinc-500">{stat.label}</div>
-                </div>
+                </Card>
               ))}
             </div>
 
