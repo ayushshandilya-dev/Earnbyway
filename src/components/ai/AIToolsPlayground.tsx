@@ -5,6 +5,9 @@ import {
   Sparkles, Search, FileText, Image, Users, Shield, UserCheck,
   Star, AlertTriangle, CheckCircle, X, ArrowRight, Copy, Loader2
 } from 'lucide-react';
+import { Button } from '../ui/Button';
+import { Card } from '../ui/Card';
+import { Badge } from '../ui/Badge';
 
 type AITab = 'search' | 'proposal' | 'gig' | 'matcher' | 'resume' | 'fraud';
 
@@ -42,25 +45,25 @@ export const AIToolsPlayground: React.FC = () => {
 
       <div className="flex gap-1.5 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
         {TABS.map(tab => (
-          <button key={tab.key} onClick={() => setActiveTab(tab.key)}
-            className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-medium whitespace-nowrap border transition-all ${
-              activeTab === tab.key
-                ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-400 shadow-sm'
-                : 'bg-zinc-900/70 border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700'
-            }`}>
+          <Button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            variant={activeTab === tab.key ? 'primary' : 'secondary'}
+            size="sm"
+            className="whitespace-nowrap"
+          >
             {tab.icon} {tab.label}
-          </button>
+          </Button>
         ))}
       </div>
 
-      <div className="glass-card rounded-2xl p-6 min-h-[400px]">
-        {activeTab === 'search' && <SmartSearchTab gigs={gigs} copyToClipboard={copyToClipboard} copied={copied} />}
+      <Card className="min-h-[400px] !p-6 glossy">{activeTab === 'search' && <SmartSearchTab gigs={gigs} copyToClipboard={copyToClipboard} copied={copied} />}
         {activeTab === 'proposal' && <ProposalTab projects={projects} profiles={profiles} currentUser={currentUser} copyToClipboard={copyToClipboard} copied={copied} />}
         {activeTab === 'gig' && <GigDescTab copyToClipboard={copyToClipboard} copied={copied} />}
         {activeTab === 'matcher' && <MatcherTab users={freelancers} profiles={profiles} copyToClipboard={copyToClipboard} copied={copied} />}
         {activeTab === 'resume' && <ResumeTab freelancers={freelancers} profiles={profiles} copyToClipboard={copyToClipboard} copied={copied} />}
         {activeTab === 'fraud' && <FraudTab copyToClipboard={copyToClipboard} copied={copied} />}
-      </div>
+      </Card>
     </div>
   );
 };
@@ -75,11 +78,14 @@ const ResultBox: React.FC<{ label: string; children: React.ReactNode }> = ({ lab
 );
 
 const CopyButton: React.FC<{ text: string; label: string; copied: string | null }> = ({ text, label, copied }) => (
-  <button onClick={() => navigator.clipboard.writeText(text)}
-    className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white text-[10px] transition-colors">
+  <Button
+    variant="secondary"
+    size="xs"
+    onClick={() => navigator.clipboard.writeText(text)}
+  >
     {copied === label ? <CheckCircle className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
     {copied === label ? 'Copied!' : 'Copy'}
-  </button>
+  </Button>
 );
 
 /* ──────────── 1. Smart Search ──────────── */
@@ -208,7 +214,7 @@ const GigDescTab: React.FC<{ copyToClipboard: any; copied: any }> = () => {
         </div>
       </div>
       <div className="mt-3 flex flex-wrap gap-1.5">
-        {result.tags.map(t => <span key={t} className="px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-[10px] text-zinc-400">{t}</span>)}
+        {result.tags.map(t => <Badge key={t} variant="zinc">{t}</Badge>)}
       </div>
     </div>
   );
@@ -302,7 +308,7 @@ const ResumeTab: React.FC<{ freelancers: any[]; profiles: any; copyToClipboard: 
               <h4 className="text-xs font-semibold text-red-400 mb-2">Missing Skills</h4>
               <div className="flex flex-wrap gap-1.5">
                 {analysis.missingSkills.map(s => (
-                  <span key={s} className="px-2 py-0.5 rounded bg-red-500/10 border border-red-500/30 text-[10px] text-red-400">{s}</span>
+                  <Badge key={s} variant="rose">{s}</Badge>
                 ))}
               </div>
             </div>

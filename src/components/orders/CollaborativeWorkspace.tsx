@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
 import { WorkspaceTask, WorkspaceAsset } from '../../types';
-import { 
+import {
   Trello, 
   FileText, 
   BookOpen, 
@@ -23,6 +23,9 @@ import {
   MessageCircle,
   X
 } from 'lucide-react';
+import { Button } from '../ui/Button';
+import { Card } from '../ui/Card';
+import { Badge } from '../ui/Badge';
 
 interface TaskComment {
   id: string;
@@ -104,9 +107,9 @@ export const CollaborativeWorkspace: React.FC = () => {
         <ShieldAlert className="w-12 h-12 text-rose-400 mx-auto mb-4" />
         <h2 className="text-xl font-bold text-white">Workspace Not Found</h2>
         <p className="text-zinc-400 text-sm mt-1">This workspace may have been archived or deleted.</p>
-        <button onClick={() => navigate('/orders')} className="mt-6 px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-white hover:bg-zinc-850">
+        <Button onClick={() => navigate('/orders')} variant="secondary" size="md" className="mt-6">
           Back to Orders
-        </button>
+        </Button>
       </div>
     );
   }
@@ -122,9 +125,9 @@ export const CollaborativeWorkspace: React.FC = () => {
         <ShieldAlert className="w-12 h-12 text-rose-500 mx-auto" />
         <h2 className="text-xl font-bold text-white">Access Denied</h2>
         <p className="text-zinc-500 text-sm">You do not have permissions to view this project team workspace.</p>
-        <button onClick={() => navigate('/orders')} className="px-4 py-2 bg-emerald-500 text-black font-bold rounded-xl text-xs">
+        <Button onClick={() => navigate('/orders')} btn3d size="md">
           Return to Dashboard
-        </button>
+        </Button>
       </div>
     );
   }
@@ -203,10 +206,10 @@ export const CollaborativeWorkspace: React.FC = () => {
           <button onClick={() => navigate('/orders')} className="flex items-center gap-1.5 text-zinc-400 hover:text-white transition-colors text-xs">
             <ArrowLeft className="w-3.5 h-3.5" /> Back to Dashboard
           </button>
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl font-heading font-extrabold text-white sm:text-2xl">{order.title}</h1>
-            <span className="text-[10px] bg-emerald-500/10 text-emerald-400 font-extrabold px-2 py-0.5 rounded border border-emerald-500/20">WORKSPACE</span>
-          </div>
+        <div className="flex items-center gap-2">
+          <h1 className="text-xl font-heading font-extrabold text-white sm:text-2xl">{order.title}</h1>
+          <Badge variant="emerald" className="uppercase tracking-wider">Workspace</Badge>
+        </div>
           <p className="text-xs text-zinc-400">
             Escrow ID: <span className="font-mono text-zinc-300">{order.id}</span> · Connected: <span className="font-semibold text-white">{order.clientName}</span> (Client) & <span className="font-semibold text-white">{order.freelancerName}</span> (Freelancer)
           </p>
@@ -220,50 +223,42 @@ export const CollaborativeWorkspace: React.FC = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-2 border-b border-zinc-800/80 pb-0.5">
-        <button
+      <div className="flex items-center gap-2 border-b border-zinc-800/80 pb-0.5 overflow-x-auto">
+        <Button
           onClick={() => setActiveTab('kanban')}
-          className={`flex items-center gap-2 px-4 py-3 text-xs font-semibold border-b-2 transition-all ${
-            activeTab === 'kanban' 
-              ? 'border-emerald-500 text-emerald-400' 
-              : 'border-transparent text-zinc-400 hover:text-white'
-          }`}
+          variant="ghost"
+          size="sm"
+          className={`border-b-2 !rounded-none !pb-3 ${activeTab === 'kanban' ? '!border-emerald-500 !text-emerald-400' : '!border-transparent !text-zinc-400 hover:!text-white'}`}
         >
           <Trello className="w-4 h-4" /> Shared Kanban Board
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={() => setActiveTab('assets')}
-          className={`flex items-center gap-2 px-4 py-3 text-xs font-semibold border-b-2 transition-all ${
-            activeTab === 'assets' 
-              ? 'border-emerald-500 text-emerald-400' 
-              : 'border-transparent text-zinc-400 hover:text-white'
-          }`}
+          variant="ghost"
+          size="sm"
+          className={`border-b-2 !rounded-none !pb-3 ${activeTab === 'assets' ? '!border-emerald-500 !text-emerald-400' : '!border-transparent !text-zinc-400 hover:!text-white'}`}
         >
           <Paperclip className="w-4 h-4" /> Shared Assets & Files ({assets.length})
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={() => {
             setActiveTab('notes');
             setEditedNotes(workspaceNotes[orderId || ''] || '');
           }}
-          className={`flex items-center gap-2 px-4 py-3 text-xs font-semibold border-b-2 transition-all ${
-            activeTab === 'notes' 
-              ? 'border-emerald-500 text-emerald-400' 
-              : 'border-transparent text-zinc-400 hover:text-white'
-          }`}
+          variant="ghost"
+          size="sm"
+          className={`border-b-2 !rounded-none !pb-3 ${activeTab === 'notes' ? '!border-emerald-500 !text-emerald-400' : '!border-transparent !text-zinc-400 hover:!text-white'}`}
         >
           <BookOpen className="w-4 h-4" /> Project Specifications
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={() => setActiveTab('milestones')}
-          className={`flex items-center gap-2 px-4 py-3 text-xs font-semibold border-b-2 transition-all ${
-            activeTab === 'milestones' 
-              ? 'border-emerald-500 text-emerald-400' 
-              : 'border-transparent text-zinc-400 hover:text-white'
-          }`}
+          variant="ghost"
+          size="sm"
+          className={`border-b-2 !rounded-none !pb-3 ${activeTab === 'milestones' ? '!border-emerald-500 !text-emerald-400' : '!border-transparent !text-zinc-400 hover:!text-white'}`}
         >
           <CheckSquare className="w-4 h-4" /> Escrow Milestones
-        </button>
+        </Button>
       </div>
 
       {/* Tab Panels */}
@@ -297,9 +292,9 @@ export const CollaborativeWorkspace: React.FC = () => {
                   <option value={order.freelancerName}>{order.freelancerName} (Freelancer)</option>
                 </select>
               </div>
-              <button type="submit" className="px-5 py-2 bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs rounded-xl flex items-center gap-1.5 h-10 w-full sm:w-auto justify-center">
+              <Button type="submit" btn3d size="md" className="w-full sm:w-auto h-10">
                 <Plus className="w-4 h-4 stroke-[3]" /> Add Task
-              </button>
+              </Button>
             </form>
 
             {/* Kanban Columns */}
@@ -490,29 +485,32 @@ export const CollaborativeWorkspace: React.FC = () => {
                 <h3 className="text-sm font-bold text-white">Interactive Shared Specifications</h3>
               </div>
               {!isEditingNotes ? (
-                <button
+                <Button
                   onClick={() => {
                     setEditedNotes(workspaceNotes[orderId || ''] || '');
                     setIsEditingNotes(true);
                   }}
-                  className="px-3 py-1.5 bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 text-zinc-300 hover:text-white font-semibold text-xs rounded-xl transition-all"
+                  variant="secondary"
+                  size="sm"
                 >
                   Edit Specs
-                </button>
+                </Button>
               ) : (
                 <div className="flex items-center gap-2">
-                  <button
+                  <Button
                     onClick={() => setIsEditingNotes(false)}
-                    className="px-3 py-1.5 bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white text-xs rounded-xl font-semibold transition-all"
+                    variant="ghost"
+                    size="sm"
                   >
                     Cancel
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     onClick={handleSaveNotes}
-                    className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-bold rounded-xl transition-all"
+                    btn3d
+                    size="sm"
                   >
                     Save & Sync
-                  </button>
+                  </Button>
                 </div>
               )}
             </div>
@@ -571,14 +569,12 @@ export const CollaborativeWorkspace: React.FC = () => {
                           <span>·</span>
                           <span>Due: {m.dueDate}</span>
                           <span>·</span>
-                          <span className={`px-2 py-0.2 rounded text-[9px] font-semibold ${
-                            m.status === 'released' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
-                            m.status === 'submitted' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
-                            m.status === 'funded' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' :
-                            'bg-zinc-900 text-zinc-500'
-                          }`}>
+                          <Badge
+                            variant={m.status === 'released' ? 'emerald' : m.status === 'submitted' ? 'amber' : m.status === 'funded' ? 'blue' : 'zinc'}
+                            className="uppercase"
+                          >
                             {m.status.charAt(0).toUpperCase() + m.status.slice(1)}
-                          </span>
+                          </Badge>
                         </div>
 
                         {/* Dependency info */}
@@ -619,12 +615,13 @@ export const CollaborativeWorkspace: React.FC = () => {
 
                       <div className="flex items-center gap-2 pl-7 sm:pl-0">
                         {isNextAction && !depsBlocking && (
-                          <button
+                          <Button
                             onClick={() => setDeliverableModal(m.id)}
-                            className="px-3.5 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-black font-bold rounded-xl text-xs flex items-center gap-1.5 transition-all shadow-md"
+                            btn3d
+                            size="sm"
                           >
                             <Upload className="w-3.5 h-3.5" /> Submit Work
-                          </button>
+                          </Button>
                         )}
                         {isNextAction && depsBlocking && (
                           <span className="px-3.5 py-1.5 bg-zinc-800 text-zinc-500 rounded-xl text-xs font-medium cursor-not-allowed">
@@ -632,15 +629,17 @@ export const CollaborativeWorkspace: React.FC = () => {
                           </span>
                         )}
                         {canApprove && !depsBlocking && (
-                          <button
+                          <Button
                             onClick={() => {
                               approveMilestoneEscrow(order.id, m.id);
                               addToast('Milestone approved & funds released to freelancer wallet!', 'success');
                             }}
-                            className="px-3.5 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-black font-bold rounded-xl text-xs flex items-center gap-1.5 transition-all shadow-md animate-bounce"
+                            btn3d
+                            size="sm"
+                            className="animate-bounce"
                           >
                             <CheckCircle className="w-3.5 h-3.5" /> Release Escrow
-                          </button>
+                          </Button>
                         )}
                         {canApprove && depsBlocking && (
                           <span className="px-3.5 py-1.5 bg-zinc-800 text-zinc-500 rounded-xl text-xs font-medium cursor-not-allowed">
@@ -691,13 +690,15 @@ export const CollaborativeWorkspace: React.FC = () => {
                   className="w-full px-4 py-2.5 bg-zinc-900/50 border border-zinc-800 rounded-xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500"
                 />
               </div>
-              <button
+              <Button
                 onClick={handleMilestoneDeliverable}
                 disabled={!deliverableNote.trim()}
-                className="w-full flex items-center justify-center gap-2 py-3 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed text-black font-bold rounded-xl transition-all text-sm shadow-md"
+                btn3d
+                size="md"
+                className="w-full"
               >
                 <Send className="w-4 h-4" /> Submit Work to Client Review
-              </button>
+              </Button>
             </div>
           </div>
         </div>

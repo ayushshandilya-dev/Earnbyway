@@ -5,7 +5,7 @@ import { useToast } from '../../context/ToastContext';
 import { AIService } from '../../services/aiService';
 import { User } from '../../types';
 import {
-  ArrowLeft, Star, CheckCircle, Clock, MapPin, Briefcase, GraduationCap,
+  ArrowLeft, Star, CheckCircle, Clock, MapPin, Globe, Briefcase, GraduationCap,
   Award, ExternalLink, Heart, MessageSquare, Download, Sparkles,
   Github, Linkedin, Dribbble, Globe as GlobeIcon, Zap
 } from 'lucide-react';

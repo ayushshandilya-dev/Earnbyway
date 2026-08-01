@@ -126,3 +126,13 @@ export const ProfilePage: React.FC = () => {
                       p.status === 'hired' ? 'bg-blue-500/10 text-blue-400 border-blue-500/30' :
                       'bg-zinc-900 text-zinc-500 border-zinc-800'
                     }`}>{p.status}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  );
+};

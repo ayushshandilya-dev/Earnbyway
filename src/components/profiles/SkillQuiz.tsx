@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
 import { Check, X, Award, Clock, ArrowRight, ShieldCheck, HelpCircle } from 'lucide-react';
+import { Button } from '../ui/Button';
+import { Card } from '../ui/Card';
+import { Badge } from '../ui/Badge';
 
 interface Question {
   id: number;
@@ -418,17 +421,16 @@ export const SkillQuiz: React.FC<Props> = ({ isOpen, onClose, defaultQuizKey }) 
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
             {Object.entries(QUIZZES).map(([key, q]) => (
-              <button key={key} onClick={() => handleStartQuiz(key)}
-                className="p-5 rounded-2xl bg-zinc-900/60 border border-zinc-800 hover:border-emerald-500/50 hover:bg-zinc-900 text-left transition-all group flex flex-col justify-between h-44">
+              <Card key={key} onClick={() => handleStartQuiz(key)} tilt3d className="text-left group flex flex-col justify-between h-44 cursor-pointer">
                 <div>
                   <h3 className="font-bold text-white group-hover:text-emerald-400 transition-colors text-sm">{q.title}</h3>
                   <p className="text-xs text-zinc-500 mt-1">Verify: {q.skillName}</p>
                 </div>
                 <div className="flex items-center justify-between w-full pt-4">
-                  <span className="text-[10px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded font-bold">5 MCQ Questions</span>
-                  <ArrowRight className="w-4 h-4 text-zinc-500 group-hover:translate-x-1 transition-transform" />
+                  <Badge variant="emerald">5 MCQ Questions</Badge>
+                  <ArrowRight className="w-4 h-4 text-zinc-500 group-hover:translate-x-1 group-hover:text-emerald-400 transition-transform" />
                 </div>
-              </button>
+              </Card>
             ))}
           </div>
         </div>
@@ -466,12 +468,11 @@ export const SkillQuiz: React.FC<Props> = ({ isOpen, onClose, defaultQuizKey }) 
             })}
           </div>
           <div className="flex items-center justify-between pt-4 border-t border-zinc-800/80">
-            <button onClick={() => setSelectedQuizKey(null)} className="text-xs text-zinc-400 hover:text-white transition-colors">Quit Quiz</button>
-            <button onClick={handleNextQuestion} disabled={selectedAnswers[currentQuestionIndex] === undefined}
-              className="px-5 py-2 rounded-xl bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed text-black font-bold text-xs hover:bg-emerald-400 transition-all flex items-center gap-1.5">
+            <Button onClick={() => setSelectedQuizKey(null)} variant="ghost" size="sm">Quit Quiz</Button>
+            <Button onClick={handleNextQuestion} disabled={selectedAnswers[currentQuestionIndex] === undefined} btn3d size="md">
               <span>{currentQuestionIndex === activeQuiz.questions.length - 1 ? 'Finish Assessment' : 'Next Question'}</span>
               <ArrowRight className="w-3.5 h-3.5" />
-            </button>
+            </Button>
           </div>
         </div>
       );
@@ -503,12 +504,9 @@ export const SkillQuiz: React.FC<Props> = ({ isOpen, onClose, defaultQuizKey }) 
             )}
           </div>
           <div className="flex items-center justify-center gap-3 pt-6 border-t border-zinc-800/80">
-            <button onClick={() => setSelectedQuizKey(null)}
-              className="px-5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-xs text-white font-bold transition-all">Go Back to Quizzes</button>
-            {!passed && <button onClick={() => handleStartQuiz(selectedQuizKey)}
-              className="px-5 py-2.5 rounded-xl bg-emerald-500 text-black font-bold text-xs hover:bg-emerald-400 transition-all">Retake Assessment</button>}
-            {passed && <button onClick={onClose}
-              className="px-5 py-2.5 rounded-xl bg-emerald-500 text-black font-bold text-xs hover:bg-emerald-400 transition-all">Done</button>}
+            <Button onClick={() => setSelectedQuizKey(null)} variant="secondary" size="md">Go Back to Quizzes</Button>
+            {!passed && <Button onClick={() => handleStartQuiz(selectedQuizKey)} btn3d size="md">Retake Assessment</Button>}
+            {passed && <Button onClick={onClose} btn3d size="md">Done</Button>}
           </div>
         </div>
       );
@@ -518,7 +516,7 @@ export const SkillQuiz: React.FC<Props> = ({ isOpen, onClose, defaultQuizKey }) 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md overflow-y-auto" onClick={onClose}>
-      <div className="bg-[#121215] border border-zinc-800 rounded-3xl max-w-2xl w-full p-6 sm:p-8 max-h-[90vh] overflow-y-auto shadow-2xl relative" onClick={e => e.stopPropagation()}>
+      <div className="bg-[#121215] border border-zinc-800 rounded-3xl max-w-2xl w-full p-6 sm:p-8 max-h-[90vh] overflow-y-auto shadow-3d-lg relative glossy" onClick={e => e.stopPropagation()}>
         <button onClick={onClose} className="absolute right-5 top-5 p-1.5 bg-zinc-900 rounded-full text-zinc-400 hover:text-white transition-colors">
           <X className="w-5 h-5" />
         </button>
