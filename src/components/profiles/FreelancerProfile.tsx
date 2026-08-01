@@ -5,11 +5,14 @@ import { useToast } from '../../context/ToastContext';
 import { AIService } from '../../services/aiService';
 import { User } from '../../types';
 import {
-  ArrowLeft, Star, CheckCircle, Clock, MapPin, Globe, Briefcase, GraduationCap,
-  Award, ExternalLink, Heart, MessageSquare, Download, Sparkles, Shield,
-  ChevronRight, Github, Linkedin, Dribbble, Globe as GlobeIcon, Zap
+  ArrowLeft, Star, CheckCircle, Clock, MapPin, Briefcase, GraduationCap,
+  Award, ExternalLink, Heart, MessageSquare, Download, Sparkles,
+  Github, Linkedin, Dribbble, Globe as GlobeIcon, Zap
 } from 'lucide-react';
 import { SkillQuiz } from './SkillQuiz';
+import { Button } from '../ui/Button';
+import { Card } from '../ui/Card';
+import { Badge } from '../ui/Badge';
 
 interface Props {
   freelancerUser: User;
@@ -41,12 +44,14 @@ export const FreelancerProfile: React.FC<Props> = ({ freelancerUser, onBack }) =
   return (
     <div className="py-8 animate-in fade-in duration-300">
       <div className="max-w-5xl mx-auto">
-        <button
+        <Button
           onClick={() => onBack ? onBack() : navigate(-1)}
-          className="flex items-center gap-2 text-xs text-zinc-400 hover:text-white mb-6 transition-colors"
+          variant="ghost"
+          size="sm"
+          className="mb-6"
         >
           <ArrowLeft className="w-4 h-4" /> Back
-        </button>
+        </Button>
 
         {/* Banner & Avatar */}
         <div className="relative rounded-2xl overflow-hidden mb-20">
