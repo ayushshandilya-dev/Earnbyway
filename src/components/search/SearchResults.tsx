@@ -6,8 +6,11 @@ import { GigCard } from '../gigs/GigCard';
 import { GigDetail } from '../gigs/GigDetail';
 import { FreelancerProfile } from '../profiles/FreelancerProfile';
 import { Gig, User } from '../../types';
+import { Button } from '../ui/Button';
+import { Badge } from '../ui/Badge';
+import { Card } from '../ui/Card';
 import {
-  Search, Sparkles, X, Users, Briefcase, Filter, Star
+  Search, Sparkles, Users, Briefcase, Filter, Star
 } from 'lucide-react';
 
 export const SearchResults: React.FC = () => {
@@ -70,34 +73,40 @@ export const SearchResults: React.FC = () => {
 
   return (
     <div className="py-8">
-      <form onSubmit={handleSearch} className="relative max-w-2xl mx-auto mb-8">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
+      <form onSubmit={handleSearch} className="relative max-w-2xl mx-auto mb-8 group">
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500 transition-colors group-focus-within:text-emerald-400" />
         <input
           type="text"
           value={query}
           onChange={e => setQuery(e.target.value)}
           placeholder="AI Natural Search: 'Need a React developer under ₹25k with 5★ rating'..."
-          className="w-full pl-12 pr-24 py-4 bg-zinc-900/80 border border-zinc-800 rounded-2xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500/60 focus:ring-2 focus:ring-emerald-500/20"
+          className="w-full pl-12 pr-24 py-4 bg-zinc-900/80 border border-zinc-800 rounded-2xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500/60 focus:ring-2 focus:ring-emerald-500/20 shadow-3d"
         />
         <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-          <button type="button" onClick={() => setShowFilters(!showFilters)}
-            className={`p-2 rounded-lg border transition-colors ${showFilters ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-400' : 'bg-zinc-900 border-zinc-800 text-zinc-400'}`}>
+          <Button
+            type="button"
+            onClick={() => setShowFilters(!showFilters)}
+            variant={showFilters ? 'primary' : 'secondary'}
+            size="md"
+            className="!p-2"
+            aria-label="Toggle filters"
+          >
             <Filter className="w-4 h-4" />
-          </button>
-          <button type="submit" className="p-2 bg-emerald-500 hover:bg-emerald-400 rounded-lg transition-colors">
-            <Sparkles className="w-4 h-4 text-black" />
-          </button>
+          </Button>
+          <Button type="submit" btn3d size="md" className="!p-2" aria-label="Search">
+            <Sparkles className="w-4 h-4" />
+          </Button>
         </div>
       </form>
 
       {query && aiFilter && (
         <div className="flex flex-wrap items-center gap-2 mb-6 px-1">
           <span className="text-xs text-zinc-500">AI detected:</span>
-          {aiFilter.category && <span className="px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-[10px] text-emerald-400 font-medium">Category: {aiFilter.category}</span>}
-          {aiFilter.maxPrice && <span className="px-2.5 py-1 rounded-lg bg-blue-500/10 border border-blue-500/30 text-[10px] text-blue-400 font-medium">Max: ₹{aiFilter.maxPrice.toLocaleString()}</span>}
-          {aiFilter.minRating && <span className="px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/30 text-[10px] text-amber-400 font-medium">{aiFilter.minRating}★+</span>}
+          {aiFilter.category && <Badge variant="emerald">Category: {aiFilter.category}</Badge>}
+          {aiFilter.maxPrice && <Badge variant="blue">Max: ₹{aiFilter.maxPrice.toLocaleString()}</Badge>}
+          {aiFilter.minRating && <Badge variant="amber">{aiFilter.minRating}★+</Badge>}
           {aiFilter.skills && aiFilter.skills.map(s => (
-            <span key={s} className="px-2.5 py-1 rounded-lg bg-purple-500/10 border border-purple-500/30 text-[10px] text-purple-400 font-medium">{s}</span>
+            <Badge key={s} variant="purple">{s}</Badge>
           ))}
         </div>
       )}
@@ -117,20 +126,21 @@ export const SearchResults: React.FC = () => {
             <label className="text-xs font-medium text-zinc-400 mb-1.5 block">Min Rating</label>
             <div className="flex gap-1.5">
               {[0, 3, 3.5, 4, 4.5].map(r => (
-                <button key={r} onClick={() => setMinRating(r)}
-                  className={`px-3 py-1.5 rounded-lg text-xs border transition-colors ${
-                    minRating === r ? 'bg-amber-500/20 border-amber-500/40 text-amber-400' : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-white'
-                  }`}>
+                <Button
+                  key={r}
+                  size="sm"
+                  variant={minRating === r ? 'primary' : 'secondary'}
+                  onClick={() => setMinRating(r)}
+                >
                   {r === 0 ? 'Any' : `${r}★`}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
           <div className="flex items-end">
-            <button onClick={() => { setMaxPrice(0); setMinRating(0); }}
-              className="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-xl text-xs text-zinc-400 hover:text-white transition-colors">
+            <Button onClick={() => { setMaxPrice(0); setMinRating(0); }} variant="outline" size="sm">
               Reset Filters
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -174,8 +184,7 @@ export const SearchResults: React.FC = () => {
               const matchResult = AIService.matchFreelancers(query, profiles, filteredFreelancers);
               const myMatch = matchResult.find(m => m.user.id === fl.id);
               return (
-                <button key={fl.id} onClick={() => setSelectedFreelancer(fl)}
-                  className="glass-card glass-card-hover rounded-2xl overflow-hidden text-left group">
+                <Card key={fl.id} hover onClick={() => setSelectedFreelancer(fl)} tilt3d padding="none" className="overflow-hidden text-left group">
                   <div className="h-20 bg-cover bg-center" style={{ backgroundImage: `url(${p.banner})` }}>
                     <div className="w-full h-full bg-gradient-to-b from-transparent to-zinc-950/90" />
                   </div>
@@ -190,7 +199,7 @@ export const SearchResults: React.FC = () => {
                     </div>
                     <div className="flex flex-wrap gap-1.5 mb-3">
                       {p.skills.slice(0, 3).map(s => (
-                        <span key={s} className="px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-[10px] text-zinc-300">{s}</span>
+                        <Badge key={s} variant="zinc">{s}</Badge>
                       ))}
                     </div>
                     {myMatch && (
@@ -199,7 +208,7 @@ export const SearchResults: React.FC = () => {
                       </div>
                     )}
                   </div>
-                </button>
+                </Card>
               );
             })}
           </div>
