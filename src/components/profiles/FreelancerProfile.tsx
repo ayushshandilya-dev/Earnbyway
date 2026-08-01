@@ -271,19 +271,15 @@ export const FreelancerProfile: React.FC<Props> = ({ freelancerUser, onBack }) =
               )}
 
               {activeTab === 'ai' && (
-                <div className="glass-card rounded-2xl p-6 space-y-5">
+                <Card className="!p-6 space-y-5">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Sparkles className="w-5 h-5 text-emerald-400" />
                       <h3 className="text-sm font-semibold text-white">AI Profile Analysis</h3>
                     </div>
-                    <div className={`px-3 py-1 rounded-full text-xs font-bold ${
-                      aiAnalysis.score >= 80 ? 'bg-emerald-500/20 text-emerald-400' :
-                      aiAnalysis.score >= 60 ? 'bg-amber-500/20 text-amber-400' :
-                      'bg-red-500/20 text-red-400'
-                    }`}>
+                    <Badge variant={aiAnalysis.score >= 80 ? 'emerald' : aiAnalysis.score >= 60 ? 'amber' : 'rose'} size="md">
                       Score: {aiAnalysis.score}/100
-                    </div>
+                    </Badge>
                   </div>
 
                   <div className="h-2 bg-zinc-900 rounded-full overflow-hidden">
@@ -319,7 +315,7 @@ export const FreelancerProfile: React.FC<Props> = ({ freelancerUser, onBack }) =
                       </ul>
                     </div>
                   )}
-                </div>
+                </Card>
               )}
             </div>
           </div>
@@ -328,18 +324,17 @@ export const FreelancerProfile: React.FC<Props> = ({ freelancerUser, onBack }) =
           <div className="space-y-4">
             <div className="glass-panel rounded-2xl p-5 sticky top-28 space-y-5">
               <div className="flex items-center gap-2">
-                <button
+                <Button
                   onClick={() => { toggleBookmark(freelancerUser.id); addToast(saved ? 'Removed from bookmarks' : 'Saved to bookmarks!', 'success'); }}
-                  className={`p-2 rounded-xl border transition-all ${
-                    saved ? 'bg-red-500/10 border-red-500/40 text-red-400' : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white'
-                  }`}
+                  variant={saved ? 'danger' : 'secondary'}
+                  className={`!p-2.5 ${saved ? 'text-red-400' : ''}`}
                   aria-label={saved ? 'Remove bookmark' : 'Add bookmark'}
                 >
                   <Heart className={`w-4 h-4 ${saved ? 'fill-red-400' : ''}`} />
-                </button>
-                <button className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-black font-bold rounded-xl transition-all text-sm">
+                </Button>
+                <Button className="flex-1" btn3d size="md">
                   <MessageSquare className="w-4 h-4" /> Hire Me
-                </button>
+                </Button>
               </div>
 
               <div className="space-y-3 text-sm">
