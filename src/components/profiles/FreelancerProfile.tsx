@@ -222,7 +222,7 @@ export const FreelancerProfile: React.FC<Props> = ({ freelancerUser, onBack }) =
                           )}
                         </div>
                       </div>
-                    </div>
+                    </Card>
                   ))}
                 </div>
               </div>
@@ -250,7 +250,7 @@ export const FreelancerProfile: React.FC<Props> = ({ freelancerUser, onBack }) =
                     <p className="text-xs text-zinc-500 text-center py-8">No reviews yet.</p>
                   ) : (
                     userReviews.map(r => (
-                      <div key={r.id} className="glass-card rounded-2xl p-5">
+                      <Card key={r.id} className="!p-5" hover>
                         <div className="flex items-center gap-3 mb-3">
                           <div className="flex items-center gap-1">
                             {Array.from({ length: r.rating }).map((_, j) => (
@@ -264,7 +264,7 @@ export const FreelancerProfile: React.FC<Props> = ({ freelancerUser, onBack }) =
                           <img src={r.reviewerAvatar} alt="" className="w-6 h-6 rounded-lg object-cover" />
                           <span className="text-white font-medium">{r.reviewerName}</span>
                         </div>
-                      </div>
+                      </Card>
                     ))
                   )}
                 </div>
