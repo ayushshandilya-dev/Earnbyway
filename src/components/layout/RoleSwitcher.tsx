@@ -34,7 +34,7 @@ export const RoleSwitcher: React.FC = () => {
   ];
 
   return (
-    <div className="bg-zinc-950 border-b border-zinc-800/80 px-4 py-2 text-xs flex flex-wrap items-center justify-between gap-3 sticky top-0 z-50 shadow-md">
+    <div className="bg-zinc-950 border-b border-zinc-800/80 px-4 py-2 text-xs flex flex-wrap items-center justify-between gap-3 shadow-md">
       <div className="flex items-center gap-2">
         <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
           SYSTEM DESIGN DEMO
