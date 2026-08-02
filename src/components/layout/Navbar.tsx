@@ -362,7 +362,13 @@ export const Navbar: React.FC<Props> = ({
                 <div onClick={() => { navigate('/profile'); setIsMobileMenuOpen(false); }}
                   className="flex items-center gap-3 p-3 rounded-xl bg-zinc-900/80 border border-zinc-800 cursor-pointer mb-4 hover:border-emerald-500/30 transition-all group">
                   <div className="relative">
-                    <img src={currentUser.avatar} alt="" className="w-12 h-12 rounded-xl object-cover ring-2 ring-emerald-500/30" />
+                    <Avatar
+                      src={currentUser.avatar}
+                      name={currentUser.name}
+                      size="md"
+                      rounded="rounded-xl"
+                      ring="ring-2 ring-emerald-500/30"
+                    />
                     {currentUser.proTier && currentUser.proTier !== 'none' && (
                       <span className={`absolute -top-1.5 -right-1.5 text-[7px] font-extrabold px-1 rounded-sm ring-2 ring-zinc-900 ${
                         currentUser.proTier === 'pro' ? 'bg-amber-500 text-black' :
