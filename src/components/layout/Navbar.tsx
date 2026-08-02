@@ -111,7 +111,7 @@ export const Navbar: React.FC<Props> = ({
   });
 
   return (
-    <header className={`sticky top-9 z-40 transition-all duration-300 ${isScrolled ? 'shadow-xl shadow-black/20' : ''}`}>
+    <header className={`sticky top-0 z-40 transition-all duration-300 ${isScrolled ? 'shadow-xl shadow-black/20' : ''}`}>
       <div className={`transition-all duration-300 ${isScrolled ? 'bg-[#121215]/95 backdrop-blur-2xl border-b border-zinc-800/60' : 'glass-panel border-b border-zinc-800/80'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
           {/* Logo */}
@@ -166,12 +166,13 @@ export const Navbar: React.FC<Props> = ({
               <button
                 key={item.path}
                 onClick={() => navigate(item.path)}
-                className={`px-3 py-2 rounded-lg transition-all duration-200 ${
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg transition-all duration-200 ${
                   isActive(item.path)
                     ? 'text-emerald-400 bg-emerald-500/10 font-semibold shadow-sm'
                     : 'hover:text-white hover:bg-zinc-800/40'
                 }`}
               >
+                <item.icon className="w-3.5 h-3.5" />
                 {item.label}
               </button>
             ))}
@@ -240,7 +241,7 @@ export const Navbar: React.FC<Props> = ({
                   className="relative p-2 rounded-xl bg-zinc-900/80 border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700 transition-all">
                   <MessageSquare className="w-4 h-4" />
                   {unreadMessages > 0 && (
-                    <span className="absolute -top-1 -right-1 w-4.5 h-4.5 bg-emerald-500 text-black text-[9px] font-extrabold rounded-full flex items-center justify-center ring-2 ring-[#09090b]">
+                    <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-emerald-500 text-black text-[9px] font-extrabold rounded-full flex items-center justify-center ring-2 ring-[#09090b]">
                       {unreadMessages > 9 ? '9+' : unreadMessages}
                     </span>
                   )}
@@ -262,7 +263,7 @@ export const Navbar: React.FC<Props> = ({
                     className="relative p-2 rounded-xl bg-zinc-900/80 border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700 transition-all">
                     <Bell className="w-4 h-4" />
                     {unreadNotifs > 0 && (
-                      <span className="absolute -top-1 -right-1 w-4.5 h-4.5 bg-amber-500 text-black text-[9px] font-extrabold rounded-full flex items-center justify-center ring-2 ring-[#09090b]">
+                      <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-amber-500 text-black text-[9px] font-extrabold rounded-full flex items-center justify-center ring-2 ring-[#09090b]">
                         {unreadNotifs > 9 ? '9+' : unreadNotifs}
                       </span>
                     )}
