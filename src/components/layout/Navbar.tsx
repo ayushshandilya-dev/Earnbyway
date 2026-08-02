@@ -314,7 +314,19 @@ export const Navbar: React.FC<Props> = ({
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setIsProfileOpen(false)} />
                     <div className="absolute right-0 top-full pt-2 z-50 animate-scale-in">
-                      <div className="bg-[#121215]/95 backdrop-blur-2xl border border-zinc-800 rounded-2xl p-2 w-56 shadow-2xl shadow-black/40">
+                      <div className="bg-[#121215]/95 backdrop-blur-2xl border border-zinc-800 rounded-2xl p-2 w-60 shadow-2xl shadow-black/40">
+                        <div className="flex items-center gap-3 px-3 py-3 rounded-xl bg-zinc-900/60 border border-zinc-800 mb-1">
+                          <Avatar
+                            src={currentUser.avatar}
+                            name={currentUser.name}
+                            size="md"
+                            rounded="rounded-xl"
+                          />
+                          <div className="min-w-0">
+                            <p className="text-sm font-semibold text-white truncate">{currentUser.name}</p>
+                            <p className="text-[10px] text-zinc-500 truncate">{currentUser.email}</p>
+                          </div>
+                        </div>
                         {DASHBOARD_ACTIONS.map(item => (
                           <button key={item.path} onClick={() => { navigate(item.path); setIsProfileOpen(false); }}
                             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs text-zinc-300 hover:text-white hover:bg-zinc-800 transition-all">
