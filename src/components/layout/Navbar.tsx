@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
 import { NotificationDrawer } from '../notifications/NotificationDrawer';
 import { requestNotificationPermission } from '../../utils/notifications';
+import { Avatar } from '../ui/Avatar';
 import {
   Hexagon,
   Sparkles,
