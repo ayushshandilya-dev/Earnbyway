@@ -286,8 +286,13 @@ export const Navbar: React.FC<Props> = ({
                   className="flex items-center gap-2 cursor-pointer p-1 rounded-xl hover:bg-zinc-800/60 transition-all border border-transparent hover:border-zinc-800"
                 >
                   <div className="relative">
-                    <img src={currentUser.avatar} alt={currentUser.name}
-                      className="w-8 h-8 rounded-lg object-cover ring-2 ring-emerald-500/30" />
+                    <Avatar
+                      src={currentUser.avatar}
+                      name={currentUser.name}
+                      size="sm"
+                      rounded="rounded-lg"
+                      ring="ring-2 ring-emerald-500/30"
+                    />
                     {currentUser.proTier && currentUser.proTier !== 'none' && (
                       <span className={`absolute -top-1.5 -right-1.5 text-[7px] font-extrabold px-1 rounded-sm ring-2 ring-[#09090b] ${
                         currentUser.proTier === 'pro' ? 'bg-amber-500 text-black' :
@@ -298,8 +303,8 @@ export const Navbar: React.FC<Props> = ({
                       </span>
                     )}
                   </div>
-                  <div className="hidden lg:block text-left">
-                    <span className="text-xs font-semibold text-white block leading-tight">{currentUser.name}</span>
+                  <div className="hidden md:block text-left">
+                    <span className="text-xs font-semibold text-white block leading-tight truncate max-w-[120px]">{currentUser.name}</span>
                     <span className="text-[10px] text-emerald-400 font-medium">₹{currentUser.balance.toLocaleString()} Available</span>
                   </div>
                   <ChevronDown className={`w-3 h-3 text-zinc-500 transition-transform ${isProfileOpen ? 'rotate-180' : ''}`} />
