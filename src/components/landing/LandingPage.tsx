@@ -29,7 +29,7 @@ const FEATURES = [
   { icon: MessageSquare, title: 'Real-Time Communication', desc: 'Built-in messaging with read receipts, file sharing, and instant notifications keeps everyone in sync.' },
   { icon: BarChart3, title: 'Advanced Analytics', desc: 'Track earnings, project performance, and profile views with interactive dashboards and insights.' },
   { icon: Globe, title: 'Global Talent Pool', desc: 'Access 10,000+ verified freelancers across 20+ categories from around the world.' },
-  { icon: HeadphonesIcon, title: '24/7 Dedicated Support', desc: 'Our support team is available round the clock to resolve disputes and answer your questions.' },
+  { icon: HeadphonesIcon, title: '24/7 Dedicated Support', desc: 'Our support team is available round the clock at +91-99718 98666 to resolve disputes and answer your questions.' },
 ];
 
 const STATS = [

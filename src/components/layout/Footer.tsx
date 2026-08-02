@@ -1,5 +1,5 @@
 import React from 'react';
-import { Hexagon, ShieldCheck, Lock, Cpu, Globe, Award, Github, Linkedin, Twitter, Mail, ArrowUpRight } from 'lucide-react';
+import { Hexagon, ShieldCheck, Lock, Cpu, Globe, Award, Github, Linkedin, Twitter, Mail, Phone, ArrowUpRight } from 'lucide-react';
 
 const FOOTER_LINKS = {
   platform: [
@@ -87,6 +87,30 @@ export const Footer: React.FC = () => {
                 </ul>
               </div>
             ))}
+
+            {/* Contact */}
+            <div>
+              <h4 className="font-semibold text-white text-sm mb-4">Contact Us</h4>
+              <ul className="space-y-2.5">
+                <li>
+                  <a href="tel:+919971898666" className="text-xs text-zinc-500 hover:text-emerald-400 transition-colors inline-flex items-center gap-2 group">
+                    <Phone className="w-3 h-3 text-emerald-400/70" />
+                    +91-99718 98666
+                  </a>
+                </li>
+                <li>
+                  <a href="mailto:support@earnbyway.com" className="text-xs text-zinc-500 hover:text-emerald-400 transition-colors inline-flex items-center gap-2 group">
+                    <Mail className="w-3 h-3 text-emerald-400/70" />
+                    support@earnbyway.com
+                  </a>
+                </li>
+                <li>
+                  <p className="text-xs text-zinc-600 leading-relaxed max-w-[180px]">
+                    Available Mon–Sat, 10 AM – 7 PM IST
+                  </p>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
 
