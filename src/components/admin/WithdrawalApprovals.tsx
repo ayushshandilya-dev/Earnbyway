@@ -6,12 +6,12 @@ import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 
 export const WithdrawalApprovals: React.FC = () => {
-  const { withdrawals, adminApproveWithdrawal } = useApp();
-  const [rejectedIds, setRejectedIds] = useState<string[]>([]);
+  const { withdrawals, adminApproveWithdrawal, adminRejectWithdrawal } = useApp();
+  const { addToast } = useToast();
 
-  const pending = withdrawals.filter(w => w.status === 'pending' && !rejectedIds.includes(w.id));
+  const pending = withdrawals.filter(w => w.status === 'pending');
   const approved = withdrawals.filter(w => w.status === 'approved');
-  const rejected = [...withdrawals.filter(w => w.status === 'rejected'), ...withdrawals.filter(w => rejectedIds.includes(w.id))];
+  const rejected = withdrawals.filter(w => w.status === 'rejected');
 
   const totalPendingAmount = pending.reduce((sum, w) => sum + w.amount, 0);
 
@@ -58,7 +58,7 @@ export const WithdrawalApprovals: React.FC = () => {
                     <Button variant="primary" size="xs" icon={<CheckCircle className="w-3.5 h-3.5" />} onClick={() => adminApproveWithdrawal(w.id)}>
                       Approve
                     </Button>
-                    <Button variant="danger" size="xs" icon={<XCircle className="w-3.5 h-3.5" />} onClick={() => setRejectedIds(prev => [...prev, w.id])}>
+                    <Button variant="danger" size="xs" icon={<XCircle className="w-3.5 h-3.5" />} onClick={() => { adminRejectWithdrawal(w.id); addToast('Withdrawal rejected — funds returned', 'info'); }}>
                       Reject
                     </Button>
                   </div>
