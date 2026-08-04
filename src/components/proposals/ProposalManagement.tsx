@@ -10,18 +10,17 @@ import {
 
 export const ProposalManagement: React.FC = () => {
   const navigate = useNavigate();
-  const { projects, currentUser, acceptProposal } = useApp();
+  const { projects, currentUser, acceptProposal, rejectProposal } = useApp();
   const { addToast } = useToast();
   const [expandedProject, setExpandedProject] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'accepted' | 'rejected'>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [rejectedIds, setRejectedIds] = useState<string[]>([]);
 
   const myProjects = projects.filter(p => p.clientId === currentUser.id);
   const hasProposals = myProjects.some(p => p.proposals.length > 0);
 
   const getFilteredProposals = (project: Project) => {
-    let props = project.proposals.filter(p => !rejectedIds.includes(p.id));
+    let props = project.proposals;
     if (statusFilter !== 'all') props = props.filter(p => p.status === statusFilter);
     if (searchQuery) props = props.filter(p =>
       p.freelancerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -31,11 +30,16 @@ export const ProposalManagement: React.FC = () => {
   };
 
   const handleReject = (projectId: string, proposalId: string) => {
-    setRejectedIds(prev => [...prev, proposalId]);
+    rejectProposal(projectId, proposalId);
     addToast('Proposal rejected', 'info');
   };
 
   const handleAccept = (projectId: string, proposalId: string) => {
+    const proj = myProjects.find(p => p.id === projectId);
+    if (proj && proj.status === 'hired') {
+      addToast('This project already has an accepted proposal', 'error');
+      return;
+    }
     acceptProposal(projectId, proposalId);
     addToast('Proposal accepted — escrow order created!', 'success');
   };
