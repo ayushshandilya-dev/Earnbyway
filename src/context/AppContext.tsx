@@ -56,16 +56,22 @@ interface AppContextType {
 
   // Actions
   switchRole: (role: UserRole) => void;
+  signIn: (role: 'client' | 'freelancer', email?: string, name?: string) => User;
+  signOut: () => void;
   createGig: (gig: Omit<Gig, 'id' | 'createdAt' | 'ordersCompleted' | 'rating' | 'reviewsCount'>) => void;
   postProject: (project: Omit<Project, 'id' | 'createdAt' | 'status' | 'proposalCount' | 'proposals'>) => void;
   submitProposal: (proposal: Omit<Proposal, 'id' | 'submittedAt' | 'status'>) => void;
   acceptProposal: (projectId: string, proposalId: string) => void;
+  rejectProposal: (projectId: string, proposalId: string) => void;
+  createOrderFromGig: (gig: Gig, packageKey: 'basic' | 'standard' | 'premium') => Order;
   submitMilestoneDeliverable: (orderId: string, milestoneId: string, note: string, file?: string) => void;
   approveMilestoneEscrow: (orderId: string, milestoneId: string) => void;
   sendMessage: (conversationId: string, text: string, attachments?: string[]) => void;
   postReview: (review: Omit<Review, 'id' | 'createdAt'>) => void;
+  updateProfile: (updates: Partial<User>) => void;
   requestWithdrawal: (amount: number, method: WithdrawalRequest['method'], accountDetails: string) => void;
   adminApproveWithdrawal: (id: string) => void;
+  adminRejectWithdrawal: (id: string) => void;
   adminResolveDispute: (id: string, resolution: string) => void;
   adminToggleVerifyUser: (userId: string) => void;
   markNotificationsAsRead: () => void;
@@ -90,10 +96,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return saved ? JSON.parse(saved) : INITIAL_USERS;
   });
 
-  const [currentRole, setCurrentRole] = useState<UserRole>('client');
+  const [currentRole, setCurrentRole] = useState<UserRole>(() => {
+    const saved = localStorage.getItem('earnbyway_role');
+    return (saved as UserRole) || 'client';
+  });
 
   const [currentUser, setCurrentUser] = useState<User>(() => {
-    return users.find(u => u.role === 'client') || users[0];
+    const role = localStorage.getItem('earnbyway_role') as UserRole;
+    const user = users.find(u => u.role === role) || users.find(u => u.role === 'client') || users[0];
+    return user;
   });
 
   const [profiles, setProfiles] = useState<Record<string, FreelancerProfile>>(() => {
@@ -182,6 +193,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Sync users in state when role changes
   const switchRole = (role: UserRole) => {
     setCurrentRole(role);
+    localStorage.setItem('earnbyway_role', role);
     if (role === 'client') {
       const u = users.find(x => x.role === 'client') || users[0];
       setCurrentUser(u);
@@ -207,6 +219,40 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         withdrawnBalance: 0
       });
     }
+  };
+
+  // Sign in: find or create a user by role + email, persist identity
+  const signIn = (role: 'client' | 'freelancer', email?: string, name?: string) => {
+    let target = users.find(u => u.role === role && (!email || u.email === email));
+    if (!target) {
+      target = users.find(u => u.role === role);
+    }
+    if (!target) {
+      const newUser: User = {
+        id: `user_${Date.now()}`,
+        name: name || (role === 'client' ? 'New Client' : 'New Freelancer'),
+        email: email || `${role}@earnbyway.dev`,
+        avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+        role,
+        location: 'Global',
+        isVerified: false,
+        joinedDate: new Date().toISOString().split('T')[0],
+        balance: 0,
+        pendingBalance: 0,
+        withdrawnBalance: 0
+      };
+      setUsers(prev => [newUser, ...prev]);
+      target = newUser;
+    }
+    setCurrentRole(role);
+    localStorage.setItem('earnbyway_role', role);
+    setCurrentUser(target);
+    return target;
+  };
+
+  // Sign out: return to guest view
+  const signOut = () => {
+    switchRole('guest');
   };
 
   // Create Gig
@@ -529,6 +575,86 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
   };
 
+  // Update current user's profile (settings)
+  const updateProfile = (updates: Partial<User>) => {
+    setUsers(prev => prev.map(u => u.id === currentUser.id ? { ...u, ...updates } : u));
+    setCurrentUser(prev => prev ? { ...prev, ...updates } : prev);
+  };
+
+  // Reject a proposal (persists status so it can't reappear)
+  const rejectProposal = (projectId: string, proposalId: string) => {
+    setProjects(prev => prev.map(p => {
+      if (p.id === projectId) {
+        return {
+          ...p,
+          proposals: p.proposals.map(pr => pr.id === proposalId ? { ...pr, status: 'rejected' as const } : pr)
+        };
+      }
+      return p;
+    }));
+  };
+
+  // Admin reject withdrawal (persists status)
+  const adminRejectWithdrawal = (id: string) => {
+    const target = withdrawals.find(w => w.id === id);
+    if (!target) return;
+    setWithdrawals(prev => prev.map(w => w.id === id ? { ...w, status: 'rejected' as const } : w));
+    setUsers(uPrev => uPrev.map(u => {
+      if (u.id === target.freelancerId) {
+        return {
+          ...u,
+          balance: u.balance + target.amount,
+          pendingBalance: Math.max(0, u.pendingBalance - target.amount)
+        };
+      }
+      return u;
+    }));
+    addNotification({
+      userId: target.freelancerId,
+      type: 'payment',
+      title: 'Withdrawal Rejected',
+      message: `Your withdrawal request of ₹${target.amount.toLocaleString()} was rejected. Funds returned to balance.`
+    });
+  };
+
+  // Buy a gig → create an escrow order (Order Now flow)
+  const createOrderFromGig = (gig: Gig, packageKey: 'basic' | 'standard' | 'premium') => {
+    const pkg = gig.packages[packageKey];
+    const freelancerUser = users.find(u => u.id === gig.freelancerId);
+
+    const newOrder: Order = {
+      id: `order_${Date.now()}`,
+      type: 'gig',
+      title: gig.title,
+      clientId: currentUser.id,
+      clientName: currentUser.name,
+      freelancerId: gig.freelancerId,
+      freelancerName: gig.freelancerName,
+      totalPrice: pkg.price,
+      escrowBalance: pkg.price,
+      status: 'funded',
+      createdAt: new Date().toISOString().split('T')[0],
+      milestones: [{
+        id: `m_${Date.now()}_1`,
+        title: `${pkg.title} — Final Delivery`,
+        percentage: 100,
+        amount: pkg.price,
+        dueDate: new Date(Date.now() + pkg.deliveryDays * 86400000).toISOString().split('T')[0],
+        status: 'funded'
+      }]
+    };
+
+    setOrders(prev => [newOrder, ...prev]);
+
+    addNotification({
+      userId: gig.freelancerId,
+      type: 'order',
+      title: 'New Order!',
+      message: `${currentUser.name} ordered "${gig.title}" (${pkg.title}). ₹${pkg.price.toLocaleString()} is in escrow.`
+    });
+    return newOrder;
+  };
+
   // Request Withdrawal
   const requestWithdrawal = (amount: number, method: WithdrawalRequest['method'], accountDetails: string) => {
     const newW: WithdrawalRequest = {
@@ -558,23 +684,29 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Admin Actions
   const adminApproveWithdrawal = (id: string) => {
-    setWithdrawals(prev => prev.map(w => {
-      if (w.id === id) {
-        // Move user pending balance to withdrawn
-        setUsers(uPrev => uPrev.map(u => {
-          if (u.id === w.freelancerId) {
-            return {
-              ...u,
-              pendingBalance: Math.max(0, u.pendingBalance - w.amount),
-              withdrawnBalance: u.withdrawnBalance + w.amount
-            };
-          }
-          return u;
-        }));
-        return { ...w, status: 'approved' as const };
+    const target = withdrawals.find(w => w.id === id);
+    if (!target) return;
+
+    // Move user pending balance to withdrawn (outside any state updater)
+    setUsers(uPrev => uPrev.map(u => {
+      if (u.id === target.freelancerId) {
+        return {
+          ...u,
+          pendingBalance: Math.max(0, u.pendingBalance - target.amount),
+          withdrawnBalance: u.withdrawnBalance + target.amount
+        };
       }
-      return w;
+      return u;
     }));
+
+    setWithdrawals(prev => prev.map(w => w.id === id ? { ...w, status: 'approved' as const } : w));
+
+    addNotification({
+      userId: target.freelancerId,
+      type: 'payment',
+      title: 'Withdrawal Approved',
+      message: `Your withdrawal of ₹${target.amount.toLocaleString()} has been approved and paid out.`
+    });
   };
 
   const adminResolveDispute = (id: string, resolution: string) => {
@@ -606,7 +738,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const markNotificationsAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    setNotifications(prev => prev.map(n =>
+      (n.userId === currentUser.id || currentRole === 'admin') ? { ...n, read: true } : n
+    ));
   };
 
   const toggleBookmark = (id: string) => {
@@ -698,30 +832,28 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const upgradeSubscription = (tier: SubscriptionTier, price: number): boolean => {
-    let success = false;
+    const user = users.find(u => u.id === currentUser.id);
+    if (!user || user.balance < price) {
+      return false;
+    }
     setUsers(prev => prev.map(u => {
       if (u.id === currentUser.id) {
-        if (u.balance >= price) {
-          success = true;
-          return {
-            ...u,
-            balance: u.balance - price,
-            proTier: tier
-          };
-        }
+        return {
+          ...u,
+          balance: u.balance - price,
+          proTier: tier
+        };
       }
       return u;
     }));
 
-    if (success) {
-      addNotification({
-        userId: currentUser.id,
-        type: 'system',
-        title: `Upgraded to ${tier.charAt(0).toUpperCase() + tier.slice(1)} Membership`,
-        message: `Your account has been upgraded to ${tier}. ₹${price.toLocaleString()} was deducted from your wallet balance.`
-      });
-    }
-    return success;
+    addNotification({
+      userId: currentUser.id,
+      type: 'system',
+      title: `Upgraded to ${tier.charAt(0).toUpperCase() + tier.slice(1)} Membership`,
+      message: `Your account has been upgraded to ${tier}. ₹${price.toLocaleString()} was deducted from your wallet balance.`
+    });
+    return true;
   };
 
   return (
@@ -742,16 +874,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       bookmarks,
       subscriptionPlans: SUBSCRIPTION_PLANS,
       switchRole,
+      signIn,
+      signOut,
       createGig,
       postProject,
       submitProposal,
       acceptProposal,
+      rejectProposal,
+      createOrderFromGig,
       submitMilestoneDeliverable,
       approveMilestoneEscrow,
       sendMessage,
       postReview,
+      updateProfile,
       requestWithdrawal,
       adminApproveWithdrawal,
+      adminRejectWithdrawal,
       adminResolveDispute,
       adminToggleVerifyUser,
       markNotificationsAsRead,
