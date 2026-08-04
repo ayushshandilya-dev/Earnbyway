@@ -11,16 +11,42 @@ interface Props {
 
 export const GigDetail: React.FC<Props> = ({ gig, onBack }) => {
   const navigate = useNavigate();
-  const { reviews, profiles, users, gigs } = useApp();
+  const { reviews, profiles, users, gigs, createOrderFromGig, currentRole } = useApp();
   const [selectedImage, setSelectedImage] = useState(0);
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
   const [selectedPackage, setSelectedPackage] = useState<'basic' | 'standard' | 'premium'>('standard');
+  const [ordering, setOrdering] = useState(false);
 
   const allImages = [gig.coverImage, ...gig.galleryImages];
   const gigReviews = reviews.filter(r => r.targetId === gig.freelancerId);
   const freelancerProfile = profiles[gig.freelancerId];
   const freelancerUser = users.find(u => u.id === gig.freelancerId);
   const pkg = gig.packages[selectedPackage];
+
+  const handleOrderNow = () => {
+    if (currentRole === 'guest') {
+      navigate('/?auth=1');
+      return;
+    }
+    setOrdering(true);
+    const order = createOrderFromGig(gig, selectedPackage);
+    setTimeout(() => {
+      setOrdering(false);
+      navigate('/orders');
+    }, 600);
+  };
+
+  const handleContact = () => {
+    navigate('/chat');
+  };
+
+  const handleViewProfile = () => {
+    if (freelancerUser) navigate(`/profile/${freelancerUser.id}`);
+  };
+
+  const handleRelated = (related: Gig) => {
+    navigate(`/gigs/${related.id}`);
+  };
 
   return (
     <div className="py-8 animate-in fade-in duration-300">
@@ -152,10 +178,11 @@ export const GigDetail: React.FC<Props> = ({ gig, onBack }) => {
               </div>
             </div>
             <div className="flex gap-3">
-              <button className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-black font-bold rounded-xl transition-all text-sm">
-                <ShoppingCart className="w-4 h-4" /> Continue (₹{pkg.price.toLocaleString()})
+              <button onClick={handleOrderNow} disabled={ordering}
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-60 text-black font-bold rounded-xl transition-all text-sm">
+                <ShoppingCart className="w-4 h-4" /> {ordering ? 'Creating Order…' : `Continue (₹${pkg.price.toLocaleString()})`}
               </button>
-              <button className="flex items-center justify-center gap-2 px-4 py-2.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 rounded-xl transition-all text-sm">
+              <button onClick={handleContact} className="flex items-center justify-center gap-2 px-4 py-2.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 rounded-xl transition-all text-sm">
                 <MessageSquare className="w-4 h-4" /> Contact
               </button>
             </div>
@@ -278,13 +305,14 @@ export const GigDetail: React.FC<Props> = ({ gig, onBack }) => {
                   </div>
                 </div>
               )}
-              <button className="w-full mt-4 px-4 py-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-xl text-xs text-zinc-300 transition-colors flex items-center justify-center gap-2">
+              <button onClick={handleViewProfile} className="w-full mt-4 px-4 py-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-xl text-xs text-zinc-300 transition-colors flex items-center justify-center gap-2">
                 <ExternalLink className="w-3 h-3" /> View Full Profile
               </button>
             </div>
 
-            <button className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-black font-bold rounded-xl transition-all text-sm">
-              Order Now — ₹{pkg.price.toLocaleString()}
+            <button onClick={handleOrderNow} disabled={ordering}
+              className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-60 text-black font-bold rounded-xl transition-all text-sm">
+              {ordering ? 'Creating Order…' : `Order Now — ₹${pkg.price.toLocaleString()}`}
             </button>
           </div>
         </div>
@@ -296,7 +324,7 @@ export const GigDetail: React.FC<Props> = ({ gig, onBack }) => {
               .filter(g => g.id !== gig.id && g.category === gig.category)
               .slice(0, 3)
               .map(related => (
-                <div key={related.id} className="glass-card glass-card-hover rounded-2xl overflow-hidden cursor-pointer group" onClick={onBack}>
+                <div key={related.id} className="glass-card glass-card-hover rounded-2xl overflow-hidden cursor-pointer group" onClick={() => handleRelated(related)}>
                   <div className="h-36 overflow-hidden">
                     <img src={related.coverImage} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                   </div>
