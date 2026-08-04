@@ -325,14 +325,15 @@ export const FreelancerProfile: React.FC<Props> = ({ freelancerUser, onBack }) =
             <div className="glass-panel rounded-2xl p-5 sticky top-28 space-y-5">
               <div className="flex items-center gap-2">
                 <Button
+                  className="flex-1"
+                  btn3d
+                  size="md"
                   onClick={() => { toggleBookmark(freelancerUser.id); addToast(saved ? 'Removed from bookmarks' : 'Saved to bookmarks!', 'success'); }}
                   variant={saved ? 'danger' : 'secondary'}
-                  className={`!p-2.5 ${saved ? 'text-red-400' : ''}`}
-                  aria-label={saved ? 'Remove bookmark' : 'Add bookmark'}
                 >
                   <Heart className={`w-4 h-4 ${saved ? 'fill-red-400' : ''}`} />
                 </Button>
-                <Button className="flex-1" btn3d size="md">
+                <Button className="flex-1" btn3d size="md" onClick={() => navigate(`/gigs?q=${encodeURIComponent(freelancerUser.name)}`)}>
                   <MessageSquare className="w-4 h-4" /> Hire Me
                 </Button>
               </div>
