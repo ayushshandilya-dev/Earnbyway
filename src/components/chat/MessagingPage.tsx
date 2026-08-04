@@ -5,14 +5,16 @@ import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
 
 export const MessagingPage: React.FC = () => {
-  const { conversations, messages, currentUser, sendMessage } = useApp();
+  const { conversations, messages, currentUser, sendMessage, markConversationRead } = useApp();
   const [activeConv, setActiveConv] = useState(conversations[0]?.id || null);
   const [messageInput, setMessageInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [showSidebar, setShowSidebar] = useState(true);
   const [isTyping, setIsTyping] = useState(false);
   const [typingUserName, setTypingUserName] = useState('');
+  const [attachment, setAttachment] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const filteredConvs = conversations.filter(c =>
     c.participant.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -21,11 +23,16 @@ export const MessagingPage: React.FC = () => {
   const activeMessages = activeConv ? messages[activeConv] || [] : [];
   const activeConversation = conversations.find(c => c.id === activeConv);
 
+  // Clear unread when opening a conversation
+  useEffect(() => {
+    if (activeConv) markConversationRead(activeConv);
+  }, [activeConv, markConversationRead]);
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [activeMessages]);
 
-  // Simulate typing indicator when user starts typing
+  // Simulate typing indicator when bot auto-reply is pending
   useEffect(() => {
     if (!messageInput.trim() || !activeConversation) {
       setIsTyping(false);
@@ -39,11 +46,19 @@ export const MessagingPage: React.FC = () => {
   }, [messageInput, activeConversation]);
 
   const handleSend = useCallback(() => {
-    if (!messageInput.trim() || !activeConv) return;
+    if (!messageInput.trim() && !attachment) return;
+    if (!activeConv) return;
     setIsTyping(false);
-    sendMessage(activeConv, messageInput.trim());
+    sendMessage(activeConv, messageInput.trim(), attachment ? [attachment] : undefined);
     setMessageInput('');
-  }, [messageInput, activeConv, sendMessage]);
+    setAttachment(null);
+  }, [messageInput, attachment, activeConv, sendMessage]);
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) setAttachment(URL.createObjectURL(file));
+    e.target.value = '';
+  };
 
   return (
     <div className="py-4 h-[calc(100vh-12rem)]">
@@ -140,7 +155,7 @@ export const MessagingPage: React.FC = () => {
                   const isMine = msg.senderId === currentUser.id;
                   return (
                     <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'} animate-in fade-in duration-200`}>
-                      <div className={`max-w-[80%] sm:max-w-[70%] ${isMine ? 'order-1' : 'order-1'}`}>
+                      <div className={`max-w-[80%] sm:max-w-[70%]`}>
                         <div className={`p-3 rounded-2xl text-sm leading-relaxed ${
                           isMine
                             ? 'bg-emerald-500/20 border border-emerald-500/30 text-white rounded-br-md shadow-[0_4px_20px_rgba(16,185,129,0.1)]'
@@ -175,9 +190,15 @@ export const MessagingPage: React.FC = () => {
 
               <div className="p-4 border-t border-zinc-800/80 bg-zinc-900/20">
                 <div className="flex items-center gap-2">
-                  <Button variant="secondary" size="md" className="!p-2.5 flex-shrink-0" aria-label="Attach file">
+                  <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileSelect} />
+                  <Button variant="secondary" size="md" className="!p-2.5 flex-shrink-0" aria-label="Attach file" onClick={() => fileInputRef.current?.click()}>
                     <Paperclip className="w-4 h-4" />
                   </Button>
+                  {attachment && (
+                    <span className="flex items-center gap-1 px-2 py-1 rounded-lg bg-zinc-800 border border-zinc-700 text-[10px] text-emerald-400 flex-shrink-0">
+                      <Paperclip className="w-3 h-3" /> {attachment.split('/').pop()?.slice(0, 12) || 'file'} <button onClick={() => setAttachment(null)} className="text-zinc-500 hover:text-rose-400">&times;</button>
+                    </span>
+                  )}
                   <div className="relative flex-1 group">
                     <Sparkles className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-emerald-500/60 pointer-events-none" />
                     <input
