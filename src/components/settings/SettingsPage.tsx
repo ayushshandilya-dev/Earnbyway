@@ -8,7 +8,7 @@ import { Input } from '../ui/Input';
 import { Settings, Bell, Shield, Smartphone, Save, User, Mail, Lock, Globe, Clock } from 'lucide-react';
 
 export const SettingsPage: React.FC = () => {
-  const { currentUser } = useApp();
+  const { currentUser, updateProfile } = useApp();
   const { addToast } = useToast();
   const [saved, setSaved] = useState(false);
   const [form, setForm] = useState({
@@ -23,6 +23,18 @@ export const SettingsPage: React.FC = () => {
   });
 
   const handleSave = () => {
+    updateProfile({
+      name: form.name.trim() || currentUser.name,
+      email: form.email.trim() || currentUser.email,
+    });
+    localStorage.setItem('earnbyway_prefs', JSON.stringify({
+      bio: form.bio,
+      language: form.language,
+      timezone: form.timezone,
+      emailNotifs: form.emailNotifs,
+      pushNotifs: form.pushNotifs,
+      smsNotifs: form.smsNotifs,
+    }));
     setSaved(true);
     addToast('Settings saved successfully!', 'success');
     setTimeout(() => setSaved(false), 2000);
