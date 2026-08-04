@@ -39,7 +39,7 @@ export const OrderDashboard: React.FC = () => {
           <p className="text-sm text-zinc-500 mt-1">Track and manage your orders</p>
         </div>
         <div className="flex gap-2">
-          {['all', 'in_progress', 'under_review', 'completed', 'cancelled'].map(s => (
+          {['all', 'funded', 'in_progress', 'under_review', 'disputed', 'completed'].map(s => (
             <button key={s} onClick={() => setStatusFilter(s)}
               className={`px-3 py-1.5 rounded-xl text-[10px] font-semibold border transition-all ${
                 statusFilter === s ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-400' : 'bg-zinc-900/70 border-zinc-800 text-zinc-400 hover:text-white'
