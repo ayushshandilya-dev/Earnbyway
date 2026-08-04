@@ -67,6 +67,7 @@ interface AppContextType {
   submitMilestoneDeliverable: (orderId: string, milestoneId: string, note: string, file?: string) => void;
   approveMilestoneEscrow: (orderId: string, milestoneId: string) => void;
   sendMessage: (conversationId: string, text: string, attachments?: string[]) => void;
+  markConversationRead: (conversationId: string) => void;
   postReview: (review: Omit<Review, 'id' | 'createdAt'>) => void;
   updateProfile: (updates: Partial<User>) => void;
   requestWithdrawal: (amount: number, method: WithdrawalRequest['method'], accountDetails: string) => void;
@@ -494,6 +495,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  // Mark conversation read + clear unread
+  const markConversationRead = (conversationId: string) => {
+    setConversations(prev => prev.map(c => c.id === conversationId ? { ...c, unreadCount: 0 } : c));
+  };
+
   // Send Message + Simulated Bot Response
   const sendMessage = (conversationId: string, text: string, attachments?: string[]) => {
     const newMsg: Message = {
@@ -885,6 +891,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       submitMilestoneDeliverable,
       approveMilestoneEscrow,
       sendMessage,
+      markConversationRead,
       postReview,
       updateProfile,
       requestWithdrawal,
