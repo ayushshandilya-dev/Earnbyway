@@ -302,6 +302,47 @@ src/
 | 3–4 | Post-MVP features + UX | ✅ | Subscription, escrow deps, OAuth, toasts |
 | 5 | 3D UI overhaul | ✅ | Professional 3D website-style UI |
 | 6 | Deployment | ✅ | Live on Vercel, repo clean |
+| 6.5 | Feature audit + bug rectification | ✅ | Dead buttons wired, state persistence fixed |
 | **7** | **Backend (Express/Prisma/Postgres)** | ⬜ | **Real persistent data — do next** |
 | 8 | Hardening (auth, WS, admin, payments) | ⬜ | Production-grade security & realtime |
 | 9 | Domain + ops | ⬜ | earnbyway.com live (requires user DNS approval) |
+| **10** | **Growth features** | ⬜ | Referrals, reviews aggregation, fraud, engagement |
+
+---
+
+## ⬜ Phase 10: Growth Features (Planned — New)
+
+### Monetization & Payments
+- [ ] Platform fee (e.g., 10% on orders) tracked per order + admin revenue ledger
+- [ ] Razorpay checkout integration for escrow funding (real gateway stub now, live in Phase 8)
+- [ ] Wallet top-up for clients (UPI/card) so they can fund projects without real escrow wiring
+- [ ] Payout methods: bank verification, UPI auto-payout, PayPal email validation
+
+### Community & Growth
+- [ ] **Referral program** — invite link, credited bonus on signup, referral leaderboard
+- [ ] Reviews aggregation — recompute `gig.rating`, `profile.rating`, `completedJobs` from `reviews` (currently posted reviews have zero effect on ratings)
+- [ ] Freelancer badges tiers (Top Rated, Rising Talent) computed from real stats
+- [ ] Project categories / skill taxonomy browser on landing page
+
+### Engagement & Retention
+- [ ] Favorites → "shortlist" folders for clients
+- [ ] Order tracking timeline (visual stepper per milestone)
+- [ ] Rate-limiter + cooldown on proposal submissions (prevent spam)
+- [ ] Email digests (mock) — weekly new-gig alerts for saved searches
+
+### Admin & Moderation
+- [ ] User suspend/ban (currently only verify toggle)
+- [ ] Audit log for admin actions
+- [ ] Dispute resolution updates linked order + notifies both parties (currently just status flip)
+- [ ] Content moderation queue for new gigs/projects
+
+### Data & Analytics (frontend)
+- [ ] Admin dashboard wired to real `orders`/`users`/`withdrawals` state (currently hardcoded chart data)
+- [ ] Earnings projection chart per freelancer (cash-flow forecast from milestone due dates)
+
+### Priority order
+1. Reviews aggregation (fixes real data inconsistency)
+2. Wallet top-up + platform fee (enables realistic escrow)
+3. User suspend/ban (admin gap)
+4. Referral program (growth)
+5. Dispute → order wiring (admin gap)
