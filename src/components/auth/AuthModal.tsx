@@ -10,21 +10,42 @@ interface Props {
 }
 
 export const AuthModal: React.FC<Props> = ({ isOpen, onClose }) => {
-  const { switchRole } = useApp();
+  const { signIn } = useApp();
   const [step, setStep] = useState<'login' | 'signup_role' | 'otp' | 'oauth_connecting' | 'oauth_success'>('login');
   const [selectedRole, setSelectedRole] = useState<'client' | 'freelancer' | null>(null);
   const [oauthProvider, setOauthProvider] = useState<'google' | 'github' | null>(null);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
+  const [error, setError] = useState('');
 
   if (!isOpen) return null;
 
   const handleMockLogin = (role: 'client' | 'freelancer') => {
-    switchRole(role);
+    signIn(role, email || undefined, name || undefined);
     onClose();
     setTimeout(() => {
       setStep('login');
       setSelectedRole(null);
       setOauthProvider(null);
+      setEmail('');
+      setPassword('');
+      setName('');
+      setError('');
     }, 300);
+  };
+
+  const handleSignIn = () => {
+    if (!email.trim()) {
+      setError('Please enter your email address.');
+      return;
+    }
+    if (password.length < 4) {
+      setError('Please enter your password (min 4 characters).');
+      return;
+    }
+    setError('');
+    handleMockLogin('client');
   };
 
   const handleOAuthStart = (provider: 'google' | 'github', role: 'client' | 'freelancer') => {
@@ -56,6 +77,8 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose }) => {
               icon={<Mail className="w-4 h-4" />}
               type="email"
               placeholder="name@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
             />
 
             <Input
@@ -63,10 +86,18 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose }) => {
               icon={<Lock className="w-4 h-4" />}
               type="password"
               placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
             />
 
+            {error && (
+              <p className="text-[11px] text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-lg px-3 py-2">
+                {error}
+              </p>
+            )}
+
             <Button
-              onClick={() => handleMockLogin('client')}
+              onClick={handleSignIn}
               btn3d
               size="md"
               className="w-full"
@@ -147,6 +178,24 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose }) => {
                 </div>
               </div>
             </Button>
+          </div>
+
+          <div className="space-y-4 mb-6">
+            <Input
+              label="Full Name"
+              icon={<Mail className="w-4 h-4" />}
+              placeholder="Your full name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+            <Input
+              label="Email Address"
+              icon={<Mail className="w-4 h-4" />}
+              type="email"
+              placeholder="name@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
           </div>
 
           <Button
