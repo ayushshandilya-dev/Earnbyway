@@ -347,8 +347,7 @@ export const SkillQuiz: React.FC<Props> = ({ isOpen, onClose, defaultQuizKey }) 
     const timer = setInterval(() => {
       setTimeLeft(prev => {
         if (prev <= 1) {
-          handleNextQuestion();
-          return 30;
+          return 0;
         }
         return prev - 1;
       });
@@ -356,6 +355,12 @@ export const SkillQuiz: React.FC<Props> = ({ isOpen, onClose, defaultQuizKey }) 
 
     return () => clearInterval(timer);
   }, [selectedQuizKey, currentQuestionIndex, quizFinished]);
+
+  useEffect(() => {
+    if (activeQuiz && !quizFinished && timeLeft === 0) {
+      handleNextQuestion();
+    }
+  }, [timeLeft, quizFinished]);
 
   if (!isOpen) return null;
 
