@@ -130,6 +130,41 @@ LandingPage (full redesign: hero, floating orbs, perspective grid, tilt features
 
 ---
 
+## ✅ Phase 6.5: Feature Audit & Bug Rectification (Aug 4, 2026 — Complete)
+
+Full audit of all 40+ components found and fixed real functional bugs — not just cosmetic issues.
+
+### Critical Bugs Fixed (AppContext + Auth)
+| Bug | Fix |
+|-----|-----|
+| `upgradeSubscription` always returned `false` (success flag read inside async updater) → Subscription page always showed "insufficient balance" | Compute balance check synchronously before `setUsers` |
+| `adminApproveWithdrawal` nested `setUsers` inside `setWithdrawals` updater (impure, double-fires in StrictMode) | Moved both updates to independent, idempotent setters |
+| `markNotificationsAsRead` wiped **every user's** unread flags | Now scoped to current user / admin |
+| Role/identity never persisted — reload always reset to `client` | Role persisted to localStorage; `signIn`/`signOut` actions added |
+| **Navbar "Sign Out"** opened the login modal instead of logging out | Real `signOut()` → guest view |
+| **AuthModal** ignored entered email/password, no validation, hardcoded "client" login | Wired email/password state, validation, `signIn` with create-if-missing |
+
+### Dead Buttons Wired (was: no `onClick`)
+- **GigDetail**: "Continue/Order Now" → `createOrderFromGig` (creates escrow order, navigates to Orders); "Contact" → chat; "View Full Profile" → new `/profile/:id` route; related-gig cards now open the actual gig (new `/gigs/:id` route).
+- **FreelancerProfile**: "Hire Me" now navigates to that freelancer's gigs.
+- **MessagingPage**: paperclip now opens a file picker + attaches real files.
+
+### State Persistence / Logic Fixes
+| File | Fix |
+|------|-----|
+| SettingsPage | Name/email saved via `updateProfile`; prefs persisted to localStorage (was: toast only, lost on refresh) |
+| ProposalManagement | Reject now persists via `rejectProposal` (was local state, reappeared on refresh); double-accept guard added |
+| WithdrawalApprovals | Reject persisted via `adminRejectWithdrawal` (returns funds to balance) |
+| OrderDashboard | Filter tabs now match real order statuses (`funded`/`disputed`, removed phantom `cancelled`) |
+| PostProjectWizard | Requires ≥1 skill; `customSkill` + `touched` reset on close |
+| ProjectDetail | Real profile rating in proposals (was hardcoded `0`); bid capped at project budget |
+| SkillQuiz | Removed side-effect inside `setTimeLeft` updater (StrictMode-safe timer) |
+
+### New Context Actions Added
+`signIn`, `signOut`, `updateProfile`, `rejectProposal`, `adminRejectWithdrawal`, `createOrderFromGig`, `markConversationRead`.
+
+---
+
 ## ⬜ Phase 7: Real Backend + Database — NEXT (Planned, Not Started)
 
 User decision: **Node/Express + Prisma ORM + PostgreSQL**, run **locally first**, deploy later.
