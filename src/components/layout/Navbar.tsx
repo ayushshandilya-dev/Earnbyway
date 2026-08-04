@@ -70,7 +70,7 @@ export const Navbar: React.FC<Props> = ({
   onOpenPostProject,
   onOpenCreateGig,
 }) => {
-  const { currentUser, currentRole, notifications, conversations } = useApp();
+  const { currentUser, currentRole, notifications, conversations, signOut } = useApp();
   const navigate = useNavigate();
   const location = useLocation();
   const [isNotifOpen, setIsNotifOpen] = useState(false);
@@ -334,7 +334,7 @@ export const Navbar: React.FC<Props> = ({
                           </button>
                         ))}
                         <div className="border-t border-zinc-800 my-1" />
-                        <button onClick={() => { onOpenAuth(); setIsProfileOpen(false); }}
+                        <button onClick={() => { signOut(); setIsProfileOpen(false); navigate('/'); }}
                           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 transition-all">
                           <LogOut className="w-3.5 h-3.5" /> Sign Out
                         </button>
