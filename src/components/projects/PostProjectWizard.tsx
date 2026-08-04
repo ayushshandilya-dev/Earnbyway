@@ -39,6 +39,7 @@ export const PostProjectWizard: React.FC<Props> = ({ isOpen, onClose }) => {
     const errs: Record<string, string | null> = {};
     if (s === 'title') { errs.title = title.trim() ? null : 'Enter a project title'; errs.category = category ? null : 'Select a category'; }
     if (s === 'description') errs.description = description.trim().length >= 20 ? null : 'Description must be at least 20 characters';
+    if (s === 'skills') errs.skills = skills.length > 0 ? null : 'Select at least one skill';
     if (s === 'budget') errs.budget = budget >= 1000 ? null : 'Minimum budget is ₹1,000';
     const hasErrors = Object.values(errs).some(Boolean);
     setTouched(prev => ({ ...prev, ...Object.fromEntries(Object.keys(errs).map(k => [k, true])) }));
@@ -57,10 +58,11 @@ export const PostProjectWizard: React.FC<Props> = ({ isOpen, onClose }) => {
   const currentIdx = steps.findIndex(s => s.key === step);
 
   const handlePublish = () => {
-    if (!title.trim() || !category || description.trim().length < 20 || budget < 1000) {
+    if (!title.trim() || !category || description.trim().length < 20 || skills.length === 0 || budget < 1000) {
       if (!title.trim()) setTouched(p => ({ ...p, title: true }));
       if (!category) setTouched(p => ({ ...p, category: true }));
       if (description.trim().length < 20) setTouched(p => ({ ...p, description: true }));
+      if (skills.length === 0) setTouched(p => ({ ...p, skills: true }));
       if (budget < 1000) setTouched(p => ({ ...p, budget: true }));
       addToast('Please fix validation errors before publishing', 'error');
       return;
@@ -86,7 +88,7 @@ export const PostProjectWizard: React.FC<Props> = ({ isOpen, onClose }) => {
     setTimeout(() => {
       setStep('title'); setTitle(''); setCategory(''); setDescription('');
       setSkills([]); setBudget(25000); setDuration('2-3 Weeks');
-      setPublishSuccess(false);
+      setCustomSkill(''); setTouched({}); setPublishSuccess(false);
     }, 300);
   };
 
@@ -161,6 +163,11 @@ export const PostProjectWizard: React.FC<Props> = ({ isOpen, onClose }) => {
       case 'skills':
         return (
           <div className="space-y-4">
+            {touched.skills && skills.length === 0 && (
+              <p className="text-[11px] text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-lg px-3 py-2">
+                Select at least one required skill.
+              </p>
+            )}
             <label className="text-xs font-medium text-zinc-400 mb-1.5 block">Required Skills</label>
             <div className="flex flex-wrap gap-2 mb-3">
               {['React', 'Node.js', 'TypeScript', 'Python', 'Figma', 'UI/UX', 'PostgreSQL', 'Docker', 'AWS', 'GraphQL', 'Next.js', 'Tailwind', 'AI/ML'].map(s => (
