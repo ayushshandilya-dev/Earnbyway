@@ -1,6 +1,6 @@
 import React, { useState, lazy, Suspense } from 'react';
-import { Routes, Route, Outlet, useLocation } from 'react-router-dom';
-import { Loader2, X } from 'lucide-react';
+import { Routes, Route, Outlet, useLocation, useParams, useNavigate } from 'react-router-dom';
+import { Loader2, X, ArrowLeft } from 'lucide-react';
 import { RoleSwitcher } from './components/layout/RoleSwitcher';
 import { Navbar } from './components/layout/Navbar';
 import { Footer } from './components/layout/Footer';
@@ -14,6 +14,8 @@ import { ToastProvider } from './context/ToastContext';
 
 const LandingPage = lazy(() => import('./components/landing/LandingPage').then(m => ({ default: m.LandingPage })));
 const GigCatalog = lazy(() => import('./components/gigs/GigCatalog').then(m => ({ default: m.GigCatalog })));
+const GigDetail = lazy(() => import('./components/gigs/GigDetail').then(m => ({ default: m.GigDetail })));
+const FreelancerProfile = lazy(() => import('./components/profiles/FreelancerProfile').then(m => ({ default: m.FreelancerProfile })));
 const ProjectsBoard = lazy(() => import('./components/projects/ProjectsBoard').then(m => ({ default: m.ProjectsBoard })));
 const ClientDashboard = lazy(() => import('./components/dashboards/ClientDashboard').then(m => ({ default: m.ClientDashboard })));
 const FreelancerDashboard = lazy(() => import('./components/dashboards/FreelancerDashboard').then(m => ({ default: m.FreelancerDashboard })));
@@ -49,6 +51,32 @@ const AnimatedOutlet: React.FC = () => {
       <Outlet />
     </div>
   );
+};
+
+const GigDetailRoute: React.FC = () => {
+  const { gigId } = useParams();
+  const navigate = useNavigate();
+  const { gigs } = useApp();
+  const gig = gigs.find(g => g.id === gigId);
+  if (!gig) return <NotFoundPage />;
+  return (
+    <div className="py-4">
+      <button onClick={() => navigate(-1)}
+        className="flex items-center gap-2 text-xs text-zinc-400 hover:text-white mb-6 transition-colors">
+        <ArrowLeft className="w-4 h-4" /> Back
+      </button>
+      <GigDetail gig={gig} onBack={() => navigate(-1)} />
+    </div>
+  );
+};
+
+const FreelancerProfileRoute: React.FC = () => {
+  const { userId } = useParams();
+  const navigate = useNavigate();
+  const { users } = useApp();
+  const user = users.find(u => u.id === userId);
+  if (!user) return <NotFoundPage />;
+  return <FreelancerProfile freelancerUser={user} onBack={() => navigate(-1)} />;
 };
 
 const AppLayout: React.FC = () => {
@@ -110,13 +138,15 @@ export default function App() {
         <Route element={<AppLayout />}>
           <Route path="/" element={<LandingPage />} />
           <Route path="/gigs" element={<GigCatalog />} />
+          <Route path="/gigs/:gigId" element={<GigDetailRoute />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/profile/:userId" element={<FreelancerProfileRoute />} />
           <Route path="/projects" element={<ProjectsBoard />} />
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/chat" element={<MessagingPage />} />
           <Route path="/earnings" element={<EarningsPage />} />
           <Route path="/search" element={<SearchResults />} />
           <Route path="/bookmarks" element={<BookmarksPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
           <Route path="/orders" element={<OrderDashboard />} />
           <Route path="/workspace/:orderId" element={<CollaborativeWorkspace />} />
           <Route path="/proposals" element={<ProposalManagement />} />
