@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
+import { useToast } from '../../context/ToastContext';
 import { Project } from '../../types';
 import { AIService } from '../../services/aiService';
 import { ArrowLeft, Clock, Users, CheckCircle, Send, Sparkles, X, AlertTriangle } from 'lucide-react';
@@ -11,6 +12,7 @@ interface Props {
 
 export const ProjectDetail: React.FC<Props> = ({ project, onBack }) => {
   const { currentRole, currentUser, profiles, submitProposal } = useApp();
+  const { addToast } = useToast();
   const [showProposalForm, setShowProposalForm] = useState(false);
   const [coverLetter, setCoverLetter] = useState('');
   const [bidAmount, setBidAmount] = useState(project.budget);
@@ -24,7 +26,10 @@ export const ProjectDetail: React.FC<Props> = ({ project, onBack }) => {
 
   const handleAIGenerate = () => {
     const myProfile = profiles[currentUser.id];
-    if (!myProfile) return;
+    if (!myProfile) {
+      addToast('Add your freelancer profile first to use AI generation', 'error');
+      return;
+    }
     const result = AIService.generateProposal(project, myProfile, currentUser);
     setCoverLetter(result.coverLetter);
     setBidAmount(result.suggestedBid);
@@ -32,13 +37,18 @@ export const ProjectDetail: React.FC<Props> = ({ project, onBack }) => {
   };
 
   const handleSubmit = () => {
+    if (bidAmount > project.budget) {
+      addToast(`Bid exceeds project budget (₹${project.budget.toLocaleString()})`, 'error');
+      return;
+    }
+    const myProfile = profiles[currentUser.id];
     submitProposal({
       projectId: project.id,
       freelancerId: currentUser.id,
       freelancerName: currentUser.name,
       freelancerAvatar: currentUser.avatar,
-      freelancerRating: 0,
-      freelancerTitle: currentUser.title || '',
+      freelancerRating: myProfile?.rating ?? 0,
+      freelancerTitle: currentUser.title || myProfile?.title || '',
       coverLetter,
       bidAmount,
       estimatedDays,
@@ -239,7 +249,7 @@ export const ProjectDetail: React.FC<Props> = ({ project, onBack }) => {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="text-xs font-medium text-zinc-400 mb-1.5 block">Bid Amount (₹)</label>
+                      <label className="text-xs font-medium text-zinc-400 mb-1.5 block">Bid Amount (₹) <span className="text-zinc-600">· max ₹{project.budget.toLocaleString()}</span></label>
                       <input
                         type="number"
                         value={bidAmount}
