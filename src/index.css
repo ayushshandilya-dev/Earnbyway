@@ -363,3 +363,216 @@
 .parallax-slow { transform: translateZ(-50px) scale(1.05); }
 .parallax-mid { transform: translateZ(0) scale(1); }
 .parallax-fast { transform: translateZ(50px) scale(0.95); }
+
+/* ═══════════════════════ PREMIUM UI (v2) ═══════════════════════ */
+
+:root {
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Animated gradient text (shimmering) */
+.gradient-text-animate {
+  background: linear-gradient(120deg, #10b981, #34d399, #2dd4bf, #10b981);
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradientShift 6s ease infinite;
+}
+
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* Gradient border (animated conic) */
+.gradient-border {
+  position: relative;
+  background: #121215;
+  border-radius: inherit;
+}
+
+.gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: conic-gradient(from var(--angle, 0deg),
+    rgba(16, 185, 129, 0.7), rgba(45, 212, 191, 0.3),
+    rgba(16, 185, 129, 0.05), rgba(45, 212, 191, 0.3),
+    rgba(16, 185, 129, 0.7));
+  z-index: -1;
+  animation: spinAngle 6s linear infinite;
+  opacity: 0.6;
+}
+
+@property --angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes spinAngle {
+  to { --angle: 360deg; }
+}
+
+/* Hover shine sweep on cards/buttons */
+.shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.shine::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -75%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
+  transform: skewX(-20deg);
+  transition: left 0.7s var(--ease-out-expo);
+}
+
+.shine:hover::after {
+  left: 125%;
+}
+
+/* Magnetic hover lift */
+.hover-lift {
+  transition: transform 0.4s var(--ease-out-expo), box-shadow 0.4s var(--ease-out-expo), border-color 0.3s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-6px);
+}
+
+/* Glass card v2 — premium frosted */
+.glass-v2 {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.015) 50%, rgba(16, 185, 129, 0.02) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  transition: transform 0.5s var(--ease-out-expo), box-shadow 0.5s var(--ease-out-expo), border-color 0.4s ease;
+}
+
+.glass-v2:hover {
+  border-color: rgba(16, 185, 129, 0.35);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.25),
+    0 2px 8px rgba(16, 185, 129, 0.06),
+    0 24px 64px -16px rgba(16, 185, 129, 0.1);
+}
+
+/* Subtle floating animation for hero elements */
+.float-slow {
+  animation: floatSlow 7s ease-in-out infinite;
+}
+
+@keyframes floatSlow {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-12px); }
+}
+
+/* Hero title reveal — mask wipe */
+.mask-reveal {
+  overflow: hidden;
+}
+
+.mask-reveal > * {
+  display: block;
+  animation: maskUp 0.9s var(--ease-out-expo) both;
+}
+
+@keyframes maskUp {
+  from { transform: translateY(110%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Infinite marquee */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* Pulsing aurora background for hero */
+.aurora {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.aurora::before,
+.aurora::after {
+  content: '';
+  position: absolute;
+  width: 55vw;
+  height: 55vw;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.22;
+}
+
+.aurora::before {
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.5), transparent 60%);
+  top: -15%;
+  left: -10%;
+  animation: auroraDrift 16s ease-in-out infinite alternate;
+}
+
+.aurora::after {
+  background: radial-gradient(circle, rgba(45, 212, 191, 0.4), transparent 60%);
+  bottom: -20%;
+  right: -10%;
+  animation: auroraDrift 20s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes auroraDrift {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(6vw, 4vw) scale(1.15); }
+}
+
+/* Scroll hint bounce */
+.scroll-hint {
+  animation: scrollHint 2s ease-in-out infinite;
+}
+
+@keyframes scrollHint {
+  0%, 100% { transform: translateY(0); opacity: 0.6; }
+  50% { transform: translateY(8px); opacity: 1; }
+}
+
+/* 3D flip card */
+.flip-card {
+  perspective: 1200px;
+}
+
+.flip-card-inner {
+  transform-style: preserve-3d;
+  transition: transform 0.8s var(--ease-out-expo);
+}
+
+.flip-card:hover .flip-card-inner {
+  transform: rotateY(180deg);
+}
+
+.flip-face {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.flip-back {
+  transform: rotateY(180deg);
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
