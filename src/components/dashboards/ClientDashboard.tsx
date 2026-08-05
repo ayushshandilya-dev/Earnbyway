@@ -5,6 +5,7 @@ import { AIService } from '../../services/aiService';
 import { Card, CardHeader, CardTitle } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
+import { Reveal, Stagger } from '../ui/Reveal';
 import {
   Briefcase, Clock, CheckCircle, DollarSign, TrendingUp, Activity, ArrowRight,
   PlusCircle, Sparkles, Star, Users as UsersIcon, Target, BarChart3
@@ -54,23 +55,27 @@ export const ClientDashboard: React.FC = () => {
   return (
     <div className="py-6 space-y-8 animate-fade-in">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-heading font-bold text-white">Client Dashboard</h1>
-          <p className="text-sm text-zinc-500 mt-1">Welcome back, {currentUser.name}</p>
+      <Reveal direction="down" duration={0.6}>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-heading font-bold text-white">Client Dashboard</h1>
+            <p className="text-sm text-zinc-500 mt-1">Welcome back, {currentUser.name}</p>
+          </div>
+          <Button variant="primary" icon={<PlusCircle className="w-4 h-4" />} onClick={() => navigate('/projects')}>
+            Post a Project
+          </Button>
         </div>
-        <Button variant="primary" icon={<PlusCircle className="w-4 h-4" />} onClick={() => navigate('/projects')}>
-          Post a Project
-        </Button>
-      </div>
+      </Reveal>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Active Projects" value={activeProjects} icon={<Briefcase className="w-4 h-4 text-blue-400" />} gradient="from-blue-500 to-cyan-400" />
-        <StatCard label="Active Orders" value={activeOrders} icon={<Activity className="w-4 h-4 text-purple-400" />} gradient="from-purple-500 to-pink-400" />
-        <StatCard label="Completed" value={completedOrders} icon={<CheckCircle className="w-4 h-4 text-emerald-400" />} gradient="from-emerald-500 to-teal-400" />
-        <StatCard label="Total Spent" value={`₹${totalSpent.toLocaleString()}`} icon={<DollarSign className="w-4 h-4 text-amber-400" />} gradient="from-amber-500 to-orange-400" />
-      </div>
+      <Stagger staggerBy={0.08}>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatCard label="Active Projects" value={activeProjects} icon={<Briefcase className="w-4 h-4 text-blue-400" />} gradient="from-blue-500 to-cyan-400" />
+          <StatCard label="Active Orders" value={activeOrders} icon={<Activity className="w-4 h-4 text-purple-400" />} gradient="from-purple-500 to-pink-400" />
+          <StatCard label="Completed" value={completedOrders} icon={<CheckCircle className="w-4 h-4 text-emerald-400" />} gradient="from-emerald-500 to-teal-400" />
+          <StatCard label="Total Spent" value={`₹${totalSpent.toLocaleString()}`} icon={<DollarSign className="w-4 h-4 text-amber-400" />} gradient="from-amber-500 to-orange-400" />
+        </div>
+      </Stagger>
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
