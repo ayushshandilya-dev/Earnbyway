@@ -5,6 +5,7 @@ import { GigCard } from './GigCard';
 import { GigDetail } from './GigDetail';
 import { Gig } from '../../types';
 import { AIService } from '../../services/aiService';
+import { Reveal, Stagger } from '../ui/Reveal';
 import { Search, SlidersHorizontal, X, Code, Brain, Palette, PenTool, Video, Megaphone, Layers, Shield } from 'lucide-react';
 import { EmptyState } from '../ui/EmptyState';
 
@@ -88,11 +89,12 @@ export const GigCatalog: React.FC = () => {
 
   return (
     <div className="py-8">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-3xl font-heading font-bold text-white">Explore Gigs</h1>
-          <p className="text-sm text-zinc-400 mt-1">{filteredGigs.length} services available</p>
-        </div>
+      <Reveal direction="down" duration={0.6}>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+          <div>
+            <h1 className="text-3xl font-heading font-bold text-white">Explore Gigs</h1>
+            <p className="text-sm text-zinc-400 mt-1">{filteredGigs.length} services available</p>
+          </div>
         <div className="flex items-center gap-3 w-full sm:w-auto">
           <div className="relative flex-1 sm:flex-none">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
@@ -116,7 +118,8 @@ export const GigCatalog: React.FC = () => {
             <SlidersHorizontal className="w-4 h-4" />
           </button>
         </div>
-      </div>
+        </div>
+      </Reveal>
 
       <div className="flex gap-1 overflow-x-auto pb-4 mb-6 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-none">
         {CATEGORIES.map(cat => (
@@ -192,11 +195,11 @@ export const GigCatalog: React.FC = () => {
       {filteredGigs.length === 0 ? (
         <EmptyState icon="search" title="No gigs found" description="Try adjusting your filters or search query." />
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <Stagger staggerBy={0.08} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredGigs.map(gig => (
             <GigCard key={gig.id} gig={gig} onClick={() => setSelectedGig(gig)} />
           ))}
-        </div>
+        </Stagger>
       )}
     </div>
   );
