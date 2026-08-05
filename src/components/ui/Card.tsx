@@ -8,6 +8,8 @@ interface CardProps {
   onClick?: () => void;
   tilt3d?: boolean;
   float3d?: boolean;
+  glow?: boolean;
+  border?: boolean;
   style?: React.CSSProperties;
 }
 
@@ -19,23 +21,36 @@ const paddings = {
 };
 
 export const Card: React.FC<CardProps> = ({
-  children, className = '', hover = false, padding = 'md', onClick, tilt3d = false, float3d = false, style,
+  children, className = '', hover = false, padding = 'md', onClick, tilt3d = false, float3d = false,
+  glow = false, border = false, style,
 }) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const [tilt, setTilt] = React.useState({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = React.useState(false);
+  const [spot, setSpot] = React.useState({ x: 50, y: 50, o: 0 });
 
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    if (!tilt3d || !cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width - 0.5;
-    const y = (e.clientY - rect.top) / rect.height - 0.5;
-    setTilt({ x: x * 8, y: y * -8 });
+    const el = cardRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const px = (e.clientX - rect.left) / rect.width;
+    const py = (e.clientY - rect.top) / rect.height;
+    setSpot({ x: px * 100, y: py * 100, o: 1 });
+    if (tilt3d) {
+      const x = px - 0.5;
+      const y = py - 0.5;
+      setTilt({ x: x * 10, y: y * -10 });
+    }
   }, [tilt3d]);
+
+  const handleMouseEnter = useCallback(() => {
+    setIsHovered(true);
+  }, []);
 
   const handleMouseLeave = useCallback(() => {
     setTilt({ x: 0, y: 0 });
     setIsHovered(false);
+    setSpot(p => ({ ...p, o: 0 }));
   }, []);
 
   const tiltStyle = tilt3d && isHovered ? {
@@ -48,13 +63,16 @@ export const Card: React.FC<CardProps> = ({
     <div
       ref={cardRef}
       onMouseMove={handleMouseMove}
-      onMouseEnter={() => setIsHovered(true)}
+      onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onClick={onClick}
-      className={`glass-card rounded-2xl ${paddings[padding]} ${hover ? 'glass-card-hover' : ''} ${onClick ? 'cursor-pointer' : ''} ${tilt3d ? 'card-3d-tilt glossy' : ''} ${float3d ? 'card-3d-float glossy' : ''} ${className}`}
+      className={`glass-card rounded-2xl ${paddings[padding]} ${hover ? 'glass-card-hover' : ''} ${onClick ? 'cursor-pointer' : ''} ${tilt3d ? 'card-3d-tilt glossy' : ''} ${float3d ? 'card-3d-float glossy' : ''} ${glow ? 'glow-emerald-sm' : ''} ${border ? 'border-emerald-500/20' : ''} ${className}`}
       style={{ ...style, ...tiltStyle }}
     >
-      {children}
+      {spot.o > 0 && !tilt3d && (
+        <div className="pointer-events-none absolute inset-0 rounded-2xl" style={{ background: `radial-gradient(500px circle at ${spot.x}% ${spot.y}%, rgba(16, 185, 129, 0.08), transparent 40%)` }} />
+      )}
+      <div className="relative z-10">{children}</div>
     </div>
   );
 };
