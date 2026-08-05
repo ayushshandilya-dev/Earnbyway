@@ -5,6 +5,7 @@ import { AIService } from '../../services/aiService';
 import { Card, CardHeader, CardTitle } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
+import { Reveal, Stagger } from '../ui/Reveal';
 import {
   DollarSign, TrendingUp, Briefcase, Eye, Star, Clock, CheckCircle, ArrowRight,
   PlusCircle, Users, Award, Sparkles, Zap, Wallet, Activity, Target, BarChart3
@@ -56,23 +57,26 @@ export const FreelancerDashboard: React.FC = () => {
   return (
     <div className="py-6 space-y-8 animate-fade-in">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-heading font-bold text-white">Freelancer Dashboard</h1>
-          <p className="text-sm text-zinc-500 mt-1">Welcome back, {currentUser.name}</p>
+      <Reveal direction="down" duration={0.6}>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-heading font-bold text-white">Freelancer Dashboard</h1>
+            <p className="text-sm text-zinc-500 mt-1">Welcome back, {currentUser.name}</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="secondary" icon={<DollarSign className="w-4 h-4" />} onClick={() => navigate('/earnings')}>
+              Withdraw
+            </Button>
+            <Button variant="primary" icon={<PlusCircle className="w-4 h-4" />} onClick={() => navigate('/gigs')}>
+              Create Gig
+            </Button>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="secondary" icon={<DollarSign className="w-4 h-4" />} onClick={() => navigate('/earnings')}>
-            Withdraw
-          </Button>
-          <Button variant="primary" icon={<PlusCircle className="w-4 h-4" />} onClick={() => navigate('/gigs')}>
-            Create Gig
-          </Button>
-        </div>
-      </div>
+      </Reveal>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <Stagger staggerBy={0.08}>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           label="Available Balance"
           value={`₹${currentUser.balance.toLocaleString()}`}
@@ -104,7 +108,8 @@ export const FreelancerDashboard: React.FC = () => {
             />
           </>
         )}
-      </div>
+        </div>
+      </Stagger>
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
