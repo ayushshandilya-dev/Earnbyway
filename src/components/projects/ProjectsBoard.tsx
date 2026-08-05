@@ -3,6 +3,7 @@ import { useApp } from '../../context/AppContext';
 import { ProjectDetail } from './ProjectDetail';
 import { Project } from '../../types';
 import { EmptyState } from '../ui/EmptyState';
+import { Reveal, Stagger } from '../ui/Reveal';
 import { Search, Code, Brain, Palette, PenTool, Video, Megaphone, Layers, Shield, Briefcase, MapPin, Clock, Users, ChevronRight, ArrowUpDown } from 'lucide-react';
 
 const CATEGORIES = ['All', 'Development', 'AI', 'Graphic Design', 'Content Writing', 'Video Editing', 'Marketing', 'UI/UX Design', 'Cybersecurity'];
@@ -49,22 +50,24 @@ export const ProjectsBoard: React.FC = () => {
 
   return (
     <div className="py-8">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-3xl font-heading font-bold text-white">Projects Board</h1>
-          <p className="text-sm text-zinc-400 mt-1">{filteredProjects.length} open projects</p>
+      <Reveal direction="down" duration={0.6}>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+          <div>
+            <h1 className="text-3xl font-heading font-bold text-white">Projects Board</h1>
+            <p className="text-sm text-zinc-400 mt-1">{filteredProjects.length} open projects</p>
+          </div>
+          <div className="relative flex-1 sm:flex-none w-full sm:w-72">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search projects by title or skills..."
+              className="w-full pl-10 pr-4 py-2 text-xs bg-zinc-900/90 border border-zinc-800 rounded-xl text-slate-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500/60"
+            />
+          </div>
         </div>
-        <div className="relative flex-1 sm:flex-none w-full sm:w-72">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search projects by title or skills..."
-            className="w-full pl-10 pr-4 py-2 text-xs bg-zinc-900/90 border border-zinc-800 rounded-xl text-slate-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500/60"
-          />
-        </div>
-      </div>
+      </Reveal>
 
       <div className="flex gap-1 overflow-x-auto pb-4 mb-6 -mx-4 px-4 sm:mx-0 sm:px-0">
         {CATEGORIES.map(cat => (
@@ -100,7 +103,7 @@ export const ProjectsBoard: React.FC = () => {
       {filteredProjects.length === 0 ? (
         <EmptyState icon="project" title="No open projects" description="Check back later for new opportunities." />
       ) : (
-        <div className="space-y-4">
+        <Stagger staggerBy={0.09} className="space-y-4">
           {filteredProjects.map(project => (
             <button
               key={project.id}
@@ -142,8 +145,8 @@ export const ProjectsBoard: React.FC = () => {
                 </div>
               </div>
             </button>
-          ))}
-        </div>
+            ))}
+        </Stagger>
       )}
     </div>
   );
