@@ -9,6 +9,9 @@ import { CreateGigWizard } from './components/gigs/CreateGigWizard';
 import { PostProjectWizard } from './components/projects/PostProjectWizard';
 import { AIToolsPlayground } from './components/ai/AIToolsPlayground';
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
+import { ScrollProgress } from './components/ui/ScrollProgress';
+import { SmoothScroll } from './components/ui/SmoothScroll';
+import { CursorGlow } from './components/ui/CursorGlow';
 import { AppProvider, useApp } from './context/AppContext';
 import { ToastProvider } from './context/ToastContext';
 
@@ -87,6 +90,9 @@ const AppLayout: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#09090b] text-slate-100 font-sans flex flex-col selection:bg-emerald-500 selection:text-black">
+      <SmoothScroll />
+      <ScrollProgress />
+      <CursorGlow />
       <div className="fixed inset-0 pointer-events-none bg-grid opacity-40 z-0" />
       <div className="relative z-10 flex flex-col min-h-screen">
         <RoleSwitcher />
