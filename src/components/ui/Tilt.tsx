@@ -73,7 +73,7 @@ export const Tilt: React.FC<TiltProps> = ({
           style={{
             opacity: spotPos.opacity,
             transition: 'opacity 0.3s ease',
-            background: `radial-gradient(600px circle at ${spotPos.x}% ${spotPos.y}%, rgba(16, 185, 129, 0.12), transparent 40%)`,
+            background: `radial-gradient(600px circle at ${spotPos.x}% ${spotPos.y}%, rgba(45, 212, 191, 0.12), transparent 40%)`,
           }}
         />
       )}

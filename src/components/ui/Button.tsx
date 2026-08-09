@@ -12,12 +12,12 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantStyles: Record<Variant, string> = {
-  primary: 'bg-emerald-500 hover:bg-emerald-400 text-black font-bold shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30',
+  primary: 'bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-500 bg-[length:200%_100%] hover:bg-[position:100%_0] text-black font-bold shadow-lg shadow-emerald-500/25 hover:shadow-emerald-400/40 transition-all duration-500',
   secondary: 'bg-zinc-800 hover:bg-zinc-700 text-white font-semibold border border-zinc-700 hover:border-zinc-600',
   outline: 'bg-transparent hover:bg-zinc-800/50 text-zinc-300 border border-zinc-800 hover:border-zinc-700 font-medium',
   ghost: 'bg-transparent hover:bg-zinc-800/30 text-zinc-400 hover:text-white font-medium',
   danger: 'bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 hover:border-rose-500/30 font-semibold',
-  gradient: 'bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-black font-bold shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30',
+  gradient: 'bg-gradient-to-r from-emerald-500 via-teal-400 to-violet-500 bg-[length:200%_100%] hover:bg-[position:100%_0] text-black font-bold shadow-lg shadow-emerald-500/25 hover:shadow-violet-500/30 transition-all duration-500',
 };
 
 const sizeStyles: Record<Size, string> = {

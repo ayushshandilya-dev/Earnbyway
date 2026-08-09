@@ -34,7 +34,9 @@ const FOOTER_LINKS = {
 export const Footer: React.FC = () => {
   return (
     <footer className="relative mt-24 border-t border-zinc-800/60 bg-gradient-to-b from-zinc-950 to-black">
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-500/40 to-transparent" />
       <div className="absolute inset-0 bg-grid opacity-20 pointer-events-none" />
+      <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-emerald-500/5 via-teal-500/5 to-transparent blur-2xl pointer-events-none" />
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Main Footer */}
         <div className="py-16">
@@ -42,7 +44,7 @@ export const Footer: React.FC = () => {
             {/* Brand */}
             <div className="col-span-2 md:col-span-2 lg:col-span-1 space-y-4">
               <div className="flex items-center gap-2">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 p-0.5">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 via-teal-400 to-violet-500 p-0.5">
                   <div className="w-full h-full bg-zinc-950 rounded-[10px] flex items-center justify-center">
                     <Hexagon className="w-5 h-5 text-emerald-400 fill-emerald-400/20" />
                   </div>

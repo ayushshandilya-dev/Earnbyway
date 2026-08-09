@@ -89,11 +89,16 @@ const AppLayout: React.FC = () => {
   const [isCreateGigOpen, setIsCreateGigOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#09090b] text-slate-100 font-sans flex flex-col selection:bg-emerald-500 selection:text-black">
-      <SmoothScroll />
-      <ScrollProgress />
-      <CursorGlow />
-      <div className="fixed inset-0 pointer-events-none bg-grid opacity-40 z-0" />
+<div className="min-h-screen bg-[#09090b] text-slate-100 font-sans flex flex-col selection:bg-emerald-500 selection:text-black">
+        <SmoothScroll />
+        <ScrollProgress />
+        <CursorGlow />
+        {/* Full-page aurora backdrop */}
+        <div className="aurora-bg">
+          <div className="bg-band band-1" />
+          <div className="bg-band band-2" />
+        </div>
+        <div className="fixed inset-0 pointer-events-none bg-grid opacity-40 z-0" />
       <div className="relative z-10 flex flex-col min-h-screen">
         <RoleSwitcher />
         <Navbar

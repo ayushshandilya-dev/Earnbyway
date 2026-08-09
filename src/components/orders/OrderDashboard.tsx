@@ -55,7 +55,7 @@ export const OrderDashboard: React.FC = () => {
       ) : (
         <div className="space-y-3">
           {filtered.map(order => (
-            <Card key={order.id} padding="md">
+            <Card key={order.id} padding="md" className="aurora-top">
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-4 flex-1 min-w-0">
                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${

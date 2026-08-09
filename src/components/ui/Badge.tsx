@@ -12,7 +12,7 @@ interface BadgeProps {
 
 const variants: Record<BadgeVariant, string> = {
   default: 'bg-zinc-900 border-zinc-800 text-zinc-300',
-  emerald: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400',
+  emerald: 'bg-gradient-to-r from-emerald-500/15 via-teal-500/15 to-violet-500/15 border-emerald-500/30 text-teal-300',
   amber: 'bg-amber-500/10 border-amber-500/30 text-amber-400',
   blue: 'bg-blue-500/10 border-blue-500/30 text-blue-400',
   purple: 'bg-purple-500/10 border-purple-500/30 text-purple-400',
@@ -28,7 +28,7 @@ const sizes = {
 export const Badge: React.FC<BadgeProps> = ({ children, variant = 'default', size = 'sm', className = '', dot = false }) => (
   <span className={`inline-flex items-center gap-1.5 rounded-lg border font-medium ${variants[variant]} ${sizes[size]} ${className}`}>
     {dot && <span className={`w-1.5 h-1.5 rounded-full ${
-      variant === 'emerald' ? 'bg-emerald-400' :
+      variant === 'emerald' ? 'bg-gradient-to-r from-teal-400 to-violet-400' :
       variant === 'amber' ? 'bg-amber-400' :
       variant === 'blue' ? 'bg-blue-400' :
       variant === 'purple' ? 'bg-purple-400' :

@@ -175,7 +175,7 @@ export const ProjectDetail: React.FC<Props> = ({ project, onBack }) => {
         </div>
 
         <div className="lg:col-span-1 space-y-4">
-          <div className="glass-panel rounded-2xl p-5 sticky top-28 space-y-5">
+          <div className="glass-panel rounded-2xl p-5 sticky top-28 space-y-5 aurora-top">
             <div className="space-y-3">
               <div className="flex justify-between text-sm">
                 <span className="text-zinc-400">Budget</span>

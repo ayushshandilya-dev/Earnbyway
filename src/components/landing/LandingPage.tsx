@@ -82,7 +82,10 @@ export const LandingPage: React.FC = () => {
       {/* ═══════════════════════ 3D HERO ═══════════════════════ */}
       <section className="relative overflow-hidden pt-24 pb-32 sm:pt-32 sm:pb-40 px-4 perspective-2000">
         {/* Aurora background */}
-        <div className="aurora" />
+        <div className="aurora">
+          <div className="aurora-band band-1" />
+          <div className="aurora-band band-2" />
+        </div>
         {/* 3D Orbs at different depths — mouse parallax */}
         <div ref={orbsRef as any} className="orb-3d absolute top-20 left-1/4 w-96 h-96 bg-emerald-500" style={{ animationDelay: '0s' }} />
         <div ref={orbsRef2 as any} className="orb-3d absolute bottom-20 right-1/4 w-80 h-80 bg-teal-400" style={{ animationDelay: '2s' }} />
@@ -153,7 +156,7 @@ export const LandingPage: React.FC = () => {
             <div className="flex flex-wrap items-center justify-center gap-4 mb-16">
               <Magnetic strength={0.25}>
                 <button onClick={() => navigate('/gigs')}
-                  className="group relative px-8 py-3.5 bg-emerald-500 hover:bg-emerald-400 text-black font-bold rounded-xl transition-all shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:scale-[1.03] btn-3d shine overflow-hidden">
+                  className="group relative px-8 py-3.5 bg-gradient-to-r from-emerald-500 via-teal-400 to-violet-500 bg-[length:200%_100%] hover:bg-[position:100%_0] text-black font-bold rounded-xl transition-all duration-500 shadow-lg shadow-emerald-500/30 hover:shadow-violet-500/40 hover:scale-[1.03] btn-3d shine overflow-hidden aurora-pulse">
                   Explore Gigs <ArrowRight className="w-4 h-4 inline group-hover:translate-x-0.5 transition-transform" />
                 </button>
               </Magnetic>
@@ -408,9 +411,10 @@ export const LandingPage: React.FC = () => {
       {/* ═══════════════════════ CTA ═══════════════════════ */}
       <Section className="py-24 px-4 max-w-5xl mx-auto">
         <Reveal direction="zoom">
-          <div className="relative overflow-hidden glass-card-strong rounded-3xl p-10 sm:p-16 perspective-2000 gradient-border">
+          <div className="relative overflow-hidden glass-card-strong rounded-3xl p-10 sm:p-16 perspective-2000 aurora-border">
             <div className="orb-3d absolute -top-24 -right-24 w-80 h-80 bg-emerald-500" style={{ animationDelay: '0s' }} />
             <div className="orb-3d absolute -bottom-24 -left-24 w-80 h-80 bg-teal-400" style={{ animationDelay: '2s' }} />
+            <div className="orb-3d absolute top-1/2 left-1/3 w-72 h-72 bg-violet-500" style={{ animationDelay: '4s' }} />
             <div className="absolute inset-0 bg-grid opacity-20" />
 
           <div className="relative z-10 text-center preserve-3d">

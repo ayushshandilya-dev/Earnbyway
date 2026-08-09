@@ -46,7 +46,7 @@ export const EarningsPage: React.FC = () => {
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {[
-          { label: 'Available Balance', value: currentUser.balance, icon: Wallet, color: 'from-emerald-500 to-teal-400' },
+          { label: 'Available Balance', value: currentUser.balance, icon: Wallet, color: 'from-emerald-500 via-teal-400 to-violet-500' },
           { label: 'Pending Clearance', value: currentUser.pendingBalance, icon: Clock, color: 'from-amber-500 to-orange-400' },
           { label: 'Total Withdrawn', value: currentUser.withdrawnBalance, icon: TrendingUp, color: 'from-blue-500 to-cyan-400' },
         ].map(stat => (
@@ -66,7 +66,7 @@ export const EarningsPage: React.FC = () => {
       </div>
 
       {/* Pro Tiers */}
-      <div className="bg-[#121215] border border-zinc-800 rounded-3xl p-6 space-y-6 glossy">
+      <div className="bg-[#121215] border border-zinc-800 rounded-3xl p-6 space-y-6 glossy aurora-top">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-zinc-800 pb-4">
           <div>
             <h2 className="text-xl font-heading font-extrabold text-white flex items-center gap-1.5">

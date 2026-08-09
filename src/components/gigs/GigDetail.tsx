@@ -141,7 +141,7 @@ export const GigDetail: React.FC<Props> = ({ gig, onBack }) => {
                     onClick={() => setSelectedPackage(tier)}
                     className={`glass-card rounded-2xl p-5 text-left transition-all ${
                       isSelected
-                        ? 'border-emerald-500/60 ring-1 ring-emerald-500/40 shadow-lg shadow-emerald-500/10'
+                        ? 'border-teal-500/60 ring-1 ring-violet-500/40 shadow-lg shadow-teal-500/10'
                         : 'hover:border-zinc-700'
                     }`}
                   >
@@ -255,7 +255,7 @@ export const GigDetail: React.FC<Props> = ({ gig, onBack }) => {
         </div>
 
         <div className="lg:col-span-1">
-          <div className="glass-panel rounded-2xl p-5 sticky top-28 space-y-5">
+          <div className="glass-panel rounded-2xl p-5 sticky top-28 space-y-5 aurora-top">
             <div className="flex items-center gap-2 text-emerald-400 text-xs font-semibold">
               <ShieldCheck className="w-4 h-4" /> Escrow Protected
             </div>

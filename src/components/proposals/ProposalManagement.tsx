@@ -79,7 +79,7 @@ export const ProposalManagement: React.FC = () => {
           const filtered = getFilteredProposals(project);
           const isExpanded = expandedProject === project.id;
           return (
-            <div key={project.id} className="glass-card rounded-2xl overflow-hidden">
+            <div key={project.id} className="glass-card rounded-2xl overflow-hidden aurora-top">
               <button onClick={() => setExpandedProject(isExpanded ? null : project.id)}
                 className="w-full p-5 flex items-center justify-between gap-4 text-left hover:bg-zinc-900/30 transition-colors">
                 <div className="flex-1 min-w-0">

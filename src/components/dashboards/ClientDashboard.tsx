@@ -72,7 +72,7 @@ export const ClientDashboard: React.FC = () => {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard label="Active Projects" value={activeProjects} icon={<Briefcase className="w-4 h-4 text-blue-400" />} gradient="from-blue-500 to-cyan-400" />
           <StatCard label="Active Orders" value={activeOrders} icon={<Activity className="w-4 h-4 text-purple-400" />} gradient="from-purple-500 to-pink-400" />
-          <StatCard label="Completed" value={completedOrders} icon={<CheckCircle className="w-4 h-4 text-emerald-400" />} gradient="from-emerald-500 to-teal-400" />
+          <StatCard label="Completed" value={completedOrders} icon={<CheckCircle className="w-4 h-4 text-emerald-400" />} gradient="from-emerald-500 via-teal-400 to-violet-500" />
           <StatCard label="Total Spent" value={`₹${totalSpent.toLocaleString()}`} icon={<DollarSign className="w-4 h-4 text-amber-400" />} gradient="from-amber-500 to-orange-400" />
         </div>
       </Stagger>
@@ -117,7 +117,7 @@ export const ClientDashboard: React.FC = () => {
       </div>
 
       {/* Recent Orders */}
-      <Card padding="lg">
+      <Card padding="lg" className="aurora-top">
         <CardHeader>
           <CardTitle icon={<Target className="w-4 h-4 text-emerald-400" />}>Recent Orders</CardTitle>
           <Button variant="ghost" size="xs" onClick={() => navigate('/orders')}>

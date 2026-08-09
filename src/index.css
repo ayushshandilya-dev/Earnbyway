@@ -21,6 +21,48 @@
 
 /* ── Glass Variants ── */
 
+/* Full-page aurora backdrop (fixs behind all content) */
+.aurora-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  background: #09090b;
+}
+.aurora-bg::before,
+.aurora-bg::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.22;
+}
+.aurora-bg::before {
+  background: radial-gradient(circle, rgba(18, 184, 168, 0.55), transparent 62%);
+  width: 65vw;
+  height: 65vw;
+  top: -18%;
+  left: -12%;
+  animation: auroraDrift 22s ease-in-out infinite alternate;
+}
+.aurora-bg::after {
+  background: radial-gradient(circle, rgba(167, 139, 250, 0.4), transparent 62%);
+  width: 60vw;
+  height: 60vw;
+  bottom: -15%;
+  right: -10%;
+  animation: auroraDrift 26s ease-in-out infinite alternate-reverse;
+}
+.aurora-bg .bg-band {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(110px);
+  opacity: 0.18;
+}
+.aurora-bg .band-1 { background: radial-gradient(circle, rgba(45, 212, 191, 0.5), transparent 60%); top: 20%; right: 0; width: 48vw; height: 48vw; animation: auroraDrift 30s ease-in-out infinite alternate; }
+.aurora-bg .band-2 { background: radial-gradient(circle, rgba(244, 114, 182, 0.35), transparent 60%); bottom: 8%; left: 18%; width: 50vw; height: 50vw; animation: auroraDrift 34s ease-in-out infinite alternate-reverse; }
+
 .glass-panel {
   background: rgba(18, 18, 22, 0.8);
   backdrop-filter: blur(20px);
@@ -37,8 +79,8 @@
 }
 
 .glass-card:hover {
-  border-color: rgba(16, 185, 129, 0.3);
-  box-shadow: 0 8px 32px rgba(16, 185, 129, 0.08);
+  border-color: rgba(45, 212, 191, 0.35);
+  box-shadow: 0 8px 32px rgba(45, 212, 191, 0.08);
 }
 
 .glass-card-hover {
@@ -47,8 +89,8 @@
 
 .glass-card-hover:hover {
   transform: translateY(-4px);
-  border-color: rgba(16, 185, 129, 0.35);
-  box-shadow: 0 20px 60px -15px rgba(16, 185, 129, 0.12);
+  border-color: rgba(167, 139, 250, 0.35);
+  box-shadow: 0 20px 60px -15px rgba(45, 212, 191, 0.14);
 }
 
 .glass-card-strong {
@@ -175,7 +217,7 @@
 /* ── Gradient Text ── */
 
 .gradient-text {
-  background: linear-gradient(135deg, #10b981, #34d399, #2dd4bf);
+  background: linear-gradient(120deg, #10b981, #34d399, #2dd4bf, #a78bfa);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -374,17 +416,66 @@
 
 /* Animated gradient text (shimmering) */
 .gradient-text-animate {
-  background: linear-gradient(120deg, #10b981, #34d399, #2dd4bf, #10b981);
-  background-size: 300% 100%;
+  background: linear-gradient(120deg, #10b981, #2dd4bf, #a78bfa, #f472b6, #10b981);
+  background-size: 400% 100%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  animation: gradientShift 6s ease infinite;
+  animation: gradientShift 7s ease infinite;
 }
 
 @keyframes gradientShift {
   0%, 100% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
+}
+
+/* Animated aurora top-border accent for cards */
+.aurora-top {
+  position: relative;
+}
+.aurora-top::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 2px;
+  border-radius: 9999px 9999px 0 0;
+  background: linear-gradient(90deg, transparent, #12b8a8, #a78bfa, #f472b6, transparent);
+  background-size: 250% 100%;
+  animation: auroraBorderShift 5s linear infinite;
+  opacity: 0.7;
+}
+
+/* Animated aurora border (flows through the color spectrum) */
+.aurora-border {
+  position: relative;
+  border-radius: inherit;
+}
+
+.aurora-border::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(120deg, #10b981, #2dd4bf, #a78bfa, #f472b6, #10b981);
+  background-size: 300% 100%;
+  z-index: -1;
+  animation: auroraBorderShift 6s linear infinite;
+}
+
+@keyframes auroraBorderShift {
+  from { background-position: 0% 0; }
+  to { background-position: 300% 0; }
+}
+
+/* Aurora button glow pulse (full spectrum) */
+@keyframes auroraPulse {
+  0%, 100% { box-shadow: 0 0 20px -5px rgba(16, 185, 129, 0.35); }
+  33% { box-shadow: 0 0 40px -6px rgba(167, 139, 250, 0.35); }
+  66% { box-shadow: 0 0 40px -6px rgba(244, 114, 182, 0.25); }
+}
+
+.aurora-pulse {
+  animation: auroraPulse 4s ease-in-out infinite;
 }
 
 /* Gradient border (animated conic) */
@@ -498,6 +589,7 @@
 }
 
 /* Pulsing aurora background for hero */
+/* Pulsing aurora background for hero */
 .aurora {
   position: absolute;
   inset: 0;
@@ -505,6 +597,7 @@
   pointer-events: none;
 }
 
+/* Rich aurora: three drifting color bands + shimmer cone */
 .aurora::before,
 .aurora::after {
   content: '';
@@ -513,13 +606,13 @@
   height: 55vw;
   border-radius: 50%;
   filter: blur(90px);
-  opacity: 0.22;
 }
 
 .aurora::before {
   background: radial-gradient(circle, rgba(16, 185, 129, 0.5), transparent 60%);
   top: -15%;
   left: -10%;
+  opacity: 0.28;
   animation: auroraDrift 16s ease-in-out infinite alternate;
 }
 
@@ -527,12 +620,22 @@
   background: radial-gradient(circle, rgba(45, 212, 191, 0.4), transparent 60%);
   bottom: -20%;
   right: -10%;
+  opacity: 0.22;
   animation: auroraDrift 20s ease-in-out infinite alternate-reverse;
 }
 
+.aurora .aurora-band {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.2;
+}
+.aurora .band-1 { background: radial-gradient(circle, rgba(167, 139, 250, 0.5), transparent 62%); top: 10%; right: 5%; width: 46vw; height: 46vw; animation: auroraDrift 24s ease-in-out infinite alternate; }
+.aurora .band-2 { background: radial-gradient(circle, rgba(244, 114, 182, 0.35), transparent 60%); bottom: 5%; left: 25%; width: 40vw; height: 40vw; animation: auroraDrift 28s ease-in-out infinite alternate-reverse; }
+
 @keyframes auroraDrift {
-  0% { transform: translate(0, 0) scale(1); }
-  100% { transform: translate(6vw, 4vw) scale(1.15); }
+  0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+  100% { transform: translate(6vw, 4vw) scale(1.15) rotate(8deg); }
 }
 
 /* Scroll hint bounce */

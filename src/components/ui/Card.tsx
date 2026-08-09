@@ -55,8 +55,8 @@ export const Card: React.FC<CardProps> = ({
 
   const tiltStyle = tilt3d && isHovered ? {
     transform: `perspective(1000px) rotateX(${tilt.y}deg) rotateY(${tilt.x}deg) translateZ(20px)`,
-    boxShadow: `${tilt.x * 2 + 15}px ${tilt.y * -2 + 25}px 50px rgba(16, 185, 129, 0.08), ${tilt.x * 4 + 25}px ${tilt.y * -4 + 50}px 80px rgba(0, 0, 0, 0.12)`,
-    borderColor: 'rgba(16, 185, 129, 0.35)',
+    boxShadow: `${tilt.x * 2 + 15}px ${tilt.y * -2 + 25}px 50px rgba(45, 212, 191, 0.08), ${tilt.x * 4 + 25}px ${tilt.y * -4 + 50}px 80px rgba(167, 139, 250, 0.08), rgba(0, 0, 0, 0.12)`,
+    borderColor: 'rgba(45, 212, 191, 0.35)',
   } : {};
 
   return (
@@ -70,7 +70,7 @@ export const Card: React.FC<CardProps> = ({
       style={{ ...style, ...tiltStyle }}
     >
       {spot.o > 0 && !tilt3d && (
-        <div className="pointer-events-none absolute inset-0 rounded-2xl" style={{ background: `radial-gradient(500px circle at ${spot.x}% ${spot.y}%, rgba(16, 185, 129, 0.08), transparent 40%)` }} />
+        <div className="pointer-events-none absolute inset-0 rounded-2xl" style={{ background: `radial-gradient(500px circle at ${spot.x}% ${spot.y}%, rgba(45, 212, 191, 0.08), transparent 40%)` }} />
       )}
       <div className="relative z-10">{children}</div>
     </div>

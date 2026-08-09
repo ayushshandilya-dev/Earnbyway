@@ -117,14 +117,14 @@ export const Navbar: React.FC<Props> = ({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
           {/* Logo */}
           <div className="flex items-center gap-3 cursor-pointer select-none group" onClick={() => navigate('/')}>
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 p-0.5 shadow-lg shadow-emerald-500/20 group-hover:shadow-emerald-500/30 transition-all group-hover:scale-105 duration-300">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 via-teal-400 to-violet-500 p-0.5 shadow-lg shadow-emerald-500/20 group-hover:shadow-violet-500/30 transition-all group-hover:scale-105 duration-300">
               <div className="w-full h-full bg-zinc-950 rounded-[10px] flex items-center justify-center">
                 <Hexagon className="w-6 h-6 text-emerald-400 fill-emerald-400/20" />
               </div>
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="font-heading font-extrabold text-xl tracking-tight text-white">EarnBy<span className="text-emerald-400">Way</span></span>
+                <span className="font-heading font-extrabold text-xl tracking-tight text-white">EarnBy<span className="gradient-text">Way</span></span>
                 {currentUser.proTier && currentUser.proTier !== 'none' && (
                   <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${
                     currentUser.proTier === 'pro' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' :
@@ -205,7 +205,7 @@ export const Navbar: React.FC<Props> = ({
             {/* AI Tools (mobile) */}
             <button
               onClick={onOpenAITools}
-              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600/20 to-teal-600/20 border border-emerald-500/30 text-emerald-300 text-xs font-semibold hover:border-emerald-400 hover:bg-emerald-500/20 transition-all btn-3d"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600/20 via-teal-600/20 to-violet-600/20 border border-emerald-500/30 text-emerald-300 text-xs font-semibold hover:border-violet-500/40 hover:bg-emerald-500/20 transition-all btn-3d"
             >
               <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
               <span className="hidden sm:inline">AI Tools</span>

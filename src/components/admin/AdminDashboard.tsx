@@ -39,13 +39,13 @@ const QuickLink: React.FC<{ label: string; path: string; icon: React.ReactNode; 
   const navigate = useNavigate();
   return (
     <button onClick={() => navigate(path)}
-      className="card-3d-tilt glossy glass-card rounded-2xl p-5 text-left hover:border-emerald-500/30 transition-all group">
+      className="card-3d-tilt glossy glass-card rounded-2xl p-5 text-left hover:border-teal-500/40 transition-all group aurora-top">
       <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${gradient} p-0.5 mb-4`}>
         <div className="w-full h-full bg-zinc-950 rounded-[10px] flex items-center justify-center group-hover:scale-110 transition-transform">
           {icon}
         </div>
       </div>
-      <h3 className="font-semibold text-white text-sm mb-1 group-hover:text-emerald-400 transition-colors">{label}</h3>
+      <h3 className="font-semibold text-white text-sm mb-1 group-hover:text-teal-300 transition-colors">{label}</h3>
       <p className="text-xs text-zinc-500">Manage &amp; oversee</p>
     </button>
   );

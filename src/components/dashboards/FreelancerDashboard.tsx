@@ -82,7 +82,7 @@ export const FreelancerDashboard: React.FC = () => {
           value={`₹${currentUser.balance.toLocaleString()}`}
           sub={`₹${currentUser.pendingBalance.toLocaleString()} pending`}
           icon={<DollarSign className="w-4 h-4 text-emerald-400" />}
-          gradient="from-emerald-500 to-teal-400"
+          gradient="from-emerald-500 via-teal-400 to-violet-500"
         />
         <StatCard
           label="Active Orders"
@@ -158,7 +158,7 @@ export const FreelancerDashboard: React.FC = () => {
 
       {/* Bottom Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card padding="lg">
+        <Card padding="lg" className="aurora-top">
           <CardTitle icon={<Activity className="w-4 h-4 text-emerald-400" />}>Your Stats</CardTitle>
           {myProfile && (
             <div className="space-y-4 mt-4">

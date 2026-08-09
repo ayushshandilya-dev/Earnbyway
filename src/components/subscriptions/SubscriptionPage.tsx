@@ -152,7 +152,7 @@ export const SubscriptionPage: React.FC = () => {
           const isLTE = currentTier === 'none' || plan.tier === 'none';
 
           return (
-            <div key={plan.tier} className={`relative glass-card rounded-3xl p-6 flex flex-col transition-all duration-300 ${
+            <div key={plan.tier} className={`relative glass-card rounded-3xl p-6 flex flex-col transition-all duration-300 aurora-top ${
               plan.popular ? 'ring-2 ring-amber-500/50 shadow-xl shadow-amber-500/10 scale-[1.02]' : ''
             } ${isCurrent ? `ring-1 ${colors.border}` : 'hover:border-zinc-700'}`}>
               {plan.popular && (
@@ -231,7 +231,7 @@ export const SubscriptionPage: React.FC = () => {
       </div>
 
       {/* FAQ */}
-      <div className="glass-card rounded-3xl p-8 max-w-2xl mx-auto text-center">
+      <div className="glass-card rounded-3xl p-8 max-w-2xl mx-auto text-center aurora-top">
         <h3 className="text-lg font-bold text-white mb-4">Frequently Asked Questions</h3>
         <div className="space-y-4 text-left">
           {[

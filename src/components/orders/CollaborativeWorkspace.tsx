@@ -201,7 +201,7 @@ export const CollaborativeWorkspace: React.FC = () => {
   return (
     <div className="py-6 space-y-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[#121215] border border-zinc-800/80 p-6 rounded-3xl">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[#121215] border border-zinc-800/80 p-6 rounded-3xl aurora-top">
         <div className="space-y-1.5">
           <button onClick={() => navigate('/orders')} className="flex items-center gap-1.5 text-zinc-400 hover:text-white transition-colors text-xs">
             <ArrowLeft className="w-3.5 h-3.5" /> Back to Dashboard
@@ -435,7 +435,7 @@ export const CollaborativeWorkspace: React.FC = () => {
             </div>
 
             {/* Assets List */}
-            <div className="lg:col-span-2 bg-[#121215]/80 border border-zinc-800 rounded-3xl p-5 space-y-4">
+            <div className="lg:col-span-2 bg-[#121215]/80 border border-zinc-800 rounded-3xl p-5 space-y-4 aurora-top">
               <h3 className="text-sm font-bold text-white border-b border-zinc-800 pb-2">Shared Project Resources</h3>
               
               <div className="space-y-2.5 max-h-[380px] overflow-y-auto pr-1">
@@ -478,7 +478,7 @@ export const CollaborativeWorkspace: React.FC = () => {
 
         {/* 3. PROJECT SPECIFICATIONS */}
         {activeTab === 'notes' && (
-          <div className="p-6 bg-[#121215] border border-zinc-800 rounded-3xl space-y-4">
+          <div className="p-6 bg-[#121215] border border-zinc-800 rounded-3xl space-y-4 aurora-top">
             <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
               <div className="flex items-center gap-2">
                 <FileText className="w-4 h-4 text-emerald-400" />
