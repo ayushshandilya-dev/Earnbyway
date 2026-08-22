@@ -307,7 +307,7 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose }) => {
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
       
       <div className="relative w-full max-w-md bg-[#121215] border border-zinc-800 rounded-3xl shadow-3d-lg overflow-hidden shadow-emerald-900/10 glossy">
-        <div className="absolute top-4 right-4 z-10">
+        <div className="absolute top-4 right-4 z-20">
           <button onClick={onClose} className="p-1.5 bg-zinc-900/80 hover:bg-zinc-800 rounded-full text-zinc-400 hover:text-white transition-colors">
             <X className="w-5 h-5" />
           </button>
