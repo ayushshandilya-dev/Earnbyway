@@ -54,8 +54,8 @@ export const FreelancerProfile: React.FC<Props> = ({ freelancerUser, onBack }) =
         </Button>
 
         {/* Banner & Avatar */}
-        <div className="relative rounded-2xl overflow-hidden mb-20">
-          <div className="h-48 sm:h-56 bg-cover bg-center" style={{ backgroundImage: `url(${profile.banner})` }}>
+        <div className="relative mb-20">
+          <div className="h-48 sm:h-56 bg-cover bg-center rounded-2xl overflow-hidden relative" style={{ backgroundImage: `url(${profile.banner})` }}>
             <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/40 to-transparent" />
           </div>
           <div className="absolute -bottom-12 left-6 sm:left-8 flex items-end gap-5">
