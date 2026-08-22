@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
 import { useToast } from '../../context/ToastContext';
@@ -52,8 +52,16 @@ export const CollaborativeWorkspace: React.FC = () => {
     updateWorkspaceNotes, 
     addWorkspaceAsset,
     submitMilestoneDeliverable,
-    approveMilestoneEscrow
+    approveMilestoneEscrow,
+    loadOrderWorkspace,
+    usingBackend
   } = useApp();
+
+  useEffect(() => {
+    if (orderId && usingBackend) {
+      loadOrderWorkspace(orderId);
+    }
+  }, [orderId, usingBackend]);
 
   const [activeTab, setActiveTab] = useState<'kanban' | 'assets' | 'notes' | 'milestones'>('kanban');
   

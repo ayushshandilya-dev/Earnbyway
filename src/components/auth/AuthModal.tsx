@@ -10,7 +10,7 @@ interface Props {
 }
 
 export const AuthModal: React.FC<Props> = ({ isOpen, onClose }) => {
-  const { signIn } = useApp();
+  const { signIn, loginUser, registerUser, usingBackend } = useApp();
   const [step, setStep] = useState<'login' | 'signup_role' | 'otp' | 'oauth_connecting' | 'oauth_success'>('login');
   const [selectedRole, setSelectedRole] = useState<'client' | 'freelancer' | null>(null);
   const [oauthProvider, setOauthProvider] = useState<'google' | 'github' | null>(null);
@@ -21,21 +21,40 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose }) => {
 
   if (!isOpen) return null;
 
-  const handleMockLogin = (role: 'client' | 'freelancer') => {
-    signIn(role, email || undefined, name || undefined);
-    onClose();
-    setTimeout(() => {
-      setStep('login');
-      setSelectedRole(null);
-      setOauthProvider(null);
-      setEmail('');
-      setPassword('');
-      setName('');
-      setError('');
-    }, 300);
+  const handleMockLogin = async (role: 'client' | 'freelancer') => {
+    if (usingBackend) {
+      try {
+        setError('');
+        await registerUser(name || (role === 'client' ? 'Sarah Jenkins' : 'Alex Vance'), email, role);
+        onClose();
+        setTimeout(() => {
+          setStep('login');
+          setSelectedRole(null);
+          setOauthProvider(null);
+          setEmail('');
+          setPassword('');
+          setName('');
+          setError('');
+        }, 300);
+      } catch (err: any) {
+        setError(err.message || 'Registration failed.');
+      }
+    } else {
+      signIn(role, email || undefined, name || undefined);
+      onClose();
+      setTimeout(() => {
+        setStep('login');
+        setSelectedRole(null);
+        setOauthProvider(null);
+        setEmail('');
+        setPassword('');
+        setName('');
+        setError('');
+      }, 300);
+    }
   };
 
-  const handleSignIn = () => {
+  const handleSignIn = async () => {
     if (!email.trim()) {
       setError('Please enter your email address.');
       return;
@@ -45,7 +64,26 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose }) => {
       return;
     }
     setError('');
-    handleMockLogin('client');
+
+    if (usingBackend) {
+      try {
+        await loginUser(email, password);
+        onClose();
+        setTimeout(() => {
+          setStep('login');
+          setSelectedRole(null);
+          setOauthProvider(null);
+          setEmail('');
+          setPassword('');
+          setName('');
+          setError('');
+        }, 300);
+      } catch (err: any) {
+        setError(err.message || 'Invalid email or password.');
+      }
+    } else {
+      handleMockLogin('client');
+    }
   };
 
   const handleOAuthStart = (provider: 'google' | 'github', role: 'client' | 'freelancer') => {

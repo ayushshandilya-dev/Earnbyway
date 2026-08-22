@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { api } from '../services/api';
 import { requestNotificationPermission, sendBrowserNotification } from '../utils/notifications';
 import { 
   User, 
@@ -54,16 +55,20 @@ interface AppContextType {
   workspaceNotes: Record<string, string>;
   workspaceAssets: WorkspaceAsset[];
 
+  usingBackend: boolean;
+
   // Actions
   switchRole: (role: UserRole) => void;
   signIn: (role: 'client' | 'freelancer', email?: string, name?: string) => User;
+  loginUser: (email: string, password: string) => Promise<User>;
+  registerUser: (name: string, email: string, role: 'client' | 'freelancer', title?: string, location?: string) => Promise<User>;
   signOut: () => void;
   createGig: (gig: Omit<Gig, 'id' | 'createdAt' | 'ordersCompleted' | 'rating' | 'reviewsCount'>) => void;
   postProject: (project: Omit<Project, 'id' | 'createdAt' | 'status' | 'proposalCount' | 'proposals'>) => void;
   submitProposal: (proposal: Omit<Proposal, 'id' | 'submittedAt' | 'status'>) => void;
   acceptProposal: (projectId: string, proposalId: string) => void;
   rejectProposal: (projectId: string, proposalId: string) => void;
-  createOrderFromGig: (gig: Gig, packageKey: 'basic' | 'standard' | 'premium') => Order;
+  createOrderFromGig: (gig: Gig, packageKey: 'basic' | 'standard' | 'premium') => Order | Promise<Order>;
   submitMilestoneDeliverable: (orderId: string, milestoneId: string, note: string, file?: string) => void;
   approveMilestoneEscrow: (orderId: string, milestoneId: string) => void;
   sendMessage: (conversationId: string, text: string, attachments?: string[]) => void;
@@ -79,6 +84,8 @@ interface AppContextType {
   toggleBookmark: (id: string) => void;
   isBookmarked: (id: string) => boolean;
 
+  loadOrderWorkspace: (orderId: string) => Promise<void>;
+
   // Phase 3 Actions
   addWorkspaceTask: (task: Omit<WorkspaceTask, 'id' | 'createdAt'>) => void;
   updateWorkspaceTask: (taskId: string, updates: Partial<WorkspaceTask>) => void;
@@ -92,6 +99,9 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const isBackendEnabled = !!import.meta.env.VITE_API_URL;
+  const [usingBackend, setUsingBackend] = useState(isBackendEnabled);
+
   const [users, setUsers] = useState<User[]>(() => {
     const saved = localStorage.getItem('earnbyway_users');
     return saved ? JSON.parse(saved) : INITIAL_USERS;
@@ -164,12 +174,97 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   });
 
   useEffect(() => {
-    localStorage.setItem('earnbyway_users', JSON.stringify(users));
+    const initData = async () => {
+      if (!isBackendEnabled) return;
+      try {
+        const token = api.getToken();
+        let activeUser = currentUser;
+        
+        if (token) {
+          try {
+            const me = await api.getMe();
+            activeUser = me;
+            setCurrentUser(me);
+            if (me.role) {
+              setCurrentRole(me.role);
+              localStorage.setItem('earnbyway_role', me.role);
+            }
+          } catch (err) {
+            console.warn('API getMe failed, clearing token:', err);
+            api.setToken(null);
+            switchRole('guest');
+          }
+        }
+        
+        const [gigsData, projectsData, freelancersData] = await Promise.all([
+          api.getGigs(),
+          api.getProjects(),
+          api.getFreelancers()
+        ]);
+        
+        setGigs(gigsData);
+        setProjects(projectsData);
+        
+        const profilesMap: Record<string, FreelancerProfile> = {};
+        const usersList: User[] = [];
+        
+        freelancersData.forEach((f: any) => {
+          const { freelancerProfile, ...userWithoutProfile } = f;
+          usersList.push(userWithoutProfile);
+          if (freelancerProfile) {
+            profilesMap[f.id] = freelancerProfile;
+          }
+        });
+        
+        setProfiles(profilesMap);
+        setUsers(prev => {
+          const merged = [...prev];
+          usersList.forEach(u => {
+            if (!merged.some(x => x.id === u.id)) {
+              merged.push(u);
+            }
+          });
+          return merged;
+        });
+
+        if (token) {
+          const [ordersData, convsData] = await Promise.all([
+            api.getOrders(),
+            api.getConversations()
+          ]);
+          setOrders(ordersData);
+          setConversations(convsData);
+          
+          if (convsData.length > 0) {
+            const messagesMap: Record<string, Message[]> = {};
+            await Promise.all(
+              convsData.slice(0, 3).map(async (c: any) => {
+                try {
+                  const msgs = await api.getMessages(c.id);
+                  messagesMap[c.id] = msgs;
+                } catch (e) {}
+              })
+            );
+            setMessages(messagesMap);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load database. Falling back to mock data:', error);
+        setUsingBackend(false);
+      }
+    };
+    initData();
+  }, [usingBackend]);
+
+  useEffect(() => {
+    if (!usingBackend) {
+      localStorage.setItem('earnbyway_users', JSON.stringify(users));
+    }
     const active = users.find(u => u.id === currentUser.id);
     if (active && JSON.stringify(active) !== JSON.stringify(currentUser)) {
       setCurrentUser(active);
     }
-  }, [users, currentUser.id]);
+  }, [users, currentUser.id, usingBackend]);
 
   useEffect(() => {
     localStorage.setItem('earnbyway_profiles', JSON.stringify(profiles));
@@ -251,247 +346,372 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return target;
   };
 
+  const loginUser = async (emailInput: string, passwordInput: string) => {
+    if (usingBackend) {
+      const user = await api.login({ email: emailInput, password: passwordInput });
+      setCurrentUser(user);
+      setCurrentRole(user.role);
+      localStorage.setItem('earnbyway_role', user.role);
+      const [ordersData, convsData] = await Promise.all([
+        api.getOrders(),
+        api.getConversations()
+      ]);
+      setOrders(ordersData);
+      setConversations(convsData);
+      return user;
+    } else {
+      return signIn('client', emailInput);
+    }
+  };
+
+  const registerUser = async (nameInput: string, emailInput: string, role: 'client' | 'freelancer') => {
+    if (usingBackend) {
+      const user = await api.register({
+        name: nameInput,
+        email: emailInput,
+        password: 'password123',
+        role,
+        title: role === 'freelancer' ? 'Specialist' : undefined,
+        location: 'Global'
+      });
+      setCurrentUser(user);
+      setCurrentRole(user.role);
+      localStorage.setItem('earnbyway_role', user.role);
+      return user;
+    } else {
+      return signIn(role, emailInput, nameInput);
+    }
+  };
+
   // Sign out: return to guest view
   const signOut = () => {
+    if (usingBackend) {
+      api.setToken(null);
+    }
     switchRole('guest');
   };
 
   // Create Gig
-  const createGig = (gigData: Omit<Gig, 'id' | 'createdAt' | 'ordersCompleted' | 'rating' | 'reviewsCount'>) => {
-    const newGig: Gig = {
-      ...gigData,
-      id: `gig_${Date.now()}`,
-      rating: 5.0,
-      reviewsCount: 0,
-      ordersCompleted: 0,
-      createdAt: new Date().toISOString().split('T')[0]
-    };
-    setGigs(prev => [newGig, ...prev]);
-    
-    // Add Notification
-    addNotification({
-      userId: currentUser.id,
-      type: 'system',
-      title: 'Gig Published Successfully',
-      message: `Your new gig "${newGig.title.slice(0, 30)}..." is now live in search.`
-    });
+  const createGig = async (gigData: Omit<Gig, 'id' | 'createdAt' | 'ordersCompleted' | 'rating' | 'reviewsCount'>) => {
+    if (usingBackend) {
+      try {
+        const gig = await api.createGig(gigData);
+        setGigs(prev => [gig, ...prev]);
+        addNotification({
+          userId: currentUser.id,
+          type: 'system',
+          title: 'Gig Published Successfully',
+          message: `Your new gig "${gig.title.slice(0, 30)}..." is now live in search.`
+        });
+      } catch (err) {
+        console.error('Failed to publish gig:', err);
+      }
+    } else {
+      const newGig: Gig = {
+        ...gigData,
+        id: `gig_${Date.now()}`,
+        rating: 5.0,
+        reviewsCount: 0,
+        ordersCompleted: 0,
+        createdAt: new Date().toISOString().split('T')[0]
+      };
+      setGigs(prev => [newGig, ...prev]);
+      
+      addNotification({
+        userId: currentUser.id,
+        type: 'system',
+        title: 'Gig Published Successfully',
+        message: `Your new gig "${newGig.title.slice(0, 30)}..." is now live in search.`
+      });
+    }
   };
 
   // Post Project
-  const postProject = (projData: Omit<Project, 'id' | 'createdAt' | 'status' | 'proposalCount' | 'proposals'>) => {
-    const newProject: Project = {
-      ...projData,
-      id: `proj_${Date.now()}`,
-      status: 'open',
-      proposalCount: 0,
-      proposals: [],
-      createdAt: new Date().toISOString().split('T')[0]
-    };
-    setProjects(prev => [newProject, ...prev]);
+  const postProject = async (projData: Omit<Project, 'id' | 'createdAt' | 'status' | 'proposalCount' | 'proposals'>) => {
+    if (usingBackend) {
+      try {
+        const project = await api.postProject(projData);
+        setProjects(prev => [project, ...prev]);
+        addNotification({
+          userId: currentUser.id,
+          type: 'system',
+          title: 'Project Posted',
+          message: `Your project "${project.title.slice(0, 30)}..." is live and open for proposals.`
+        });
+      } catch (err) {
+        console.error('Failed to post project:', err);
+      }
+    } else {
+      const newProject: Project = {
+        ...projData,
+        id: `proj_${Date.now()}`,
+        status: 'open',
+        proposalCount: 0,
+        proposals: [],
+        createdAt: new Date().toISOString().split('T')[0]
+      };
+      setProjects(prev => [newProject, ...prev]);
 
-    addNotification({
-      userId: currentUser.id,
-      type: 'system',
-      title: 'Project Posted',
-      message: `Your project "${newProject.title.slice(0, 30)}..." is live and open for proposals.`
-    });
+      addNotification({
+        userId: currentUser.id,
+        type: 'system',
+        title: 'Project Posted',
+        message: `Your project "${newProject.title.slice(0, 30)}..." is live and open for proposals.`
+      });
+    }
   };
 
   // Submit Proposal
-  const submitProposal = (propData: Omit<Proposal, 'id' | 'submittedAt' | 'status'>) => {
-    const newProposal: Proposal = {
-      ...propData,
-      id: `prop_${Date.now()}`,
-      status: 'pending',
-      submittedAt: new Date().toISOString().split('T')[0]
-    };
-
-    setProjects(prev => prev.map(p => {
-      if (p.id === propData.projectId) {
-        return {
-          ...p,
-          proposalCount: p.proposalCount + 1,
-          proposals: [newProposal, ...p.proposals]
-        };
+  const submitProposal = async (propData: Omit<Proposal, 'id' | 'submittedAt' | 'status'>) => {
+    if (usingBackend) {
+      try {
+        const proposal = await api.submitProposal(propData.projectId, propData);
+        setProjects(prev => prev.map(p => {
+          if (p.id === propData.projectId) {
+            return {
+              ...p,
+              proposalCount: p.proposalCount + 1,
+              proposals: [proposal, ...p.proposals]
+            };
+          }
+          return p;
+        }));
+      } catch (err) {
+        console.error('Failed to submit proposal:', err);
       }
-      return p;
-    }));
+    } else {
+      const newProposal: Proposal = {
+        ...propData,
+        id: `prop_${Date.now()}`,
+        status: 'pending',
+        submittedAt: new Date().toISOString().split('T')[0]
+      };
 
-    const proj = projects.find(p => p.id === propData.projectId);
-    if (proj) {
-      addNotification({
-        userId: proj.clientId,
-        type: 'proposal',
-        title: 'New Proposal Received',
-        message: `${currentUser.name} submitted a proposal for "${proj.title.slice(0, 25)}...".`
-      });
+      setProjects(prev => prev.map(p => {
+        if (p.id === propData.projectId) {
+          return {
+            ...p,
+            proposalCount: p.proposalCount + 1,
+            proposals: [newProposal, ...p.proposals]
+          };
+        }
+        return p;
+      }));
+
+      const proj = projects.find(p => p.id === propData.projectId);
+      if (proj) {
+        addNotification({
+          userId: proj.clientId,
+          type: 'proposal',
+          title: 'New Proposal Received',
+          message: `${currentUser.name} submitted a proposal for "${proj.title.slice(0, 25)}...".`
+        });
+      }
     }
   };
 
   // Accept Proposal & Fund Escrow Order
-  const acceptProposal = (projectId: string, proposalId: string) => {
-    const proj = projects.find(p => p.id === projectId);
-    if (!proj) return;
-    const prop = proj.proposals.find(pr => pr.id === proposalId);
-    if (!prop) return;
-
-    // Update project status
-    setProjects(prev => prev.map(p => {
-      if (p.id === projectId) {
-        return {
-          ...p,
-          status: 'hired',
-          proposals: p.proposals.map(pr => pr.id === proposalId ? { ...pr, status: 'accepted' } : { ...pr, status: 'rejected' })
-        };
+  const acceptProposal = async (projectId: string, proposalId: string) => {
+    if (usingBackend) {
+      try {
+        await api.manageProposal(projectId, proposalId, 'accepted');
+        const [projectsData, ordersData] = await Promise.all([
+          api.getProjects(),
+          api.getOrders()
+        ]);
+        setProjects(projectsData);
+        setOrders(ordersData);
+      } catch (err) {
+        console.error('Failed to accept proposal:', err);
       }
-      return p;
-    }));
+    } else {
+      const proj = projects.find(p => p.id === projectId);
+      if (!proj) return;
+      const prop = proj.proposals.find(pr => pr.id === proposalId);
+      if (!prop) return;
 
-    // Create Order with Escrow Milestones
-    const newOrder: Order = {
-      id: `order_${Date.now()}`,
-      type: 'project',
-      title: proj.title,
-      clientId: proj.clientId,
-      clientName: proj.clientName,
-      freelancerId: prop.freelancerId,
-      freelancerName: prop.freelancerName,
-      totalPrice: prop.bidAmount,
-      escrowBalance: prop.bidAmount,
-      status: 'in_progress',
-      createdAt: new Date().toISOString().split('T')[0],
-      milestones: [
-        {
-          id: `m_${Date.now()}_1`,
-          title: 'Milestone 1: Prototype & Initial Delivery',
-          percentage: 50,
-          amount: Math.round(prop.bidAmount * 0.5),
-          dueDate: new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0],
-          status: 'funded'
-        },
-        {
-          id: `m_${Date.now()}_2`,
-          title: 'Milestone 2: Final Build & Handover',
-          percentage: 50,
-          amount: Math.round(prop.bidAmount * 0.5),
-          dueDate: new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0],
-          status: 'funded'
+      // Update project status
+      setProjects(prev => prev.map(p => {
+        if (p.id === projectId) {
+          return {
+            ...p,
+            status: 'hired',
+            proposals: p.proposals.map(pr => pr.id === proposalId ? { ...pr, status: 'accepted' } : { ...pr, status: 'rejected' })
+          };
         }
-      ]
-    };
+        return p;
+      }));
 
-    setOrders(prev => [newOrder, ...prev]);
+      // Create Order with Escrow Milestones
+      const newOrder: Order = {
+        id: `order_${Date.now()}`,
+        type: 'project',
+        title: proj.title,
+        clientId: proj.clientId,
+        clientName: proj.clientName,
+        freelancerId: prop.freelancerId,
+        freelancerName: prop.freelancerName,
+        totalPrice: prop.bidAmount,
+        escrowBalance: prop.bidAmount,
+        status: 'in_progress',
+        createdAt: new Date().toISOString().split('T')[0],
+        milestones: [
+          {
+            id: `m_${Date.now()}_1`,
+            title: 'Milestone 1: Prototype & Initial Delivery',
+            percentage: 50,
+            amount: Math.round(prop.bidAmount * 0.5),
+            dueDate: new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0],
+            status: 'funded'
+          },
+          {
+            id: `m_${Date.now()}_2`,
+            title: 'Milestone 2: Final Build & Handover',
+            percentage: 50,
+            amount: Math.round(prop.bidAmount * 0.5),
+            dueDate: new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0],
+            status: 'funded'
+          }
+        ]
+      };
 
-    // Notify Freelancer
-    addNotification({
-      userId: prop.freelancerId,
-      type: 'order',
-      title: 'Proposal Accepted & Escrow Funded!',
-      message: `${proj.clientName} accepted your proposal for "${proj.title}". Escrow of ₹${prop.bidAmount.toLocaleString()} is locked.`
-    });
+      setOrders(prev => [newOrder, ...prev]);
+
+      // Notify Freelancer
+      addNotification({
+        userId: prop.freelancerId,
+        type: 'order',
+        title: 'Proposal Accepted & Escrow Funded!',
+        message: `${proj.clientName} accepted your proposal for "${proj.title}". Escrow of ₹${prop.bidAmount.toLocaleString()} is locked.`
+      });
+    }
   };
 
   // Submit Milestone Deliverable
-  const submitMilestoneDeliverable = (orderId: string, milestoneId: string, note: string, file?: string) => {
-    setOrders(prev => prev.map(o => {
-      if (o.id === orderId) {
-        return {
-          ...o,
-          milestones: o.milestones.map(m => {
-            if (m.id === milestoneId) {
-              return {
-                ...m,
-                status: 'submitted',
-                deliverableNote: note,
-                deliverableFile: file || 'https://earnbyway.dev/deliverables/submission.zip',
-                submittedAt: new Date().toISOString().split('T')[0]
-              };
-            }
-            return m;
-          })
-        };
+  const submitMilestoneDeliverable = async (orderId: string, milestoneId: string, note: string, file?: string) => {
+    if (usingBackend) {
+      try {
+        await api.submitMilestone(orderId, milestoneId, { note, file });
+        const ordersData = await api.getOrders();
+        setOrders(ordersData);
+      } catch (err) {
+        console.error('Failed to submit milestone:', err);
       }
-      return o;
-    }));
+    } else {
+      setOrders(prev => prev.map(o => {
+        if (o.id === orderId) {
+          return {
+            ...o,
+            milestones: o.milestones.map(m => {
+              if (m.id === milestoneId) {
+                return {
+                  ...m,
+                  status: 'submitted',
+                  deliverableNote: note,
+                  deliverableFile: file || 'https://earnbyway.dev/deliverables/submission.zip',
+                  submittedAt: new Date().toISOString().split('T')[0]
+                };
+              }
+              return m;
+            })
+          };
+        }
+        return o;
+      }));
 
-    const targetOrder = orders.find(o => o.id === orderId);
-    if (targetOrder) {
-      addNotification({
-        userId: targetOrder.clientId,
-        type: 'order',
-        title: 'Milestone Submitted for Review',
-        message: `${targetOrder.freelancerName} submitted work for review on order #${orderId}.`
-      });
+      const targetOrder = orders.find(o => o.id === orderId);
+      if (targetOrder) {
+        addNotification({
+          userId: targetOrder.clientId,
+          type: 'order',
+          title: 'Milestone Submitted for Review',
+          message: `${targetOrder.freelancerName} submitted work for review on order #${orderId}.`
+        });
+      }
     }
   };
 
   // Approve Milestone Escrow Release (with dependency checking)
-  const approveMilestoneEscrow = (orderId: string, milestoneId: string) => {
-    let releasedAmount = 0;
-    let freelancerId = '';
+  const approveMilestoneEscrow = async (orderId: string, milestoneId: string) => {
+    if (usingBackend) {
+      try {
+        await api.releaseMilestone(orderId, milestoneId);
+        const [ordersData, me] = await Promise.all([
+          api.getOrders(),
+          api.getMe()
+        ]);
+        setOrders(ordersData);
+        setCurrentUser(me);
+      } catch (err) {
+        console.error('Failed to release milestone:', err);
+      }
+    } else {
+      let releasedAmount = 0;
+      let freelancerId = '';
 
-    const order = orders.find(o => o.id === orderId);
-    if (!order) return;
+      const order = orders.find(o => o.id === orderId);
+      if (!order) return;
 
-    const milestone = order.milestones.find(m => m.id === milestoneId);
-    if (!milestone) return;
+      const milestone = order.milestones.find(m => m.id === milestoneId);
+      if (!milestone) return;
 
-    // Check dependencies: all depended-on milestones must be 'released'
-    if (milestone.dependsOn && milestone.dependsOn.length > 0) {
-      for (const depId of milestone.dependsOn) {
-        const depMilestone = order.milestones.find(m => m.id === depId);
-        if (depMilestone && depMilestone.status !== 'released') {
-          addNotification({
-            userId: currentUser.id,
-            type: 'order',
-            title: 'Milestone Dependency Not Met',
-            message: `"${milestone.title}" depends on "${depMilestone?.title}" which has not been released yet.`
-          });
-          return; // Block release
+      // Check dependencies: all depended-on milestones must be 'released'
+      if (milestone.dependsOn && milestone.dependsOn.length > 0) {
+        for (const depId of milestone.dependsOn) {
+          const depMilestone = order.milestones.find(m => m.id === depId);
+          if (depMilestone && depMilestone.status !== 'released') {
+            addNotification({
+              userId: currentUser.id,
+              type: 'order',
+              title: 'Milestone Dependency Not Met',
+              message: `"${milestone.title}" depends on "${depMilestone?.title}" which has not been released yet.`
+            });
+            return; // Block release
+          }
         }
       }
-    }
 
-    setOrders(prev => prev.map(o => {
-      if (o.id === orderId) {
-        freelancerId = o.freelancerId;
-        const updatedMilestones = o.milestones.map(m => {
-          if (m.id === milestoneId) {
-            releasedAmount = m.amount;
-            return { ...m, status: 'released' as const };
-          }
-          return m;
-        });
+      setOrders(prev => prev.map(o => {
+        if (o.id === orderId) {
+          freelancerId = o.freelancerId;
+          const updatedMilestones = o.milestones.map(m => {
+            if (m.id === milestoneId) {
+              releasedAmount = m.amount;
+              return { ...m, status: 'released' as const };
+            }
+            return m;
+          });
 
-        const allReleased = updatedMilestones.every(m => m.status === 'released');
+          const allReleased = updatedMilestones.every(m => m.status === 'released');
 
-        return {
-          ...o,
-          escrowBalance: Math.max(0, o.escrowBalance - releasedAmount),
-          status: allReleased ? ('completed' as const) : o.status
-        };
-      }
-      return o;
-    }));
-
-    // Credit Freelancer Balance
-    if (releasedAmount > 0 && freelancerId) {
-      setUsers(prev => prev.map(u => {
-        if (u.id === freelancerId) {
           return {
-            ...u,
-            balance: u.balance + releasedAmount
+            ...o,
+            escrowBalance: Math.max(0, o.escrowBalance - releasedAmount),
+            status: allReleased ? ('completed' as const) : o.status
           };
         }
-        return u;
+        return o;
       }));
 
-      addNotification({
-        userId: freelancerId,
-        type: 'payment',
-        title: 'Payment Released from Escrow!',
-        message: `₹${releasedAmount.toLocaleString()} has been credited to your available balance.`
-      });
+      // Credit Freelancer Balance
+      if (releasedAmount > 0 && freelancerId) {
+        setUsers(prev => prev.map(u => {
+          if (u.id === freelancerId) {
+            return {
+              ...u,
+              balance: u.balance + releasedAmount
+            };
+          }
+          return u;
+        }));
+
+        addNotification({
+          userId: freelancerId,
+          type: 'payment',
+          title: 'Payment Released from Escrow!',
+          message: `₹${releasedAmount.toLocaleString()} has been credited to your available balance.`
+        });
+      }
     }
   };
 
@@ -501,67 +721,89 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   // Send Message + Simulated Bot Response
-  const sendMessage = (conversationId: string, text: string, attachments?: string[]) => {
-    const newMsg: Message = {
-      id: `msg_${Date.now()}`,
-      conversationId,
-      senderId: currentUser.id,
-      senderName: currentUser.name,
-      senderAvatar: currentUser.avatar,
-      recipientId: 'user_freelancer_1',
-      text,
-      attachments,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      isRead: true
-    };
-
-    setMessages(prev => ({
-      ...prev,
-      [conversationId]: [...(prev[conversationId] || []), newMsg]
-    }));
-
-    setConversations(prev => prev.map(c => {
-      if (c.id === conversationId) {
-        return {
-          ...c,
-          lastMessage: text,
-          lastMessageTime: 'Just now'
-        };
+  const sendMessage = async (conversationId: string, text: string, attachments?: string[]) => {
+    if (usingBackend) {
+      try {
+        const message = await api.sendMessage(conversationId, text, attachments);
+        setMessages(prev => ({
+          ...prev,
+          [conversationId]: [...(prev[conversationId] || []), message]
+        }));
+        setConversations(prev => prev.map(c => {
+          if (c.id === conversationId) {
+            return {
+              ...c,
+              lastMessage: text || '[Attachment]',
+              lastMessageTime: new Date().toISOString()
+            };
+          }
+          return c;
+        }));
+      } catch (err) {
+        console.error('Failed to send message:', err);
       }
-      return c;
-    }));
-
-    // Trigger simulated response after 2 seconds
-    setTimeout(() => {
-      const autoReply: Message = {
-        id: `msg_${Date.now() + 1}`,
+    } else {
+      const newMsg: Message = {
+        id: `msg_${Date.now()}`,
         conversationId,
-        senderId: 'user_freelancer_1',
-        senderName: 'Alex Vance',
-        senderAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-        recipientId: currentUser.id,
-        text: `Thanks for your message, ${currentUser.name}! I received your note regarding "${text.slice(0, 20)}...". I will get back to you shortly.`,
+        senderId: currentUser.id,
+        senderName: currentUser.name,
+        senderAvatar: currentUser.avatar,
+        recipientId: 'user_freelancer_1',
+        text,
+        attachments,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        isRead: false
+        isRead: true
       };
 
       setMessages(prev => ({
         ...prev,
-        [conversationId]: [...(prev[conversationId] || []), autoReply]
+        [conversationId]: [...(prev[conversationId] || []), newMsg]
       }));
 
       setConversations(prev => prev.map(c => {
         if (c.id === conversationId) {
           return {
             ...c,
-            lastMessage: autoReply.text,
-            lastMessageTime: 'Just now',
-            unreadCount: c.unreadCount + 1
+            lastMessage: text,
+            lastMessageTime: 'Just now'
           };
         }
         return c;
       }));
-    }, 2000);
+
+      // Trigger simulated response after 2 seconds
+      setTimeout(() => {
+        const autoReply: Message = {
+          id: `msg_${Date.now() + 1}`,
+          conversationId,
+          senderId: 'user_freelancer_1',
+          senderName: 'Alex Vance',
+          senderAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+          recipientId: currentUser.id,
+          text: `Thanks for your message, ${currentUser.name}! I received your note regarding "${text.slice(0, 20)}...". I will get back to you shortly.`,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          isRead: false
+        };
+
+        setMessages(prev => ({
+          ...prev,
+          [conversationId]: [...(prev[conversationId] || []), autoReply]
+        }));
+
+        setConversations(prev => prev.map(c => {
+          if (c.id === conversationId) {
+            return {
+              ...c,
+              lastMessage: autoReply.text,
+              lastMessageTime: 'Just now',
+              unreadCount: c.unreadCount + 1
+            };
+          }
+          return c;
+        }));
+      }, 2000);
+    }
   };
 
   // Post Review
@@ -582,22 +824,48 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   // Update current user's profile (settings)
-  const updateProfile = (updates: Partial<User>) => {
-    setUsers(prev => prev.map(u => u.id === currentUser.id ? { ...u, ...updates } : u));
-    setCurrentUser(prev => prev ? { ...prev, ...updates } : prev);
+  const updateProfile = async (updates: Partial<User>) => {
+    if (usingBackend) {
+      try {
+        const updatedUser = await api.updateProfile(updates);
+        setCurrentUser(updatedUser);
+      } catch (err) {
+        console.error('Failed to update profile:', err);
+      }
+    } else {
+      setUsers(prev => prev.map(u => u.id === currentUser.id ? { ...u, ...updates } : u));
+      setCurrentUser(prev => prev ? { ...prev, ...updates } : prev);
+    }
   };
 
   // Reject a proposal (persists status so it can't reappear)
-  const rejectProposal = (projectId: string, proposalId: string) => {
-    setProjects(prev => prev.map(p => {
-      if (p.id === projectId) {
-        return {
-          ...p,
-          proposals: p.proposals.map(pr => pr.id === proposalId ? { ...pr, status: 'rejected' as const } : pr)
-        };
+  const rejectProposal = async (projectId: string, proposalId: string) => {
+    if (usingBackend) {
+      try {
+        await api.manageProposal(projectId, proposalId, 'rejected');
+        setProjects(prev => prev.map(p => {
+          if (p.id === projectId) {
+            return {
+              ...p,
+              proposals: p.proposals.map(pr => pr.id === proposalId ? { ...pr, status: 'rejected' as const } : pr)
+            };
+          }
+          return p;
+        }));
+      } catch (err) {
+        console.error('Failed to reject proposal:', err);
       }
-      return p;
-    }));
+    } else {
+      setProjects(prev => prev.map(p => {
+        if (p.id === projectId) {
+          return {
+            ...p,
+            proposals: p.proposals.map(pr => pr.id === proposalId ? { ...pr, status: 'rejected' as const } : pr)
+          };
+        }
+        return p;
+      }));
+    }
   };
 
   // Admin reject withdrawal (persists status)
@@ -624,41 +892,60 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   // Buy a gig → create an escrow order (Order Now flow)
-  const createOrderFromGig = (gig: Gig, packageKey: 'basic' | 'standard' | 'premium') => {
-    const pkg = gig.packages[packageKey];
-    const freelancerUser = users.find(u => u.id === gig.freelancerId);
+  const createOrderFromGig = async (gig: Gig, packageKey: 'basic' | 'standard' | 'premium') => {
+    if (usingBackend) {
+      try {
+        const order = await api.createOrderFromGig(gig.id, packageKey);
+        setOrders(prev => [order, ...prev]);
+        const gigPackages = typeof gig.packages === 'string' ? JSON.parse(gig.packages) : gig.packages;
+        const price = gigPackages[packageKey].price;
+        setCurrentUser(prev => ({
+          ...prev,
+          balance: Math.max(0, prev.balance - price),
+          pendingBalance: prev.pendingBalance + price
+        }));
+        return order;
+      } catch (err) {
+        console.error('Failed to create order from gig:', err);
+        throw err;
+      }
+    } else {
+      const gigPackages = typeof gig.packages === 'string' ? JSON.parse(gig.packages) : gig.packages;
+      const pkg = gigPackages[packageKey];
+      const freelancerUser = users.find(u => u.id === gig.freelancerId);
 
-    const newOrder: Order = {
-      id: `order_${Date.now()}`,
-      type: 'gig',
-      title: gig.title,
-      clientId: currentUser.id,
-      clientName: currentUser.name,
-      freelancerId: gig.freelancerId,
-      freelancerName: gig.freelancerName,
-      totalPrice: pkg.price,
-      escrowBalance: pkg.price,
-      status: 'funded',
-      createdAt: new Date().toISOString().split('T')[0],
-      milestones: [{
-        id: `m_${Date.now()}_1`,
-        title: `${pkg.title} — Final Delivery`,
-        percentage: 100,
-        amount: pkg.price,
-        dueDate: new Date(Date.now() + pkg.deliveryDays * 86400000).toISOString().split('T')[0],
-        status: 'funded'
-      }]
-    };
+      const newOrder: Order = {
+        id: `order_${Date.now()}`,
+        type: 'gig',
+        title: gig.title,
+        clientId: currentUser.id,
+        clientName: currentUser.name,
+        freelancerId: gig.freelancerId,
+        freelancerName: gig.freelancerName,
+        totalPrice: pkg.price,
+        escrowBalance: pkg.price,
+        status: 'funded',
+        createdAt: new Date().toISOString().split('T')[0],
+        milestones: [{
+          id: `m_${Date.now()}_1`,
+          title: `${pkg.title} — Final Delivery`,
+          percentage: 100,
+          amount: pkg.price,
+          dueDate: new Date(Date.now() + pkg.deliveryDays * 86400000).toISOString().split('T')[0],
+          status: 'funded'
+        }]
+      };
 
-    setOrders(prev => [newOrder, ...prev]);
+      setOrders(prev => [newOrder, ...prev]);
 
-    addNotification({
-      userId: gig.freelancerId,
-      type: 'order',
-      title: 'New Order!',
-      message: `${currentUser.name} ordered "${gig.title}" (${pkg.title}). ₹${pkg.price.toLocaleString()} is in escrow.`
-    });
-    return newOrder;
+      addNotification({
+        userId: gig.freelancerId,
+        type: 'order',
+        title: 'New Order!',
+        message: `${currentUser.name} ordered "${gig.title}" (${pkg.title}). ₹${pkg.price.toLocaleString()} is in escrow.`
+      });
+      return newOrder;
+    }
   };
 
   // Request Withdrawal
@@ -755,38 +1042,110 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const isBookmarked = (id: string) => bookmarks.includes(id);
 
-  // Phase 3 Actions
-  const addWorkspaceTask = (taskData: Omit<WorkspaceTask, 'id' | 'createdAt'>) => {
-    const newTask: WorkspaceTask = {
-      ...taskData,
-      id: `wt_${Date.now()}`,
-      createdAt: new Date().toISOString().split('T')[0]
-    };
-    setWorkspaceTasks(prev => [...prev, newTask]);
+  const loadOrderWorkspace = async (orderId: string) => {
+    if (usingBackend) {
+      try {
+        const order = await api.getOrderById(orderId);
+        setWorkspaceTasks(order.workspaceTasks || []);
+        setWorkspaceAssets(order.workspaceAssets || []);
+        if (order.workspaceNotes) {
+          setWorkspaceNotes(prev => ({
+            ...prev,
+            [orderId]: order.workspaceNotes.notes || ''
+          }));
+        } else {
+          setWorkspaceNotes(prev => ({
+            ...prev,
+            [orderId]: ''
+          }));
+        }
+      } catch (err) {
+        console.error('Failed to load order workspace data:', err);
+      }
+    }
   };
 
-  const updateWorkspaceTask = (taskId: string, updates: Partial<WorkspaceTask>) => {
-    setWorkspaceTasks(prev => prev.map(t => t.id === taskId ? { ...t, ...updates } : t));
+  // Phase 3 Actions
+  const addWorkspaceTask = async (taskData: Omit<WorkspaceTask, 'id' | 'createdAt'>) => {
+    if (usingBackend) {
+      try {
+        const task = await api.addWorkspaceTask(taskData.orderId, { title: taskData.title, assignedTo: taskData.assignedTo || '' });
+        setWorkspaceTasks(prev => [...prev, task]);
+      } catch (err) {
+        console.error('Failed to add workspace task:', err);
+      }
+    } else {
+      const newTask: WorkspaceTask = {
+        ...taskData,
+        id: `wt_${Date.now()}`,
+        createdAt: new Date().toISOString().split('T')[0]
+      };
+      setWorkspaceTasks(prev => [...prev, newTask]);
+    }
+  };
+
+  const updateWorkspaceTask = async (taskId: string, updates: Partial<WorkspaceTask>) => {
+    if (usingBackend) {
+      try {
+        const task = workspaceTasks.find(t => t.id === taskId);
+        if (task) {
+          const updated = await api.updateWorkspaceTask(task.orderId, taskId, {
+            status: updates.status || task.status,
+            assignedTo: updates.assignedTo || task.assignedTo || ''
+          });
+          setWorkspaceTasks(prev => prev.map(t => t.id === taskId ? updated : t));
+        }
+      } catch (err) {
+        console.error('Failed to update workspace task:', err);
+      }
+    } else {
+      setWorkspaceTasks(prev => prev.map(t => t.id === taskId ? { ...t, ...updates } : t));
+    }
   };
 
   const deleteWorkspaceTask = (taskId: string) => {
     setWorkspaceTasks(prev => prev.filter(t => t.id !== taskId));
   };
 
-  const updateWorkspaceNotes = (orderId: string, notes: string) => {
-    setWorkspaceNotes(prev => ({
-      ...prev,
-      [orderId]: notes
-    }));
+  const updateWorkspaceNotes = async (orderId: string, notes: string) => {
+    if (usingBackend) {
+      try {
+        await api.updateWorkspaceNotes(orderId, notes);
+        setWorkspaceNotes(prev => ({
+          ...prev,
+          [orderId]: notes
+        }));
+      } catch (err) {
+        console.error('Failed to update workspace notes:', err);
+      }
+    } else {
+      setWorkspaceNotes(prev => ({
+        ...prev,
+        [orderId]: notes
+      }));
+    }
   };
 
-  const addWorkspaceAsset = (assetData: Omit<WorkspaceAsset, 'id' | 'uploadedAt'>) => {
-    const newAsset: WorkspaceAsset = {
-      ...assetData,
-      id: `wa_${Date.now()}`,
-      uploadedAt: new Date().toISOString().split('T')[0]
-    };
-    setWorkspaceAssets(prev => [...prev, newAsset]);
+  const addWorkspaceAsset = async (assetData: Omit<WorkspaceAsset, 'id' | 'uploadedAt'>) => {
+    if (usingBackend) {
+      try {
+        const asset = await api.addWorkspaceAsset(assetData.orderId, {
+          name: assetData.name,
+          url: assetData.url,
+          size: assetData.size || 'Unknown'
+        });
+        setWorkspaceAssets(prev => [...prev, asset]);
+      } catch (err) {
+        console.error('Failed to add workspace asset:', err);
+      }
+    } else {
+      const newAsset: WorkspaceAsset = {
+        ...assetData,
+        id: `wa_${Date.now()}`,
+        uploadedAt: new Date().toISOString().split('T')[0]
+      };
+      setWorkspaceAssets(prev => [...prev, newAsset]);
+    }
   };
 
   const verifySkill = (userId: string, skill: string) => {
@@ -879,8 +1238,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       withdrawals,
       bookmarks,
       subscriptionPlans: SUBSCRIPTION_PLANS,
+      usingBackend,
       switchRole,
       signIn,
+      loginUser,
+      registerUser,
       signOut,
       createGig,
       postProject,
@@ -902,6 +1264,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       markNotificationsAsRead,
       toggleBookmark,
       isBookmarked,
+      loadOrderWorkspace,
       workspaceTasks,
       workspaceNotes,
       workspaceAssets,

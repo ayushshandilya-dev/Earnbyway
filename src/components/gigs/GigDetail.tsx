@@ -23,17 +23,20 @@ export const GigDetail: React.FC<Props> = ({ gig, onBack }) => {
   const freelancerUser = users.find(u => u.id === gig.freelancerId);
   const pkg = gig.packages[selectedPackage];
 
-  const handleOrderNow = () => {
+  const handleOrderNow = async () => {
     if (currentRole === 'guest') {
       navigate('/?auth=1');
       return;
     }
     setOrdering(true);
-    const order = createOrderFromGig(gig, selectedPackage);
-    setTimeout(() => {
+    try {
+      await createOrderFromGig(gig, selectedPackage);
       setOrdering(false);
       navigate('/orders');
-    }, 600);
+    } catch (err) {
+      console.error(err);
+      setOrdering(false);
+    }
   };
 
   const handleContact = () => {
