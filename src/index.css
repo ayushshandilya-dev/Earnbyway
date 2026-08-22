@@ -7,6 +7,7 @@
 @layer base {
   html {
     scroll-behavior: smooth;
+    font-size: 18px;
   }
   body {
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
