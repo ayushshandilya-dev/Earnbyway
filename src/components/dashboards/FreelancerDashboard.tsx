@@ -79,8 +79,8 @@ export const FreelancerDashboard: React.FC = () => {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           label="Available Balance"
-          value={`₹${currentUser.balance.toLocaleString()}`}
-          sub={`₹${currentUser.pendingBalance.toLocaleString()} pending`}
+          value={`₹${(currentUser.balance ?? 0).toLocaleString()}`}
+          sub={`₹${(currentUser.pendingBalance ?? 0).toLocaleString()} pending`}
           icon={<DollarSign className="w-4 h-4 text-emerald-400" />}
           gradient="from-emerald-500 via-teal-400 to-violet-500"
         />

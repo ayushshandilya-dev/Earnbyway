@@ -255,7 +255,7 @@ export const EarningsPage: React.FC = () => {
             <div className="space-y-4">
               <div className="p-4 rounded-xl bg-zinc-900/50 border border-zinc-800">
                 <span className="text-xs text-zinc-400">Available Balance</span>
-                <div className="text-2xl font-bold text-white">₹{currentUser.balance.toLocaleString()}</div>
+                <div className="text-2xl font-bold text-white">₹{(currentUser.balance ?? 0).toLocaleString()}</div>
               </div>
 
               <div>

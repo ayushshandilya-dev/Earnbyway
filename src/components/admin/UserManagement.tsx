@@ -66,7 +66,7 @@ export const UserManagement: React.FC = () => {
               <div className="mt-4 pt-4 border-t border-zinc-800/60 grid grid-cols-3 gap-4 text-xs">
                 <div><span className="text-zinc-500">Joined:</span> <span className="text-white ml-1">{user.joinedDate}</span></div>
                 <div><span className="text-zinc-500">Location:</span> <span className="text-white ml-1">{user.location}</span></div>
-                <div><span className="text-zinc-500">Balance:</span> <span className="text-emerald-400 ml-1">₹{user.balance.toLocaleString()}</span></div>
+                <div><span className="text-zinc-500">Balance:</span> <span className="text-emerald-400 ml-1">₹{(user.balance ?? 0).toLocaleString()}</span></div>
               </div>
             )}
           </Card>

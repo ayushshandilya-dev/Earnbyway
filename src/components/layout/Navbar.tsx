@@ -305,7 +305,7 @@ export const Navbar: React.FC<Props> = ({
                   </div>
                   <div className="hidden md:block text-left">
                     <span className="text-xs font-semibold text-white block leading-tight truncate max-w-[120px]">{currentUser.name}</span>
-                    <span className="text-[10px] text-emerald-400 font-medium">₹{currentUser.balance.toLocaleString()} Available</span>
+                    <span className="text-[10px] text-emerald-400 font-medium">₹{(currentUser.balance ?? 0).toLocaleString()} Available</span>
                   </div>
                   <ChevronDown className={`w-3 h-3 text-zinc-500 transition-transform ${isProfileOpen ? 'rotate-180' : ''}`} />
                 </button>
@@ -393,7 +393,7 @@ export const Navbar: React.FC<Props> = ({
                   </div>
                   <div>
                     <div className="text-sm font-semibold text-white group-hover:text-emerald-400 transition-colors">{currentUser.name}</div>
-                    <div className="text-xs text-zinc-500">₹{currentUser.balance.toLocaleString()} Available</div>
+                    <div className="text-xs text-zinc-500">₹{(currentUser.balance ?? 0).toLocaleString()} Available</div>
                   </div>
                   <ArrowUpRight className="w-4 h-4 text-zinc-500 ml-auto group-hover:text-emerald-400 transition-colors" />
                 </div>

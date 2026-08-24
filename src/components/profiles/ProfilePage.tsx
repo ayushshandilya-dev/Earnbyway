@@ -58,7 +58,7 @@ export const ProfilePage: React.FC = () => {
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-6 border-t border-zinc-800/60">
           <div className="text-center">
-            <div className="text-xl font-bold text-white">₹{currentUser.balance.toLocaleString()}</div>
+            <div className="text-xl font-bold text-white">₹{(currentUser.balance ?? 0).toLocaleString()}</div>
             <div className="text-[10px] text-zinc-500">Available</div>
           </div>
           <div className="text-center">
