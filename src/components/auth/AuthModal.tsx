@@ -443,16 +443,16 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose }) => {
               {/* Account list */}
               <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1 pt-1">
                 <button
-                  onClick={() => handleAccountSelect('Latiyan15', 'shahilch15@gmail.com')}
+                  onClick={() => handleAccountSelect('Demo User', 'demo@earnbyway.dev')}
                   className="w-full flex items-center justify-between p-3.5 rounded-xl bg-zinc-900/60 border border-zinc-800 hover:bg-zinc-800 hover:border-zinc-700 transition-all text-left group"
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold text-sm">
-                      L
+                      D
                     </div>
                     <div>
-                      <p className="text-xs font-semibold text-white group-hover:text-emerald-400 transition-colors">Latiyan15</p>
-                      <p className="text-[10px] text-zinc-500">shahilch15@gmail.com</p>
+                      <p className="text-xs font-semibold text-white group-hover:text-emerald-400 transition-colors">Demo User</p>
+                      <p className="text-[10px] text-zinc-500">demo@earnbyway.dev</p>
                     </div>
                   </div>
                   <span className="text-[10px] px-2 py-0.5 rounded bg-zinc-850 text-zinc-400 group-hover:bg-emerald-500/20 group-hover:text-emerald-300 transition-all">Sign In</span>

@@ -358,21 +358,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, [usingBackend, currentUser.id]);
 
-  const joinChatRoom = (conversationId: string) => {
+  const joinChatRoom = useCallback((conversationId: string) => {
     if (usingBackend && socketRef.current) {
       socketRef.current.emit('join_room', conversationId);
     }
-  };
+  }, [usingBackend]);
 
-  const leaveChatRoom = (conversationId: string) => {
+  const leaveChatRoom = useCallback((conversationId: string) => {
     // leave room logic if needed
-  };
+  }, []);
 
-  const sendTypingStatus = (conversationId: string, isTyping: boolean) => {
+  const sendTypingStatus = useCallback((conversationId: string, isTyping: boolean) => {
     if (usingBackend && socketRef.current) {
       socketRef.current.emit('typing', { conversationId, senderId: currentUser.id, isTyping });
     }
-  };
+  }, [usingBackend, currentUser.id]);
 
   useEffect(() => {
     if (!usingBackend) {
@@ -834,12 +834,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   // Mark conversation read + clear unread
-  const markConversationRead = (conversationId: string) => {
+  const markConversationRead = useCallback((conversationId: string) => {
     setConversations(prev => prev.map(c => c.id === conversationId ? { ...c, unreadCount: 0 } : c));
     if (usingBackend && socketRef.current) {
       socketRef.current.emit('join_room', conversationId);
     }
-  };
+  }, [usingBackend]);
 
   // Send Message + Simulated Bot Response
   const sendMessage = async (conversationId: string, text: string, attachments?: string[]) => {
