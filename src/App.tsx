@@ -1,10 +1,11 @@
 import React, { useState, lazy, Suspense } from 'react';
 import { Routes, Route, Outlet, useLocation, useParams, useNavigate } from 'react-router-dom';
-import { Loader2, X, ArrowLeft } from 'lucide-react';
+import { Loader2, X, ArrowLeft, Lock, LogIn } from 'lucide-react';
 
 import { Navbar } from './components/layout/Navbar';
 import { Footer } from './components/layout/Footer';
 import { AuthModal } from './components/auth/AuthModal';
+import { GitHubCallback } from './components/auth/GitHubCallback';
 import { CreateGigWizard } from './components/gigs/CreateGigWizard';
 import { PostProjectWizard } from './components/projects/PostProjectWizard';
 import { AIToolsPlayground } from './components/ai/AIToolsPlayground';
@@ -56,6 +57,39 @@ const AnimatedOutlet: React.FC = () => {
   );
 };
 
+// ─── AUTH REQUIRED PAGE (shown when guest tries to access protected route) ───
+const AuthRequiredPage: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth }) => {
+  const navigate = useNavigate();
+  return (
+    <div className="min-h-[60vh] flex items-center justify-center">
+      <div className="text-center max-w-md mx-auto p-8">
+        <div className="w-20 h-20 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center mx-auto mb-6">
+          <Lock className="w-10 h-10 text-zinc-500" />
+        </div>
+        <h1 className="text-2xl font-heading font-bold text-white mb-3">Sign In Required</h1>
+        <p className="text-sm text-zinc-400 mb-8 leading-relaxed">
+          You need to be signed in to access this page. Create a free account or sign in with your existing credentials.
+        </p>
+        <div className="flex flex-col gap-3 max-w-xs mx-auto">
+          <button
+            onClick={onOpenAuth}
+            className="flex items-center justify-center gap-2 px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-black font-semibold rounded-xl transition-colors"
+          >
+            <LogIn className="w-4 h-4" />
+            Sign In / Sign Up
+          </button>
+          <button
+            onClick={() => navigate('/')}
+            className="px-6 py-2.5 text-sm text-zinc-400 hover:text-white transition-colors"
+          >
+            Back to Home
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const GigDetailRoute: React.FC = () => {
   const { gigId } = useParams();
   const navigate = useNavigate();
@@ -87,6 +121,17 @@ const AppLayout: React.FC = () => {
   const [isAIToolsOpen, setIsAIToolsOpen] = useState(false);
   const [isPostProjectOpen, setIsPostProjectOpen] = useState(false);
   const [isCreateGigOpen, setIsCreateGigOpen] = useState(false);
+  const location = useLocation();
+
+  // Auto-open auth modal when redirected with ?auth=1
+  React.useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get('auth') === '1') {
+      setIsAuthOpen(true);
+      // Clean up the URL
+      window.history.replaceState({}, '', location.pathname);
+    }
+  }, [location.search]);
 
   return (
 <div className="min-h-screen bg-[#09090b] text-slate-100 font-sans flex flex-col selection:bg-emerald-500 selection:text-black">
@@ -133,6 +178,22 @@ const AppLayout: React.FC = () => {
   );
 };
 
+// ─── ROUTE GUARD: RequireAuth wrapper ───
+const ProtectedRoute: React.FC<{ children: React.ReactElement }> = ({ children }) => {
+  const { currentRole } = useApp();
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
+
+  if (currentRole === 'guest') {
+    return (
+      <>
+        <AuthRequiredPage onOpenAuth={() => setIsAuthOpen(true)} />
+        <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
+      </>
+    );
+  }
+  return children;
+};
+
 const DashboardPage: React.FC = () => {
   const { currentRole } = useApp();
   if (currentRole === 'client') return <ClientDashboard />;
@@ -146,27 +207,31 @@ export default function App() {
       <ToastProvider>
       <Routes>
         <Route element={<AppLayout />}>
+          {/* Public routes */}
           <Route path="/" element={<LandingPage />} />
           <Route path="/gigs" element={<GigCatalog />} />
           <Route path="/gigs/:gigId" element={<GigDetailRoute />} />
-          <Route path="/profile" element={<ProfilePage />} />
           <Route path="/profile/:userId" element={<FreelancerProfileRoute />} />
           <Route path="/projects" element={<ProjectsBoard />} />
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/chat" element={<MessagingPage />} />
-          <Route path="/earnings" element={<EarningsPage />} />
           <Route path="/search" element={<SearchResults />} />
-          <Route path="/bookmarks" element={<BookmarksPage />} />
-          <Route path="/orders" element={<OrderDashboard />} />
-          <Route path="/workspace/:orderId" element={<CollaborativeWorkspace />} />
-          <Route path="/proposals" element={<ProposalManagement />} />
           <Route path="/ai" element={<AIToolsPlayground />} />
-          <Route path="/settings" element={<SettingsPage />} />
-          <Route path="/subscription" element={<SubscriptionPage />} />
-          <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/admin/users" element={<UserManagement />} />
-          <Route path="/admin/disputes" element={<DisputePanel />} />
-          <Route path="/admin/withdrawals" element={<WithdrawalApprovals />} />
+          <Route path="/auth/github/callback" element={<GitHubCallback />} />
+
+          {/* Protected routes — require authentication */}
+          <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+          <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+          <Route path="/chat" element={<ProtectedRoute><MessagingPage /></ProtectedRoute>} />
+          <Route path="/earnings" element={<ProtectedRoute><EarningsPage /></ProtectedRoute>} />
+          <Route path="/bookmarks" element={<ProtectedRoute><BookmarksPage /></ProtectedRoute>} />
+          <Route path="/orders" element={<ProtectedRoute><OrderDashboard /></ProtectedRoute>} />
+          <Route path="/workspace/:orderId" element={<ProtectedRoute><CollaborativeWorkspace /></ProtectedRoute>} />
+          <Route path="/proposals" element={<ProtectedRoute><ProposalManagement /></ProtectedRoute>} />
+          <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+          <Route path="/subscription" element={<ProtectedRoute><SubscriptionPage /></ProtectedRoute>} />
+          <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+          <Route path="/admin/users" element={<ProtectedRoute><UserManagement /></ProtectedRoute>} />
+          <Route path="/admin/disputes" element={<ProtectedRoute><DisputePanel /></ProtectedRoute>} />
+          <Route path="/admin/withdrawals" element={<ProtectedRoute><WithdrawalApprovals /></ProtectedRoute>} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>

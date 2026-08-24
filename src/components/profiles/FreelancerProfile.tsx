@@ -333,7 +333,13 @@ export const FreelancerProfile: React.FC<Props> = ({ freelancerUser, onBack }) =
                 >
                   <Heart className={`w-4 h-4 ${saved ? 'fill-red-400' : ''}`} />
                 </Button>
-                <Button className="flex-1" btn3d size="md" onClick={() => navigate(`/chat?user=${freelancerUser.id}`)}>
+                <Button className="flex-1" btn3d size="md" onClick={() => {
+                  if (currentRole === 'guest') {
+                    navigate('/?auth=1');
+                    return;
+                  }
+                  navigate(`/chat?user=${freelancerUser.id}`);
+                }}>
                   <MessageSquare className="w-4 h-4" /> Hire Me
                 </Button>
               </div>

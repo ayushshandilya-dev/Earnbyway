@@ -40,6 +40,10 @@ export const GigDetail: React.FC<Props> = ({ gig, onBack }) => {
   };
 
   const handleContact = () => {
+    if (currentRole === 'guest') {
+      navigate('/?auth=1');
+      return;
+    }
     navigate(`/chat?user=${gig.freelancerId}`);
   };
 
