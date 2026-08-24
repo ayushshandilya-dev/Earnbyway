@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
 import { Search, Send, Paperclip, Circle, ChevronLeft, Loader2, Sparkles, MessagesSquare } from 'lucide-react';
 import { Button } from '../ui/Button';
@@ -10,6 +11,7 @@ export const MessagingPage: React.FC = () => {
     messages, 
     currentUser, 
     sendMessage, 
+    startConversation,
     markConversationRead, 
     joinChatRoom, 
     leaveChatRoom, 
@@ -17,7 +19,28 @@ export const MessagingPage: React.FC = () => {
     typingUsers, 
     usingBackend 
   } = useApp();
-  const [activeConv, setActiveConv] = useState(conversations[0]?.id || null);
+  const location = useLocation();
+  const [activeConv, setActiveConv] = useState<string | null>(conversations[0]?.id || null);
+
+  // Check for ?user=... query parameter to auto-start/select conversation
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const userId = params.get('user');
+    
+    if (userId && currentUser.id !== 'guest_user') {
+      const initChat = async () => {
+        try {
+          const convId = await startConversation(userId);
+          setActiveConv(convId);
+          setShowSidebar(false);
+        } catch (e) {
+          console.error('Failed to auto-start chat conversation:', e);
+        }
+      };
+      initChat();
+    }
+  }, [location.search, startConversation, currentUser.id]);
+
   const [messageInput, setMessageInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [showSidebar, setShowSidebar] = useState(true);

@@ -74,6 +74,7 @@ interface AppContextType {
   submitMilestoneDeliverable: (orderId: string, milestoneId: string, note: string, file?: string) => void;
   approveMilestoneEscrow: (orderId: string, milestoneId: string) => void;
   sendMessage: (conversationId: string, text: string, attachments?: string[]) => void;
+  startConversation: (participantId: string) => Promise<string>;
   joinChatRoom: (conversationId: string) => void;
   leaveChatRoom: (conversationId: string) => void;
   sendTypingStatus: (conversationId: string, isTyping: boolean) => void;
@@ -921,6 +922,57 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  const startConversation = async (participantId: string): Promise<string> => {
+    if (usingBackend) {
+      try {
+        const newConv = await api.createConversation(participantId);
+        setConversations(prev => {
+          if (prev.some(c => c.id === newConv.id)) return prev;
+          return [newConv, ...prev];
+        });
+        try {
+          const msgs = await api.getMessages(newConv.id);
+          setMessages(prev => ({ ...prev, [newConv.id]: msgs }));
+        } catch (e) {
+          console.error('Failed to load messages for conversation:', e);
+        }
+        return newConv.id;
+      } catch (err) {
+        console.error('Failed to start conversation:', err);
+        throw err;
+      }
+    } else {
+      const existing = conversations.find(c => c.participant.id === participantId);
+      if (existing) return existing.id;
+
+      const otherUser = users.find(u => u.id === participantId) || {
+        id: participantId,
+        name: 'Alex Vance',
+        email: 'alex@techscale.io',
+        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+        role: 'freelancer'
+      };
+
+      const newConv: Conversation = {
+        id: `conv_${Date.now()}`,
+        participant: {
+          id: otherUser.id,
+          name: otherUser.name,
+          avatar: otherUser.avatar,
+          role: otherUser.role as any,
+          isOnline: true
+        },
+        lastMessage: 'Conversation started',
+        lastMessageTime: 'Just now',
+        unreadCount: 0
+      };
+
+      setConversations(prev => [newConv, ...prev]);
+      setMessages(prev => ({ ...prev, [newConv.id]: [] }));
+      return newConv.id;
+    }
+  };
+
   // Post Review
   const postReview = (revData: Omit<Review, 'id' | 'createdAt'>) => {
     const newRev: Review = {
@@ -1440,6 +1492,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       submitMilestoneDeliverable,
       approveMilestoneEscrow,
       sendMessage,
+      startConversation,
       markConversationRead,
       postReview,
       updateProfile,

@@ -40,7 +40,7 @@ export const GigDetail: React.FC<Props> = ({ gig, onBack }) => {
   };
 
   const handleContact = () => {
-    navigate('/chat');
+    navigate(`/chat?user=${gig.freelancerId}`);
   };
 
   const handleViewProfile = () => {
