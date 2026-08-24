@@ -21,13 +21,15 @@ export const MessagingPage: React.FC = () => {
   } = useApp();
   const location = useLocation();
   const [activeConv, setActiveConv] = useState<string | null>(conversations[0]?.id || null);
+  const processedUserRef = useRef<string | null>(null);
 
   // Check for ?user=... query parameter to auto-start/select conversation
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const userId = params.get('user');
     
-    if (userId && currentUser.id !== 'guest_user') {
+    if (userId && currentUser.id !== 'guest_user' && processedUserRef.current !== userId) {
+      processedUserRef.current = userId;
       const initChat = async () => {
         try {
           const convId = await startConversation(userId);
@@ -35,6 +37,7 @@ export const MessagingPage: React.FC = () => {
           setShowSidebar(false);
         } catch (e) {
           console.error('Failed to auto-start chat conversation:', e);
+          processedUserRef.current = null;
         }
       };
       initChat();

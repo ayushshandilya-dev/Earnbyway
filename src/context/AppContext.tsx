@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { api } from '../services/api';
 import { requestNotificationPermission, sendBrowserNotification } from '../utils/notifications';
@@ -922,7 +922,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const startConversation = async (participantId: string): Promise<string> => {
+  const startConversation = useCallback(async (participantId: string): Promise<string> => {
     if (usingBackend) {
       try {
         const newConv = await api.createConversation(participantId);
@@ -971,7 +971,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setMessages(prev => ({ ...prev, [newConv.id]: [] }));
       return newConv.id;
     }
-  };
+  }, [usingBackend, conversations, users]);
 
   // Post Review
   const postReview = (revData: Omit<Review, 'id' | 'createdAt'>) => {
