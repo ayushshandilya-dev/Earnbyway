@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import { io, Socket } from 'socket.io-client';
 import { api } from '../services/api';
 import { requestNotificationPermission, sendBrowserNotification } from '../utils/notifications';
 import { 
@@ -55,6 +56,7 @@ interface AppContextType {
   workspaceNotes: Record<string, string>;
   workspaceAssets: WorkspaceAsset[];
 
+  typingUsers: Record<string, { senderId: string; isTyping: boolean }>;
   usingBackend: boolean;
 
   // Actions
@@ -72,9 +74,13 @@ interface AppContextType {
   submitMilestoneDeliverable: (orderId: string, milestoneId: string, note: string, file?: string) => void;
   approveMilestoneEscrow: (orderId: string, milestoneId: string) => void;
   sendMessage: (conversationId: string, text: string, attachments?: string[]) => void;
+  joinChatRoom: (conversationId: string) => void;
+  leaveChatRoom: (conversationId: string) => void;
+  sendTypingStatus: (conversationId: string, isTyping: boolean) => void;
   markConversationRead: (conversationId: string) => void;
   postReview: (review: Omit<Review, 'id' | 'createdAt'>) => void;
   updateProfile: (updates: Partial<User>) => void;
+  depositFunds: (amount: number, paymentMethod: string) => Promise<any>;
   requestWithdrawal: (amount: number, method: WithdrawalRequest['method'], accountDetails: string) => void;
   adminApproveWithdrawal: (id: string) => void;
   adminRejectWithdrawal: (id: string) => void;
@@ -132,6 +138,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [reviews, setReviews] = useState<Review[]>(INITIAL_REVIEWS);
   const [disputes, setDisputes] = useState<Dispute[]>(INITIAL_DISPUTES);
   const [withdrawals, setWithdrawals] = useState<WithdrawalRequest[]>(INITIAL_WITHDRAWALS);
+  const [typingUsers, setTypingUsers] = useState<Record<string, { senderId: string; isTyping: boolean }>>({});
+  const socketRef = useRef<Socket | null>(null);
   const [bookmarks, setBookmarks] = useState<string[]>(() => {
     const saved = localStorage.getItem('earnbyway_bookmarks');
     return saved ? JSON.parse(saved) : [];
@@ -227,13 +235,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           return merged;
         });
 
-        if (token) {
-          const [ordersData, convsData] = await Promise.all([
+        if (token && activeUser) {
+          const [ordersData, convsData, withdrawalsData] = await Promise.all([
             api.getOrders(),
-            api.getConversations()
+            api.getConversations(),
+            activeUser.role === 'admin' ? api.getAdminWithdrawals() : api.getWithdrawals()
           ]);
           setOrders(ordersData);
           setConversations(convsData);
+          setWithdrawals(withdrawalsData || []);
           
           if (convsData.length > 0) {
             const messagesMap: Record<string, Message[]> = {};
@@ -255,6 +265,95 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
     initData();
   }, [usingBackend]);
+
+  // Connect/disconnect Socket.io based on auth status and backend flag
+  useEffect(() => {
+    if (usingBackend && currentUser && currentUser.id !== 'guest_user') {
+      const socketUrl = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : 'http://localhost:4000';
+      const s = io(socketUrl);
+      socketRef.current = s;
+
+      s.on('connect', () => {
+        console.log('Socket.IO connected to backend server');
+      });
+
+      // Listen for incoming messages
+      s.on('receive_message', (message: any) => {
+        // Format database message to match frontend expectations
+        const formattedMsg: Message = {
+          id: message.id,
+          conversationId: message.conversationId,
+          senderId: message.senderId,
+          senderName: message.senderName,
+          senderAvatar: message.senderAvatar,
+          recipientId: message.recipientId,
+          text: message.text,
+          attachments: typeof message.attachments === 'string' ? JSON.parse(message.attachments) : (message.attachments || []),
+          timestamp: new Date(message.timestamp || new Date()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          isRead: message.isRead
+        };
+
+        setMessages(prev => {
+          const roomMsgs = prev[message.conversationId] || [];
+          if (roomMsgs.some(m => m.id === message.id)) {
+            return prev;
+          }
+          return {
+            ...prev,
+            [message.conversationId]: [...roomMsgs, formattedMsg]
+          };
+        });
+
+        // Update conversation last message details
+        setConversations(prev => prev.map(c => {
+          if (c.id === message.conversationId) {
+            return {
+              ...c,
+              lastMessage: message.text || '[Attachment]',
+              lastMessageTime: new Date(message.timestamp || new Date()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              unreadCount: message.senderId !== currentUser.id ? c.unreadCount + 1 : c.unreadCount
+            };
+          }
+          return c;
+        }));
+      });
+
+      s.on('user_typing', (data: { conversationId: string; senderId: string; isTyping: boolean }) => {
+        setTypingUsers(prev => ({
+          ...prev,
+          [data.conversationId]: { senderId: data.senderId, isTyping: data.isTyping }
+        }));
+      });
+
+      return () => {
+        s.off('receive_message');
+        s.off('user_typing');
+        s.disconnect();
+        socketRef.current = null;
+      };
+    } else {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
+    }
+  }, [usingBackend, currentUser.id]);
+
+  const joinChatRoom = (conversationId: string) => {
+    if (usingBackend && socketRef.current) {
+      socketRef.current.emit('join_room', conversationId);
+    }
+  };
+
+  const leaveChatRoom = (conversationId: string) => {
+    // leave room logic if needed
+  };
+
+  const sendTypingStatus = (conversationId: string, isTyping: boolean) => {
+    if (usingBackend && socketRef.current) {
+      socketRef.current.emit('typing', { conversationId, senderId: currentUser.id, isTyping });
+    }
+  };
 
   useEffect(() => {
     if (!usingBackend) {
@@ -718,29 +817,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Mark conversation read + clear unread
   const markConversationRead = (conversationId: string) => {
     setConversations(prev => prev.map(c => c.id === conversationId ? { ...c, unreadCount: 0 } : c));
+    if (usingBackend && socketRef.current) {
+      socketRef.current.emit('join_room', conversationId);
+    }
   };
 
   // Send Message + Simulated Bot Response
   const sendMessage = async (conversationId: string, text: string, attachments?: string[]) => {
     if (usingBackend) {
       try {
-        const message = await api.sendMessage(conversationId, text, attachments);
-        setMessages(prev => ({
-          ...prev,
-          [conversationId]: [...(prev[conversationId] || []), message]
-        }));
-        setConversations(prev => prev.map(c => {
-          if (c.id === conversationId) {
-            return {
-              ...c,
-              lastMessage: text || '[Attachment]',
-              lastMessageTime: new Date().toISOString()
-            };
-          }
-          return c;
-        }));
+        if (socketRef.current) {
+          socketRef.current.emit('send_message', {
+            conversationId,
+            senderId: currentUser.id,
+            senderName: currentUser.name,
+            senderAvatar: currentUser.avatar,
+            content: text,
+            attachments: attachments || []
+          });
+        }
       } catch (err) {
-        console.error('Failed to send message:', err);
+        console.error('Failed to send socket message:', err);
       }
     } else {
       const newMsg: Message = {
@@ -869,26 +966,38 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   // Admin reject withdrawal (persists status)
-  const adminRejectWithdrawal = (id: string) => {
-    const target = withdrawals.find(w => w.id === id);
-    if (!target) return;
-    setWithdrawals(prev => prev.map(w => w.id === id ? { ...w, status: 'rejected' as const } : w));
-    setUsers(uPrev => uPrev.map(u => {
-      if (u.id === target.freelancerId) {
-        return {
-          ...u,
-          balance: u.balance + target.amount,
-          pendingBalance: Math.max(0, u.pendingBalance - target.amount)
-        };
+  const adminRejectWithdrawal = async (id: string) => {
+    if (usingBackend) {
+      try {
+        await api.rejectWithdrawal(id);
+        const withdrawalsData = await api.getAdminWithdrawals();
+        setWithdrawals(withdrawalsData);
+        const me = await api.getMe();
+        setCurrentUser(me);
+      } catch (err) {
+        console.error('Failed to reject withdrawal:', err);
       }
-      return u;
-    }));
-    addNotification({
-      userId: target.freelancerId,
-      type: 'payment',
-      title: 'Withdrawal Rejected',
-      message: `Your withdrawal request of ₹${target.amount.toLocaleString()} was rejected. Funds returned to balance.`
-    });
+    } else {
+      const target = withdrawals.find(w => w.id === id);
+      if (!target) return;
+      setWithdrawals(prev => prev.map(w => w.id === id ? { ...w, status: 'rejected' as const } : w));
+      setUsers(uPrev => uPrev.map(u => {
+        if (u.id === target.freelancerId) {
+          return {
+            ...u,
+            balance: u.balance + target.amount,
+            pendingBalance: Math.max(0, u.pendingBalance - target.amount)
+          };
+        }
+        return u;
+      }));
+      addNotification({
+        userId: target.freelancerId,
+        type: 'payment',
+        title: 'Withdrawal Rejected',
+        message: `Your withdrawal request of ₹${target.amount.toLocaleString()} was rejected. Funds returned to balance.`
+      });
+    }
   };
 
   // Buy a gig → create an escrow order (Order Now flow)
@@ -948,66 +1057,122 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  // Request Withdrawal
-  const requestWithdrawal = (amount: number, method: WithdrawalRequest['method'], accountDetails: string) => {
-    const newW: WithdrawalRequest = {
-      id: `w_${Date.now()}`,
-      freelancerId: currentUser.id,
-      freelancerName: currentUser.name,
-      amount,
-      method,
-      accountDetails,
-      status: 'pending',
-      createdAt: new Date().toISOString().split('T')[0]
-    };
-    setWithdrawals(prev => [newW, ...prev]);
-
-    // Deduct available balance and add to withdrawn/pending
-    setUsers(prev => prev.map(u => {
-      if (u.id === currentUser.id) {
-        return {
-          ...u,
-          balance: Math.max(0, u.balance - amount),
-          pendingBalance: u.pendingBalance + amount
-        };
+  // Deposit Funds (Wallet Top-Up)
+  const depositFunds = async (amount: number, paymentMethod: string) => {
+    if (usingBackend) {
+      try {
+        const res = await api.depositFunds(amount, paymentMethod);
+        setCurrentUser(res.user);
+        return res;
+      } catch (err) {
+        console.error('Deposit failed:', err);
+        throw err;
       }
-      return u;
-    }));
+    } else {
+      setCurrentUser(prev => ({
+        ...prev,
+        balance: prev.balance + amount
+      }));
+      addNotification({
+        userId: currentUser.id,
+        type: 'payment',
+        title: 'Wallet Funded Successfully',
+        message: `₹${amount.toLocaleString()} has been added to your available balance via ${paymentMethod}.`
+      });
+    }
+  };
+
+  // Request Withdrawal
+  const requestWithdrawal = async (amount: number, method: WithdrawalRequest['method'], accountDetails: string) => {
+    if (usingBackend) {
+      try {
+        const res = await api.requestWithdrawal(amount, method, accountDetails);
+        setCurrentUser(res.user);
+        setWithdrawals(prev => [res.withdrawal, ...prev]);
+      } catch (err) {
+        console.error('Withdrawal failed:', err);
+      }
+    } else {
+      const newW: WithdrawalRequest = {
+        id: `w_${Date.now()}`,
+        freelancerId: currentUser.id,
+        freelancerName: currentUser.name,
+        amount,
+        method,
+        accountDetails,
+        status: 'pending',
+        createdAt: new Date().toISOString().split('T')[0]
+      };
+      setWithdrawals(prev => [newW, ...prev]);
+
+      // Deduct available balance and add to withdrawn/pending
+      setUsers(prev => prev.map(u => {
+        if (u.id === currentUser.id) {
+          return {
+            ...u,
+            balance: Math.max(0, u.balance - amount),
+            pendingBalance: u.pendingBalance + amount
+          };
+        }
+        return u;
+      }));
+    }
   };
 
   // Admin Actions
-  const adminApproveWithdrawal = (id: string) => {
-    const target = withdrawals.find(w => w.id === id);
-    if (!target) return;
-
-    // Move user pending balance to withdrawn (outside any state updater)
-    setUsers(uPrev => uPrev.map(u => {
-      if (u.id === target.freelancerId) {
-        return {
-          ...u,
-          pendingBalance: Math.max(0, u.pendingBalance - target.amount),
-          withdrawnBalance: u.withdrawnBalance + target.amount
-        };
+  const adminApproveWithdrawal = async (id: string) => {
+    if (usingBackend) {
+      try {
+        await api.approveWithdrawal(id);
+        const withdrawalsData = await api.getAdminWithdrawals();
+        setWithdrawals(withdrawalsData);
+        const me = await api.getMe();
+        setCurrentUser(me);
+      } catch (err) {
+        console.error('Failed to approve withdrawal:', err);
       }
-      return u;
-    }));
+    } else {
+      const target = withdrawals.find(w => w.id === id);
+      if (!target) return;
 
-    setWithdrawals(prev => prev.map(w => w.id === id ? { ...w, status: 'approved' as const } : w));
+      // Move user pending balance to withdrawn (outside any state updater)
+      setUsers(uPrev => uPrev.map(u => {
+        if (u.id === target.freelancerId) {
+          return {
+            ...u,
+            pendingBalance: Math.max(0, u.pendingBalance - target.amount),
+            withdrawnBalance: u.withdrawnBalance + target.amount
+          };
+        }
+        return u;
+      }));
 
-    addNotification({
-      userId: target.freelancerId,
-      type: 'payment',
-      title: 'Withdrawal Approved',
-      message: `Your withdrawal of ₹${target.amount.toLocaleString()} has been approved and paid out.`
-    });
+      setWithdrawals(prev => prev.map(w => w.id === id ? { ...w, status: 'approved' as const } : w));
+
+      addNotification({
+        userId: target.freelancerId,
+        type: 'payment',
+        title: 'Withdrawal Approved',
+        message: `Your withdrawal of ₹${target.amount.toLocaleString()} has been approved and paid out.`
+      });
+    }
   };
 
   const adminResolveDispute = (id: string, resolution: string) => {
     setDisputes(prev => prev.map(d => d.id === id ? { ...d, status: 'resolved' as const, resolution } : d));
   };
 
-  const adminToggleVerifyUser = (userId: string) => {
-    setUsers(prev => prev.map(u => u.id === userId ? { ...u, isVerified: !u.isVerified } : u));
+  const adminToggleVerifyUser = async (userId: string) => {
+    if (usingBackend) {
+      try {
+        const res = await api.toggleVerifyUser(userId);
+        setUsers(prev => prev.map(u => u.id === userId ? { ...u, isVerified: res.isVerified } : u));
+      } catch (err) {
+        console.error('Failed to toggle user verification status:', err);
+      }
+    } else {
+      setUsers(prev => prev.map(u => u.id === userId ? { ...u, isVerified: !u.isVerified } : u));
+    }
   };
 
   const addNotification = (item: Omit<NotificationItem, 'id' | 'read' | 'timestamp'>) => {
@@ -1238,11 +1403,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       withdrawals,
       bookmarks,
       subscriptionPlans: SUBSCRIPTION_PLANS,
+      typingUsers,
       usingBackend,
       switchRole,
       signIn,
       loginUser,
       registerUser,
+      joinChatRoom,
+      leaveChatRoom,
+      sendTypingStatus,
       signOut,
       createGig,
       postProject,
@@ -1256,6 +1425,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       markConversationRead,
       postReview,
       updateProfile,
+      depositFunds,
       requestWithdrawal,
       adminApproveWithdrawal,
       adminRejectWithdrawal,

@@ -7,11 +7,14 @@ import { Card, CardHeader, CardTitle } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 
 export const EarningsPage: React.FC = () => {
-  const { currentUser, withdrawals, requestWithdrawal, upgradeSubscription } = useApp();
+  const { currentUser, withdrawals, requestWithdrawal, upgradeSubscription, depositFunds } = useApp();
   const { addToast } = useToast();
   const [showWithdraw, setShowWithdraw] = useState(false);
+  const [showDeposit, setShowDeposit] = useState(false);
   const [amount, setAmount] = useState(0);
+  const [depositAmount, setDepositAmount] = useState(0);
   const [method, setMethod] = useState<'UPI' | 'Bank Transfer' | 'Razorpay' | 'PayPal'>('UPI');
+  const [depositMethod, setDepositMethod] = useState<'UPI' | 'Card' | 'Razorpay'>('Razorpay');
   const [accountDetails, setAccountDetails] = useState('');
 
   const myWithdrawals = withdrawals.filter(w => w.freelancerId === currentUser.id);
@@ -27,6 +30,18 @@ export const EarningsPage: React.FC = () => {
     setAccountDetails('');
   };
 
+  const handleDeposit = async () => {
+    if (depositAmount <= 0) return;
+    try {
+      await depositFunds(depositAmount, depositMethod);
+      addToast(`₹${depositAmount.toLocaleString()} added to your wallet!`, 'success');
+      setShowDeposit(false);
+      setDepositAmount(0);
+    } catch (err: any) {
+      addToast(err.message || 'Deposit failed', 'error');
+    }
+  };
+
   return (
     <div className="py-8 space-y-8">
       <div className="flex items-center justify-between">
@@ -34,14 +49,27 @@ export const EarningsPage: React.FC = () => {
           <h1 className="text-3xl font-heading font-bold text-white">Earnings & Wallet</h1>
           <p className="text-sm text-zinc-400 mt-1">Manage your earnings and withdrawals</p>
         </div>
-        <Button
-          onClick={() => setShowWithdraw(true)}
-          disabled={currentUser.balance <= 0}
-          btn3d
-          size="md"
-        >
-          <ArrowUpRight className="w-4 h-4" /> Withdraw Funds
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button
+            onClick={() => setShowDeposit(true)}
+            btn3d
+            variant="primary"
+            size="md"
+          >
+            <Wallet className="w-4 h-4" /> Deposit Funds
+          </Button>
+          {currentUser.role === 'freelancer' && (
+            <Button
+              onClick={() => setShowWithdraw(true)}
+              disabled={currentUser.balance <= 0}
+              btn3d
+              variant="secondary"
+              size="md"
+            >
+              <ArrowUpRight className="w-4 h-4" /> Withdraw Funds
+            </Button>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -296,6 +324,70 @@ export const EarningsPage: React.FC = () => {
                 btn3d
               >
                 Withdraw ₹{amount.toLocaleString()}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showDeposit && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setShowDeposit(false)}>
+          <div className="bg-[#121215] border border-zinc-800 rounded-3xl p-6 max-w-md w-full shadow-3d-lg animate-in fade-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-heading font-bold text-white">Deposit Funds</h2>
+              <Button variant="ghost" size="xs" onClick={() => setShowDeposit(false)} aria-label="Close">
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs font-medium text-zinc-400 mb-1.5 block">Amount (₹)</label>
+                <input
+                  type="number"
+                  value={depositAmount || ''}
+                  onChange={(e) => setDepositAmount(Number(e.target.value))}
+                  placeholder="Enter deposit amount"
+                  className="w-full px-4 py-2.5 bg-zinc-900/50 border border-zinc-800 rounded-xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20 transition-all"
+                />
+                <div className="flex gap-1.5 mt-2">
+                  {[5000, 10000, 25000, 50000].map(v => (
+                    <Button
+                      key={v}
+                      size="xs"
+                      variant={depositAmount === v ? 'primary' : 'secondary'}
+                      onClick={() => setDepositAmount(v)}
+                    >
+                      ₹{v.toLocaleString()}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-medium text-zinc-400 mb-1.5 block">Payment Method</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {(['UPI', 'Card', 'Razorpay'] as const).map(m => (
+                    <Button
+                      key={m}
+                      onClick={() => setDepositMethod(m)}
+                      variant={depositMethod === m ? 'primary' : 'secondary'}
+                      size="sm"
+                    >
+                      {m}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+
+              <Button
+                onClick={handleDeposit}
+                disabled={depositAmount <= 0}
+                className="w-full mt-4"
+                size="md"
+                btn3d
+              >
+                Deposit ₹{depositAmount.toLocaleString()}
               </Button>
             </div>
           </div>

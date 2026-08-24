@@ -2,6 +2,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
 
 class ApiClient {
   private token: string | null = localStorage.getItem('earnbyway_token');
+  private refreshTokenVal: string | null = localStorage.getItem('earnbyway_refresh_token');
 
   setToken(token: string | null) {
     this.token = token;
@@ -12,11 +13,24 @@ class ApiClient {
     }
   }
 
+  setRefreshToken(token: string | null) {
+    this.refreshTokenVal = token;
+    if (token) {
+      localStorage.setItem('earnbyway_refresh_token', token);
+    } else {
+      localStorage.removeItem('earnbyway_refresh_token');
+    }
+  }
+
   getToken() {
     return this.token;
   }
 
-  private async request(endpoint: string, options: RequestInit = {}) {
+  getRefreshToken() {
+    return this.refreshTokenVal;
+  }
+
+  private async request(endpoint: string, options: RequestInit = {}): Promise<any> {
     const headers = new Headers(options.headers || {});
     if (this.token) {
       headers.set('Authorization', `Bearer ${this.token}`);
@@ -25,10 +39,40 @@ class ApiClient {
       headers.set('Content-Type', 'application/json');
     }
 
-    const response = await fetch(`${API_URL}${endpoint}`, {
+    let response = await fetch(`${API_URL}${endpoint}`, {
       ...options,
       headers
     });
+
+    // Auto Refresh Token Handling on 403 Forbidden (Expired Access Token)
+    if (response.status === 403 && this.refreshTokenVal && endpoint !== '/auth/refresh') {
+      try {
+        const refreshResponse = await fetch(`${API_URL}/auth/refresh`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ refreshToken: this.refreshTokenVal }),
+        });
+
+        if (refreshResponse.ok) {
+          const refreshData = await refreshResponse.json();
+          this.setToken(refreshData.accessToken);
+          this.setRefreshToken(refreshData.refreshToken);
+
+          // Retry the original request with new token
+          headers.set('Authorization', `Bearer ${refreshData.accessToken}`);
+          response = await fetch(`${API_URL}${endpoint}`, {
+            ...options,
+            headers
+          });
+        } else {
+          // Refresh token expired or invalid - clear auth
+          this.logout();
+        }
+      } catch (err) {
+        console.error('Auto refresh token failed:', err);
+        this.logout();
+      }
+    }
 
     if (!response.ok) {
       const errData = await response.json().catch(() => ({}));
@@ -38,13 +82,19 @@ class ApiClient {
     return response.json();
   }
 
+  logout() {
+    this.setToken(null);
+    this.setRefreshToken(null);
+  }
+
   // Auth
   async login(credentials: any) {
     const data = await this.request('/auth/login', {
       method: 'POST',
       body: JSON.stringify(credentials)
     });
-    this.setToken(data.token);
+    this.setToken(data.accessToken);
+    this.setRefreshToken(data.refreshToken);
     return data.user;
   }
 
@@ -53,7 +103,8 @@ class ApiClient {
       method: 'POST',
       body: JSON.stringify(registerData)
     });
-    this.setToken(data.token);
+    this.setToken(data.accessToken);
+    this.setRefreshToken(data.refreshToken);
     return data.user;
   }
 
@@ -196,6 +247,48 @@ class ApiClient {
     return this.request('/chat/conversations', {
       method: 'POST',
       body: JSON.stringify({ participantId })
+    });
+  }
+
+  // Earnings Ledger (Deposits & Withdrawals)
+  async depositFunds(amount: number, paymentMethod: string) {
+    return this.request('/earnings/deposit', {
+      method: 'POST',
+      body: JSON.stringify({ amount, paymentMethod })
+    });
+  }
+
+  async requestWithdrawal(amount: number, method: string, accountDetails: string) {
+    return this.request('/earnings/withdraw', {
+      method: 'POST',
+      body: JSON.stringify({ amount, method, accountDetails })
+    });
+  }
+
+  async getWithdrawals() {
+    return this.request('/earnings/withdrawals');
+  }
+
+  // Admin Moderation API
+  async getAdminWithdrawals() {
+    return this.request('/admin/withdrawals');
+  }
+
+  async approveWithdrawal(id: string) {
+    return this.request(`/admin/withdrawals/${id}/approve`, {
+      method: 'PUT'
+    });
+  }
+
+  async rejectWithdrawal(id: string) {
+    return this.request(`/admin/withdrawals/${id}/reject`, {
+      method: 'PUT'
+    });
+  }
+
+  async toggleVerifyUser(userId: string) {
+    return this.request(`/admin/users/${userId}/verify`, {
+      method: 'PUT'
     });
   }
 }

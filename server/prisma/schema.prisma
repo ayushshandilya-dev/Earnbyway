@@ -1,0 +1,277 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id               String               @id @default(uuid())
+  name             String
+  email            String               @unique
+  password         String               // hashed password for auth
+  avatar           String
+  role             String               // 'client' | 'freelancer' | 'admin'
+  company          String?
+  title            String?
+  location         String
+  isVerified       Boolean              @default(false)
+  joinedDate       DateTime             @default(now())
+  balance          Float                @default(0.0)
+  pendingBalance   Float                @default(0.0)
+  withdrawnBalance Float                @default(0.0)
+  proTier          String               @default("none") // 'none' | 'standard' | 'pro' | 'elite'
+
+  freelancerProfile FreelancerProfile?
+  gigs             Gig[]                @relation("FreelancerGigs")
+  projects         Project[]            @relation("ClientProjects")
+  proposals        Proposal[]           @relation("FreelancerProposals")
+  ordersAsClient   Order[]              @relation("ClientOrders")
+  ordersAsFreelancer Order[]            @relation("FreelancerOrders")
+  sentMessages     Message[]            @relation("SentMessages")
+  receivedMessages Message[]            @relation("ReceivedMessages")
+  notifications    Notification[]
+  withdrawals      WithdrawalRequest[]
+  bookmarks        Bookmark[]
+}
+
+model FreelancerProfile {
+  userId                String   @id
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  banner                String
+  bio                   String
+  title                 String
+  hourlyRate            Float
+  skills                String   // stored as stringified JSON array
+  languages             String   // stored as stringified JSON array
+  education             String   // stored as stringified JSON array
+  certificates          String   // stored as stringified JSON array of Certifications
+  experience            String   // stored as stringified JSON array of ExperienceItems
+  portfolio             String   // stored as stringified JSON array of PortfolioItems
+  socialLinks           String   // stored as stringified JSON object
+  resumeUrl             String?
+  availability          String   // 'Full-time' | 'Part-time' | 'Contract'
+  rating                Float    @default(0.0)
+  completedJobs         Int      @default(0)
+  totalEarned           Float    @default(0.0)
+  responseTime          String
+  avgDeliveryTime       String
+  responseRate          Float
+  proposalSuccessRate   Float
+  profileViewsThisMonth Int      @default(0)
+  verifiedSkills        String   // stored as stringified JSON array
+}
+
+model Gig {
+  id                   String   @id @default(uuid())
+  title                String
+  freelancerId         String
+  freelancer           User     @relation("FreelancerGigs", fields: [freelancerId], references: [id], onDelete: Cascade)
+  freelancerName       String
+  freelancerAvatar     String
+  freelancerTitle      String
+  rating               Float    @default(0.0)
+  reviewsCount         Int      @default(0)
+  category             String
+  subcategory          String
+  tags                 String   // stored as stringified JSON array
+  description          String
+  coverImage           String
+  galleryImages        String   // stored as stringified JSON array
+  startingPrice        Float
+  packages             String   // stored as stringified JSON object
+  faqs                 String   // stored as stringified JSON array
+  requirements         String   // stored as stringified JSON array
+  ordersCompleted      Int      @default(0)
+  createdAt            DateTime @default(now())
+}
+
+model Project {
+  id             String     @id @default(uuid())
+  title          String
+  clientId       String
+  client         User       @relation("ClientProjects", fields: [clientId], references: [id], onDelete: Cascade)
+  clientName     String
+  clientAvatar   String
+  clientCompany  String?
+  budget         Float
+  category       String
+  skills         String     // stored as stringified JSON array
+  description    String
+  duration       String
+  status         String     // 'open' | 'hired' | 'completed' | 'cancelled'
+  proposalCount  Int        @default(0)
+  proposals      Proposal[]
+  createdAt      DateTime   @default(now())
+}
+
+model Proposal {
+  id               String   @id @default(uuid())
+  projectId        String
+  project          Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  freelancerId     String
+  freelancer       User     @relation("FreelancerProposals", fields: [freelancerId], references: [id], onDelete: Cascade)
+  freelancerName   String
+  freelancerAvatar String
+  freelancerRating Float
+  freelancerTitle  String
+  coverLetter      String
+  bidAmount        Float
+  estimatedDays    Int
+  attachments      String?  // stored as stringified JSON array
+  status           String   // 'pending' | 'shortlisted' | 'accepted' | 'rejected'
+  submittedAt      DateTime @default(now())
+}
+
+model Order {
+  id             String          @id @default(uuid())
+  type           String          // 'gig' | 'project'
+  title          String
+  clientId       String
+  client         User            @relation("ClientOrders", fields: [clientId], references: [id], onDelete: Cascade)
+  clientName     String
+  freelancerId   String
+  freelancer     User            @relation("FreelancerOrders", fields: [freelancerId], references: [id], onDelete: Cascade)
+  freelancerName String
+  totalPrice     Float
+  escrowBalance  Float
+  status         String          // 'funded' | 'in_progress' | 'under_review' | 'completed' | 'disputed'
+  milestones     Milestone[]
+  createdAt      DateTime        @default(now())
+  disputes       Dispute[]
+  reviews        Review[]
+  workspaceTasks WorkspaceTask[]
+  workspaceAssets WorkspaceAsset[]
+  workspaceNotes WorkspaceNote?
+}
+
+model Milestone {
+  id              String   @id @default(uuid())
+  orderId         String
+  order           Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  title           String
+  percentage      Float
+  amount          Float
+  dueDate         String
+  status          String   // 'pending' | 'funded' | 'submitted' | 'approved' | 'released'
+  deliverableFile String?
+  deliverableNote String?
+  submittedAt     String?
+  dependsOn       String?  // stored as stringified JSON array
+}
+
+model Conversation {
+  id              String   @id @default(uuid())
+  participantAId  String
+  participantBId  String
+  lastMessage     String?
+  lastMessageTime DateTime @default(now())
+  
+  messages        Message[]
+}
+
+model Message {
+  id             String       @id @default(uuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId       String
+  sender         User         @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  senderName     String
+  senderAvatar   String
+  recipientId    String
+  recipient      User         @relation("ReceivedMessages", fields: [recipientId], references: [id], onDelete: Cascade)
+  text           String
+  attachments    String?      // stored as stringified JSON array
+  timestamp      DateTime     @default(now())
+  isRead         Boolean      @default(false)
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String   // 'proposal' | 'payment' | 'order' | 'message' | 'review' | 'system'
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  timestamp DateTime @default(now())
+}
+
+model Review {
+  id             String   @id @default(uuid())
+  orderId        String
+  order          Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  reviewerName   String
+  reviewerAvatar String
+  targetId       String
+  rating         Float
+  comment        String
+  pros           String?
+  cons           String?
+  wouldHireAgain Boolean  @default(true)
+  createdAt      DateTime @default(now())
+}
+
+model Dispute {
+  id             String   @id @default(uuid())
+  orderId        String
+  order          Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderTitle     String
+  clientName     String
+  freelancerName String
+  amount         Float
+  reason         String
+  status         String   // 'open' | 'resolved'
+  resolution     String?
+  createdAt      DateTime @default(now())
+}
+
+model WithdrawalRequest {
+  id             String   @id @default(uuid())
+  freelancerId   String
+  freelancer     User     @relation(fields: [freelancerId], references: [id], onDelete: Cascade)
+  freelancerName String
+  amount         Float
+  method         String   // 'UPI' | 'Bank Transfer' | 'Razorpay' | 'PayPal'
+  accountDetails String
+  status         String   // 'pending' | 'approved' | 'rejected'
+  createdAt      DateTime @default(now())
+}
+
+model WorkspaceTask {
+  id         String   @id @default(uuid())
+  orderId    String
+  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  title      String
+  status     String   // 'todo' | 'in_progress' | 'in_review' | 'done'
+  assignedTo String?
+  createdAt  DateTime @default(now())
+}
+
+model WorkspaceAsset {
+  id         String   @id @default(uuid())
+  orderId    String
+  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  name       String
+  url        String
+  size       String?
+  uploadedBy String
+  uploadedAt DateTime @default(now())
+}
+
+model WorkspaceNote {
+  orderId String @id
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  notes   String
+}
+
+model Bookmark {
+  id       String @id @default(uuid())
+  userId   String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  targetId String // ID of Gig or Freelancer Profile
+  
+  @@unique([userId, targetId])
+}

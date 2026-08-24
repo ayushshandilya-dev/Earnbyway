@@ -5,7 +5,18 @@ import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
 
 export const MessagingPage: React.FC = () => {
-  const { conversations, messages, currentUser, sendMessage, markConversationRead } = useApp();
+  const { 
+    conversations, 
+    messages, 
+    currentUser, 
+    sendMessage, 
+    markConversationRead, 
+    joinChatRoom, 
+    leaveChatRoom, 
+    sendTypingStatus, 
+    typingUsers, 
+    usingBackend 
+  } = useApp();
   const [activeConv, setActiveConv] = useState(conversations[0]?.id || null);
   const [messageInput, setMessageInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -23,27 +34,52 @@ export const MessagingPage: React.FC = () => {
   const activeMessages = activeConv ? messages[activeConv] || [] : [];
   const activeConversation = conversations.find(c => c.id === activeConv);
 
-  // Clear unread when opening a conversation
+  // Clear unread and join/leave WebSocket rooms when selecting active conversation
   useEffect(() => {
-    if (activeConv) markConversationRead(activeConv);
-  }, [activeConv, markConversationRead]);
+    if (activeConv) {
+      markConversationRead(activeConv);
+      if (usingBackend) {
+        joinChatRoom(activeConv);
+        return () => {
+          leaveChatRoom(activeConv);
+        };
+      }
+    }
+  }, [activeConv, markConversationRead, usingBackend]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [activeMessages]);
 
-  // Simulate typing indicator when bot auto-reply is pending
+  // Handle typing triggers (real Socket.IO vs mock simulation)
   useEffect(() => {
-    if (!messageInput.trim() || !activeConversation) {
-      setIsTyping(false);
-      return;
+    if (usingBackend) {
+      if (activeConv) {
+        const hasText = messageInput.trim().length > 0;
+        sendTypingStatus(activeConv, hasText);
+        if (hasText) {
+          const timer = setTimeout(() => sendTypingStatus(activeConv, false), 3000);
+          return () => clearTimeout(timer);
+        }
+      }
+    } else {
+      if (!messageInput.trim() || !activeConversation) {
+        setIsTyping(false);
+        return;
+      }
+      setIsTyping(true);
+      setTypingUserName(activeConversation.participant.name);
+      const timer = setTimeout(() => setIsTyping(false), 3000);
+      return () => clearTimeout(timer);
     }
-    // Show typing indicator for the other participant
-    setIsTyping(true);
-    setTypingUserName(activeConversation.participant.name);
-    const timer = setTimeout(() => setIsTyping(false), 3000);
-    return () => clearTimeout(timer);
-  }, [messageInput, activeConversation]);
+  }, [messageInput, activeConv, activeConversation, usingBackend]);
+
+  const activeTypingState = activeConv ? typingUsers[activeConv] : null;
+  const isOtherUserTyping = usingBackend
+    ? (activeTypingState && activeTypingState.isTyping && activeTypingState.senderId !== currentUser.id)
+    : isTyping;
+
+  const otherTypingName = activeConversation ? activeConversation.participant.name : '';
 
   const handleSend = useCallback(() => {
     if (!messageInput.trim() && !attachment) return;
@@ -145,10 +181,10 @@ export const MessagingPage: React.FC = () => {
               </div>
 
               <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gradient-to-b from-transparent to-zinc-950/30">
-                {isTyping && typingUserName && (
+                {isOtherUserTyping && otherTypingName && (
                   <div className="flex items-start gap-2 text-xs text-zinc-500 italic animate-in fade-in duration-200">
                     <Loader2 className="w-3 h-3 animate-spin text-emerald-400" />
-                    <span>{typingUserName} is typing...</span>
+                    <span>{otherTypingName} is typing...</span>
                   </div>
                 )}
                 {activeMessages.map(msg => {
