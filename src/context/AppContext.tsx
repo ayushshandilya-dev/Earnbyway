@@ -63,7 +63,7 @@ interface AppContextType {
   switchRole: (role: UserRole) => void;
   signIn: (role: 'client' | 'freelancer', email?: string, name?: string) => User;
   loginUser: (email: string, password: string) => Promise<User>;
-  registerUser: (name: string, email: string, role: 'client' | 'freelancer', title?: string, location?: string) => Promise<User>;
+  registerUser: (name: string, email: string, role: 'client' | 'freelancer', password?: string, title?: string, location?: string) => Promise<User>;
   signOut: () => void;
   createGig: (gig: Omit<Gig, 'id' | 'createdAt' | 'ordersCompleted' | 'rating' | 'reviewsCount'>) => void;
   postProject: (project: Omit<Project, 'id' | 'createdAt' | 'status' | 'proposalCount' | 'proposals'>) => void;
@@ -114,11 +114,29 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   });
 
   const [currentRole, setCurrentRole] = useState<UserRole>(() => {
+    const token = localStorage.getItem('earnbyway_token') || localStorage.getItem('earnbyway_access_token');
+    if (!token) return 'guest';
     const saved = localStorage.getItem('earnbyway_role');
-    return (saved as UserRole) || 'client';
+    return (saved as UserRole) || 'guest';
   });
 
   const [currentUser, setCurrentUser] = useState<User>(() => {
+    const token = localStorage.getItem('earnbyway_token') || localStorage.getItem('earnbyway_access_token');
+    if (!token) {
+      return {
+        id: 'guest_user',
+        name: 'Guest Explorer',
+        email: 'guest@earnbyway.dev',
+        avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+        role: 'guest',
+        location: 'Global',
+        isVerified: false,
+        joinedDate: 'Today',
+        balance: 0,
+        pendingBalance: 0,
+        withdrawnBalance: 0
+      };
+    }
     const role = localStorage.getItem('earnbyway_role') as UserRole;
     const user = users.find(u => u.role === role) || users.find(u => u.role === 'client') || users[0];
     return user;
@@ -463,12 +481,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const registerUser = async (nameInput: string, emailInput: string, role: 'client' | 'freelancer') => {
+  const registerUser = async (nameInput: string, emailInput: string, role: 'client' | 'freelancer', passwordInput?: string) => {
     if (usingBackend) {
       const user = await api.register({
         name: nameInput,
         email: emailInput,
-        password: 'password123',
+        password: passwordInput || 'password123',
         role,
         title: role === 'freelancer' ? 'Specialist' : undefined,
         location: 'Global'

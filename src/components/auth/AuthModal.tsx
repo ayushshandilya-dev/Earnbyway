@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { Hexagon, X, Mail, Lock, ShieldCheck, Github, Smartphone, Loader2, CheckCircle } from 'lucide-react';
+import { Hexagon, X, Mail, Lock, ShieldCheck, Github, Smartphone, Loader2, CheckCircle, User as UserIcon } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 
@@ -84,6 +84,27 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose }) => {
     } else {
       handleMockLogin('client');
     }
+  };
+
+  const handleSignUpClick = () => {
+    if (!selectedRole) {
+      setError('Please select your role first.');
+      return;
+    }
+    if (name.trim().length < 2) {
+      setError('Please enter your full name (min 2 characters).');
+      return;
+    }
+    if (!email.includes('@')) {
+      setError('Please enter a valid email address.');
+      return;
+    }
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters.');
+      return;
+    }
+    setError('');
+    setStep('otp');
   };
 
   const handleOAuthStart = (provider: 'google' | 'github', role: 'client' | 'freelancer') => {
@@ -221,7 +242,7 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose }) => {
           <div className="space-y-4 mb-6">
             <Input
               label="Full Name"
-              icon={<Mail className="w-4 h-4" />}
+              icon={<UserIcon className="w-4 h-4" />}
               placeholder="Your full name"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -234,11 +255,24 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose }) => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
+            <Input
+              label="Password"
+              icon={<Lock className="w-4 h-4" />}
+              type="password"
+              placeholder="Minimum 6 characters"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            {error && (
+              <p className="text-[11px] text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-lg px-3 py-2">
+                {error}
+              </p>
+            )}
           </div>
 
           <Button
             disabled={!selectedRole}
-            onClick={() => setStep('otp')}
+            onClick={handleSignUpClick}
             btn3d
             size="md"
             className="w-full"

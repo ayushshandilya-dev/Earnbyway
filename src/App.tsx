@@ -1,7 +1,7 @@
 import React, { useState, lazy, Suspense } from 'react';
 import { Routes, Route, Outlet, useLocation, useParams, useNavigate } from 'react-router-dom';
 import { Loader2, X, ArrowLeft } from 'lucide-react';
-import { RoleSwitcher } from './components/layout/RoleSwitcher';
+
 import { Navbar } from './components/layout/Navbar';
 import { Footer } from './components/layout/Footer';
 import { AuthModal } from './components/auth/AuthModal';
@@ -100,7 +100,6 @@ const AppLayout: React.FC = () => {
         </div>
         <div className="fixed inset-0 pointer-events-none bg-grid opacity-40 z-0" />
       <div className="relative z-10 flex flex-col min-h-screen">
-        <RoleSwitcher />
         <Navbar
           onOpenAuth={() => setIsAuthOpen(true)}
           onOpenAITools={() => setIsAIToolsOpen(true)}
