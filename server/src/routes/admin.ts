@@ -149,4 +149,45 @@ router.put('/users/:id/verify', async (req: AuthRequest, res) => {
   }
 });
 
+// Suspend / Unsuspend User
+router.put('/users/:id/suspend', async (req: AuthRequest, res) => {
+  const { id } = req.params;
+
+  try {
+    const user = await prisma.user.findUnique({ where: { id } });
+    if (!user) {
+      return res.status(404).json({ error: 'User account not found' });
+    }
+
+    if (user.role === 'admin') {
+      return res.status(400).json({ error: 'Cannot suspend admin accounts' });
+    }
+
+    const updated = await prisma.user.update({
+      where: { id },
+      data: { isSuspended: !user.isSuspended }
+    });
+
+    // Notify user of suspension status change
+    await prisma.notification.create({
+      data: {
+        userId: id,
+        type: 'system',
+        title: updated.isSuspended ? 'Account Suspended' : 'Account Reactivated',
+        message: updated.isSuspended
+          ? 'Your account has been suspended by administration. Contact support for assistance.'
+          : 'Your account has been reactivated. Welcome back!'
+      }
+    });
+
+    return res.json({
+      message: `User ${updated.isSuspended ? 'suspended' : 'reactivated'} successfully`,
+      isSuspended: updated.isSuspended
+    });
+  } catch (error) {
+    console.error('Toggle user suspension error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 export default router;

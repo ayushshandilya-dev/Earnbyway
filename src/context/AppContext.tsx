@@ -1131,9 +1131,53 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const depositFunds = async (amount: number, paymentMethod: string) => {
     if (usingBackend) {
       try {
-        const res = await api.depositFunds(amount, paymentMethod);
-        setCurrentUser(res.user);
-        return res;
+        if (paymentMethod === 'Razorpay') {
+          // 1. Create order on backend
+          const orderData = await api.createPaymentOrder(amount);
+
+          return new Promise((resolve, reject) => {
+            const options = {
+              key: orderData.key_id,
+              amount: orderData.amount,
+              currency: orderData.currency,
+              name: 'EarnByWay Platform',
+              description: `Wallet deposit of ₹${amount}`,
+              order_id: orderData.orderId,
+              handler: async (response: any) => {
+                try {
+                  // 2. Verify payment signature on backend
+                  const res = await api.verifyPayment({
+                    razorpay_order_id: response.razorpay_order_id,
+                    razorpay_payment_id: response.razorpay_payment_id,
+                    razorpay_signature: response.razorpay_signature,
+                  });
+                  setCurrentUser(res.user);
+                  resolve(res);
+                } catch (err) {
+                  reject(err);
+                }
+              },
+              prefill: {
+                name: currentUser.name,
+                email: currentUser.email,
+              },
+              theme: {
+                color: '#10b981', // emerald-500 brand color
+              },
+              modal: {
+                ondismiss: () => {
+                  reject(new Error('Payment cancelled by user'));
+                }
+              }
+            };
+            const rzp = new (window as any).Razorpay(options);
+            rzp.open();
+          });
+        } else {
+          const res = await api.depositFunds(amount, paymentMethod);
+          setCurrentUser(res.user);
+          return res;
+        }
       } catch (err) {
         console.error('Deposit failed:', err);
         throw err;
@@ -1146,7 +1190,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       addNotification({
         userId: currentUser.id,
         type: 'payment',
-        title: 'Wallet Funded Successfully',
+        title: 'Wallet Funded Successfully (Demo)',
         message: `₹${amount.toLocaleString()} has been added to your available balance via ${paymentMethod}.`
       });
     }

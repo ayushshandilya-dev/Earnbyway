@@ -46,7 +46,7 @@ export function verifyToken(token: string): any {
   return verifyAccessToken(token);
 }
 
-export function authenticateToken(req: AuthRequest, res: Response, next: NextFunction) {
+export async function authenticateToken(req: AuthRequest, res: Response, next: NextFunction) {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
@@ -57,6 +57,20 @@ export function authenticateToken(req: AuthRequest, res: Response, next: NextFun
   const decoded = verifyAccessToken(token);
   if (!decoded) {
     return res.status(403).json({ error: 'Invalid or expired access token' });
+  }
+
+  // Check if user is suspended
+  try {
+    const prisma = (await import('../lib/prisma')).default;
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.id },
+      select: { isSuspended: true }
+    });
+    if (user?.isSuspended) {
+      return res.status(403).json({ error: 'Your account has been suspended. Contact support for assistance.' });
+    }
+  } catch (_) {
+    // If DB check fails, allow request to proceed (graceful degradation)
   }
 
   req.user = decoded;

@@ -291,6 +291,55 @@ class ApiClient {
       method: 'PUT'
     });
   }
+
+  async toggleSuspendUser(userId: string) {
+    return this.request(`/admin/users/${userId}/suspend`, {
+      method: 'PUT'
+    });
+  }
+
+  // Payments API (Razorpay)
+  async createPaymentOrder(amount: number) {
+    return this.request('/payments/create-order', {
+      method: 'POST',
+      body: JSON.stringify({ amount })
+    });
+  }
+
+  async verifyPayment(verificationData: {
+    razorpay_order_id: string;
+    razorpay_payment_id: string;
+    razorpay_signature: string;
+  }) {
+    return this.request('/payments/verify', {
+      method: 'POST',
+      body: JSON.stringify(verificationData)
+    });
+  }
+
+  async getPaymentHistory() {
+    return this.request('/payments/history');
+  }
+
+  // Reviews API
+  async submitReview(reviewData: {
+    orderId: string;
+    targetId: string;
+    rating: number;
+    comment: string;
+    pros?: string;
+    cons?: string;
+    wouldHireAgain?: boolean;
+  }) {
+    return this.request('/reviews', {
+      method: 'POST',
+      body: JSON.stringify(reviewData)
+    });
+  }
+
+  async getReviews(targetId: string) {
+    return this.request(`/reviews/${targetId}`);
+  }
 }
 
 export const api = new ApiClient();

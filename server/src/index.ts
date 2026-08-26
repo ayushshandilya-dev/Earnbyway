@@ -11,6 +11,8 @@ import orderRoutes from './routes/orders';
 import chatRoutes from './routes/chat';
 import earningsRoutes from './routes/earnings';
 import adminRoutes from './routes/admin';
+import reviewRoutes from './routes/reviews';
+import paymentRoutes from './routes/payments';
 import { rateLimiter } from './middleware/rateLimiter';
 import prisma from './lib/prisma';
 
@@ -44,6 +46,8 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/earnings', rateLimiter(100, 15 * 60 * 1000), earningsRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/reviews', reviewRoutes);
+app.use('/api/payments', rateLimiter(20, 15 * 60 * 1000), paymentRoutes);
 
 // Health check endpoint
 app.get('/', (req, res) => {

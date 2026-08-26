@@ -18,6 +18,7 @@ model User {
   title            String?
   location         String
   isVerified       Boolean              @default(false)
+  isSuspended      Boolean              @default(false)
   joinedDate       DateTime             @default(now())
   balance          Float                @default(0.0)
   pendingBalance   Float                @default(0.0)
@@ -35,6 +36,7 @@ model User {
   notifications    Notification[]
   withdrawals      WithdrawalRequest[]
   bookmarks        Bookmark[]
+  payments         PaymentTransaction[]
 }
 
 model FreelancerProfile {
@@ -203,6 +205,7 @@ model Review {
   id             String   @id @default(uuid())
   orderId        String
   order          Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  reviewerId     String
   reviewerName   String
   reviewerAvatar String
   targetId       String
@@ -212,6 +215,8 @@ model Review {
   cons           String?
   wouldHireAgain Boolean  @default(true)
   createdAt      DateTime @default(now())
+
+  @@unique([orderId, reviewerId])
 }
 
 model Dispute {
@@ -274,4 +279,18 @@ model Bookmark {
   targetId String // ID of Gig or Freelancer Profile
   
   @@unique([userId, targetId])
+}
+
+model PaymentTransaction {
+  id                String    @id @default(uuid())
+  userId            String
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount            Float
+  currency          String    @default("INR")
+  razorpayOrderId   String    @unique
+  razorpayPaymentId String?
+  status            String    // 'pending' | 'completed' | 'failed'
+  receipt           String    @unique // idempotency key
+  createdAt         DateTime  @default(now())
+  completedAt       DateTime?
 }
