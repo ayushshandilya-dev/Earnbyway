@@ -54,6 +54,41 @@ export const FreelancerDashboard: React.FC = () => {
   const totalEarned = orders.filter(o => o.freelancerId === currentUser.id).reduce((sum, o) => sum + o.totalPrice, 0);
   const openProjects = projects.filter(p => p.status === 'open').length;
 
+  const dynamicChartData = useMemo(() => {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const currentMonthIndex = new Date().getMonth();
+    
+    const last6Months: Array<{ name: string; monthNum: number; earnings: number; orders: number }> = [];
+    for (let i = 5; i >= 0; i--) {
+      let index = currentMonthIndex - i;
+      if (index < 0) index += 12;
+      last6Months.push({
+        name: months[index],
+        monthNum: index,
+        earnings: 0,
+        orders: 0
+      });
+    }
+
+    const myCompletedOrders = orders.filter(o => 
+      o.freelancerId === currentUser.id && 
+      o.status === 'completed'
+    );
+
+    myCompletedOrders.forEach(o => {
+      const orderDate = new Date(o.createdAt || new Date());
+      const orderMonth = orderDate.getMonth();
+      
+      const chartMonth = last6Months.find(m => m.monthNum === orderMonth);
+      if (chartMonth) {
+        chartMonth.earnings += o.totalPrice * 0.90; // net earnings
+        chartMonth.orders += 1;
+      }
+    });
+
+    return last6Months;
+  }, [orders, currentUser.id]);
+
   return (
     <div className="py-6 space-y-8 animate-fade-in">
       {/* Header */}
@@ -120,7 +155,7 @@ export const FreelancerDashboard: React.FC = () => {
           </CardTitle>
           <div className="h-52 mt-4">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={earningsData}>
+              <AreaChart data={dynamicChartData}>
                 <defs>
                   <linearGradient id="earningsGrad" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="#10b981" stopOpacity={0.3} />
@@ -144,7 +179,7 @@ export const FreelancerDashboard: React.FC = () => {
           </CardTitle>
           <div className="h-52 mt-4">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={earningsData}>
+              <BarChart data={dynamicChartData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
                 <XAxis dataKey="name" tick={{ fill: '#71717a', fontSize: 11 }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fill: '#71717a', fontSize: 11 }} axisLine={false} tickLine={false} />

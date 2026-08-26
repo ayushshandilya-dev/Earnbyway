@@ -119,25 +119,23 @@ export const OnboardingPage: React.FC = () => {
               <UserIcon className="w-5 h-5 text-emerald-400" /> Basic Details
             </h2>
 
-            {/* Profile Avatar Selection */}
             <div>
               <label className="text-xs font-medium text-zinc-400 mb-2 block">Choose Profile Picture</label>
               <div className="flex flex-wrap gap-3 items-center">
                 <img src={avatar} alt="Selected avatar" className="w-16 h-16 rounded-2xl object-cover ring-2 ring-emerald-500" />
                 <div className="flex flex-wrap gap-2">
                   {[
-                    'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150',
-                    'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150',
-                    'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
-                    'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150',
-                    'https://images.unsplash.com/photo-1628157582853-a796fa650a6a?w=150'
+                    'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80', // Male 1
+                    'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80', // Male 2
+                    'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80', // Female 1
+                    'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&auto=format&fit=crop&q=80'  // Female 2
                   ].map((url) => (
                     <button
                       key={url}
                       type="button"
-                      onClick={() => setAvatar(`${url}&auto=format&fit=crop&q=80`)}
-                      className={`w-10 h-10 rounded-xl overflow-hidden border-2 transition-all ${
-                        avatar.includes(url) ? 'border-emerald-400 scale-105' : 'border-zinc-800 hover:border-zinc-700'
+                      onClick={() => setAvatar(url)}
+                      className={`w-12 h-12 rounded-xl overflow-hidden border-2 transition-all ${
+                        avatar === url ? 'border-emerald-400 scale-105' : 'border-zinc-800 hover:border-zinc-700'
                       }`}
                     >
                       <img src={url} className="w-full h-full object-cover" alt="Preset choice" />
