@@ -14,6 +14,8 @@ import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 
+import { EditFreelancerProfileModal } from './EditFreelancerProfileModal';
+
 interface Props {
   freelancerUser: User;
   onBack?: () => void;
@@ -27,6 +29,7 @@ export const FreelancerProfile: React.FC<Props> = ({ freelancerUser, onBack }) =
   const [activeTab, setActiveTab] = useState<'portfolio' | 'reviews' | 'ai'>('portfolio');
   const [showAI, setShowAI] = useState(false);
   const [isQuizOpen, setIsQuizOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
   const isOwner = currentUser.id === freelancerUser.id;
 
   if (!profile) {
@@ -68,6 +71,16 @@ export const FreelancerProfile: React.FC<Props> = ({ freelancerUser, onBack }) =
               <div className="flex items-center gap-2 mb-1">
                 <h1 className="text-2xl font-heading font-bold text-white">{freelancerUser.name}</h1>
                 {freelancerUser.isVerified && <CheckCircle className="w-5 h-5 text-emerald-400 fill-emerald-400/20" />}
+                {isOwner && (
+                  <Button
+                    onClick={() => setIsEditOpen(true)}
+                    variant="outline"
+                    size="xs"
+                    className="ml-3 border-zinc-800 text-zinc-300 hover:text-white"
+                  >
+                    Edit Profile
+                  </Button>
+                )}
               </div>
               <p className="text-sm text-zinc-400">{profile.title}</p>
             </div>
@@ -78,6 +91,16 @@ export const FreelancerProfile: React.FC<Props> = ({ freelancerUser, onBack }) =
           <div className="flex items-center gap-2 mb-1">
             <h1 className="text-xl font-heading font-bold text-white">{freelancerUser.name}</h1>
             {freelancerUser.isVerified && <CheckCircle className="w-4 h-4 text-emerald-400 fill-emerald-400/20" />}
+            {isOwner && (
+              <Button
+                onClick={() => setIsEditOpen(true)}
+                variant="outline"
+                size="xs"
+                className="ml-3 border-zinc-800 text-zinc-300 hover:text-white"
+              >
+                Edit
+              </Button>
+            )}
           </div>
           <p className="text-sm text-zinc-400">{profile.title}</p>
         </div>
@@ -419,6 +442,7 @@ export const FreelancerProfile: React.FC<Props> = ({ freelancerUser, onBack }) =
         </div>
       </div>
       <SkillQuiz isOpen={isQuizOpen} onClose={() => setIsQuizOpen(false)} />
+      <EditFreelancerProfileModal isOpen={isEditOpen} onClose={() => setIsEditOpen(false)} />
     </div>
   );
 };

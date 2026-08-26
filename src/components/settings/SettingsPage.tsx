@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
-import { Settings, Bell, Shield, Smartphone, Save, User, Mail, Lock, Globe, Clock } from 'lucide-react';
+import { Settings, Bell, Shield, Smartphone, Save, User, Mail, Lock, Globe, Clock, Building, Briefcase } from 'lucide-react';
 
 export const SettingsPage: React.FC = () => {
   const { currentUser, updateProfile } = useApp();
@@ -14,7 +14,9 @@ export const SettingsPage: React.FC = () => {
   const [form, setForm] = useState({
     name: currentUser.name,
     email: currentUser.email,
-    bio: 'Full-stack developer with 5+ years of experience building scalable web applications.',
+    title: currentUser.title || '',
+    company: currentUser.company || '',
+    location: currentUser.location || 'Global',
     language: 'English',
     timezone: 'IST (UTC+5:30)',
     emailNotifs: true,
@@ -26,9 +28,11 @@ export const SettingsPage: React.FC = () => {
     updateProfile({
       name: form.name.trim() || currentUser.name,
       email: form.email.trim() || currentUser.email,
+      title: form.title.trim(),
+      company: currentUser.role === 'client' ? form.company.trim() : undefined,
+      location: form.location.trim(),
     });
     localStorage.setItem('earnbyway_prefs', JSON.stringify({
-      bio: form.bio,
       language: form.language,
       timezone: form.timezone,
       emailNotifs: form.emailNotifs,
@@ -52,11 +56,11 @@ export const SettingsPage: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
           <Input label="Full Name" value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} icon={<User className="w-4 h-4" />} />
           <Input label="Email" value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} icon={<Mail className="w-4 h-4" />} />
-        </div>
-        <div className="mt-4">
-          <label className="block text-xs font-medium text-zinc-400 mb-1.5">Bio</label>
-          <textarea value={form.bio} onChange={e => setForm(p => ({ ...p, bio: e.target.value }))}
-            className="w-full p-3 text-sm bg-zinc-900/80 border border-zinc-800 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20 resize-none" rows={3} />
+          <Input label="Location" value={form.location} onChange={e => setForm(p => ({ ...p, location: e.target.value }))} icon={<Globe className="w-4 h-4" />} />
+          <Input label="Job Title" value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} icon={<Briefcase className="w-4 h-4" />} />
+          {currentUser.role === 'client' && (
+            <Input label="Company" value={form.company} onChange={e => setForm(p => ({ ...p, company: e.target.value }))} icon={<Building className="w-4 h-4" />} />
+          )}
         </div>
       </Card>
 
