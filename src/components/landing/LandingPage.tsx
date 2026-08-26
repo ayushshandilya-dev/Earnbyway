@@ -68,7 +68,7 @@ const Section: React.FC<{ children: React.ReactNode; className?: string; delay?:
 
 export const LandingPage: React.FC = () => {
   const navigate = useNavigate();
-  const { gigs, users, profiles } = useApp();
+  const { gigs, users, profiles, currentRole } = useApp();
   const [searchQuery, setSearchQuery] = useState('');
   const freelancers = users.filter(u => u.role === 'freelancer' && profiles[u.id]);
   const heroParallax = useParallax<HTMLDivElement>({ speed: 0.12 });
@@ -431,12 +431,24 @@ export const LandingPage: React.FC = () => {
             <div className="flex flex-wrap items-center justify-center gap-4"
               style={{ transform: 'translateZ(50px)' }}>
               <Magnetic strength={0.2}>
-                <Button variant="primary" size="lg" btn3d icon={<ArrowRight className="w-4 h-4" />} onClick={() => navigate('/gigs')}>
+                <Button variant="primary" size="lg" btn3d icon={<ArrowRight className="w-4 h-4" />} onClick={() => {
+                  if (currentRole === 'guest') {
+                    navigate('/?auth=1');
+                  } else {
+                    navigate('/gigs');
+                  }
+                }}>
                   Find a Freelancer
                 </Button>
               </Magnetic>
               <Magnetic strength={0.2}>
-                <Button variant="secondary" size="lg" btn3d icon={<ArrowUpRight className="w-5 h-5" />} onClick={() => navigate('/projects')}>
+                <Button variant="secondary" size="lg" btn3d icon={<ArrowUpRight className="w-5 h-5" />} onClick={() => {
+                  if (currentRole === 'guest') {
+                    navigate('/?auth=1');
+                  } else {
+                    navigate('/projects');
+                  }
+                }}>
                   Become a Seller
                 </Button>
               </Magnetic>
