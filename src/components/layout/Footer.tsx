@@ -1,5 +1,5 @@
 import React from 'react';
-import { Hexagon, ShieldCheck, Lock, Cpu, Globe, Award, Github, Linkedin, Twitter, Mail, Phone, ArrowUpRight } from 'lucide-react';
+import { Hexagon, ShieldCheck, Lock, Cpu, Globe, Award, Github, Linkedin, Twitter, Mail, Phone, ArrowUpRight, CheckCircle, Building } from 'lucide-react';
 
 const FOOTER_LINKS = {
   platform: [
@@ -33,16 +33,58 @@ const FOOTER_LINKS = {
 
 export const Footer: React.FC = () => {
   return (
-    <footer className="relative mt-24 border-t border-zinc-800/60 bg-gradient-to-b from-zinc-950 to-black">
+    <footer className="relative mt-24 border-t border-zinc-800/60 bg-gradient-to-b from-zinc-950 to-black text-left">
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-500/40 to-transparent" />
       <div className="absolute inset-0 bg-grid opacity-20 pointer-events-none" />
       <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-emerald-500/5 via-teal-500/5 to-transparent blur-2xl pointer-events-none" />
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Main Footer */}
-        <div className="py-16">
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-8 lg:gap-12">
-            {/* Brand */}
-            <div className="col-span-2 md:col-span-2 lg:col-span-1 space-y-4">
+        
+        {/* Trust Badges Banner */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 py-8 border-b border-zinc-800/60">
+          {[
+            {
+              icon: Building,
+              title: 'MJCORP ASIA PVT LTD',
+              desc: 'Corporate escrow holder & verified legal custodian for all milestone contracts.',
+              gradient: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20'
+            },
+            {
+              icon: Lock,
+              title: 'Razorpay Secured (INR ₹)',
+              desc: 'Instant UPI, RuPay, Visa, NetBanking with 256-bit PCI-DSS banking encryption.',
+              gradient: 'text-blue-400 bg-blue-500/10 border-blue-500/20'
+            },
+            {
+              icon: ShieldCheck,
+              title: 'Mandatory User KYC',
+              desc: 'Aadhaar, PAN & bank verification before any platform funds are disbursed.',
+              gradient: 'text-amber-400 bg-amber-500/10 border-amber-500/20'
+            },
+            {
+              icon: CheckCircle,
+              title: 'Milestone-Based NEFT',
+              desc: 'Bank transfers executed with verifiable bank UTR audit tracking compliance.',
+              gradient: 'text-purple-400 bg-purple-500/10 border-purple-500/20'
+            }
+          ].map((item, idx) => (
+            <div key={idx} className="flex gap-3.5 p-4 rounded-2xl bg-zinc-900/30 border border-zinc-800/80">
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center border shrink-0 ${item.gradient}`}>
+                <item.icon className="w-5 h-5" />
+              </div>
+              <div>
+                <h5 className="text-xs font-semibold text-white mb-0.5">{item.title}</h5>
+                <p className="text-[10px] text-zinc-500 leading-normal">{item.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Main Footer Links & Legal Entity Card */}
+        <div className="py-12">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-8 lg:gap-12">
+            
+            {/* Brand & Operating Legal Entity Card */}
+            <div className="col-span-2 space-y-5">
               <div className="flex items-center gap-2">
                 <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 via-teal-400 to-violet-500 p-0.5">
                   <div className="w-full h-full bg-zinc-950 rounded-[10px] flex items-center justify-center">
@@ -57,15 +99,20 @@ export const Footer: React.FC = () => {
               <p className="text-xs text-zinc-500 leading-relaxed max-w-xs">
                 Connecting clients with talented freelancers worldwide through secure escrow milestone payment processing, real-time communication, and AI-powered matching.
               </p>
-              <div className="flex items-center gap-2 pt-1">
-                {[
-                  { icon: ShieldCheck, label: 'Escrow Protected', color: 'text-emerald-400', border: 'border-emerald-500/20', bg: 'bg-emerald-500/10' },
-                  { icon: Lock, label: '256-Bit SSL', color: 'text-blue-400', border: 'border-blue-500/20', bg: 'bg-blue-500/10' },
-                ].map(b => (
-                  <span key={b.label} className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg ${b.bg} ${b.color} ${b.border} text-[10px] font-medium border`}>
-                    <b.icon className="w-3 h-3" /> {b.label}
-                  </span>
-                ))}
+
+              {/* Operating Legal Entity Details Card */}
+              <div className="p-4 rounded-2xl bg-zinc-900/40 border border-zinc-800/70 space-y-2 max-w-xs">
+                <div className="flex items-center gap-1.5 text-[10px] font-semibold text-emerald-400">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  Operating Legal Entity
+                </div>
+                <h5 className="text-xs font-bold text-white">MJCORP ASIA PRIVATE LIMITED</h5>
+                <div className="text-[9.5px] text-zinc-500 space-y-1">
+                  <div>CIN: <span className="text-zinc-400">U62099HR2024PTC125790</span></div>
+                  <div>GSTIN: <span className="text-zinc-400">06AASCM6316N1ZU</span></div>
+                  <div>1212/25, Kalupur, Sonipat, Haryana 131001, India</div>
+                  <div>Contact: <a href="mailto:contact@earnbyway.com" className="text-emerald-400 hover:underline">contact@earnbyway.com</a></div>
+                </div>
               </div>
             </div>
 
@@ -73,7 +120,6 @@ export const Footer: React.FC = () => {
             {[
               { title: 'Platform', links: FOOTER_LINKS.platform },
               { title: 'Categories', links: FOOTER_LINKS.categories },
-              { title: 'Resources', links: FOOTER_LINKS.resources },
             ].map(section => (
               <div key={section.title}>
                 <h4 className="font-semibold text-white text-sm mb-4">{section.title}</h4>
@@ -113,14 +159,29 @@ export const Footer: React.FC = () => {
                 </li>
               </ul>
             </div>
+
           </div>
+        </div>
+
+        {/* Regulatory Disclaimer & Settlement */}
+        <div className="py-6 border-t border-zinc-800/60 text-[10px] text-zinc-600 leading-relaxed space-y-2">
+          <p>
+            <span className="font-semibold text-zinc-400">Regulatory Disclaimer:</span> EarnByWay (earnbyway.com) operates purely as a secure freelance escrow marketplace platform. It does not facilitate equity investments, debt financing, securities offering, collective investment schemes, or guaranteed financial returns in accordance with SEBI, RBI, and Companies Act regulations.
+          </p>
+          <p>
+            All freelance contract funds are collected via Razorpay Standard Checkout in Indian Rupees (INR) and settled directly into the merchant account owned by <span className="font-semibold text-zinc-400">MJCORP ASIA PRIVATE LIMITED</span>. Disbursements are executed manually by Admin via NEFT/RTGS/IMPS to verified freelancer bank accounts following milestone compliance audits.
+          </p>
         </div>
 
         {/* Bottom Bar */}
         <div className="py-6 border-t border-zinc-800/60 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-[11px] text-zinc-600">
-            &copy; 2026 Earn By Way. All rights reserved. Built with React, TypeScript &amp; Tailwind CSS.
-          </p>
+          <div className="text-[11px] text-zinc-600 flex flex-wrap items-center gap-1.5">
+            <span>&copy; 2026 Earn By Way. A property of <span className="text-zinc-400 font-medium">MJCORP ASIA PRIVATE LIMITED</span>. All rights reserved.</span>
+            <span className="text-zinc-800">|</span>
+            <span className="text-zinc-500">Made with pride in India🇮🇳</span>
+            <span className="text-zinc-800">|</span>
+            <span className="text-zinc-500">Domain: earnbyway.com</span>
+          </div>
           <div className="flex items-center gap-3">
             {[
               { icon: Github, href: '#', label: 'GitHub' },
@@ -135,6 +196,7 @@ export const Footer: React.FC = () => {
             ))}
           </div>
         </div>
+
       </div>
     </footer>
   );
