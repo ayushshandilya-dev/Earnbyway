@@ -22,6 +22,7 @@ export interface User {
   title?: string;
   location: string;
   isVerified: boolean;
+  isOnboarded?: boolean;
   joinedDate: string;
   balance: number;
   pendingBalance: number;

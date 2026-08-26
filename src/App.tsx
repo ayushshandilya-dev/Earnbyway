@@ -1,5 +1,5 @@
 import React, { useState, lazy, Suspense } from 'react';
-import { Routes, Route, Outlet, useLocation, useParams, useNavigate } from 'react-router-dom';
+import { Routes, Route, Outlet, useLocation, useParams, useNavigate, Navigate } from 'react-router-dom';
 import { Loader2, X, ArrowLeft, Lock, LogIn } from 'lucide-react';
 
 import { Navbar } from './components/layout/Navbar';
@@ -37,6 +37,7 @@ const AdminDashboard = lazy(() => import('./components/admin/AdminDashboard').th
 const UserManagement = lazy(() => import('./components/admin/UserManagement').then(m => ({ default: m.UserManagement })));
 const DisputePanel = lazy(() => import('./components/admin/DisputePanel').then(m => ({ default: m.DisputePanel })));
 const WithdrawalApprovals = lazy(() => import('./components/admin/WithdrawalApprovals').then(m => ({ default: m.WithdrawalApprovals })));
+const OnboardingPage = lazy(() => import('./components/auth/OnboardingPage').then(m => ({ default: m.OnboardingPage })));
 const NotFoundPage = lazy(() => import('./components/ui/NotFoundPage').then(m => ({ default: m.NotFoundPage })));
 
 const PageLoader: React.FC = () => (
@@ -180,8 +181,9 @@ const AppLayout: React.FC = () => {
 
 // ─── ROUTE GUARD: RequireAuth wrapper ───
 const ProtectedRoute: React.FC<{ children: React.ReactElement }> = ({ children }) => {
-  const { currentRole } = useApp();
+  const { currentRole, currentUser } = useApp();
   const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const location = useLocation();
 
   if (currentRole === 'guest') {
     return (
@@ -191,6 +193,12 @@ const ProtectedRoute: React.FC<{ children: React.ReactElement }> = ({ children }
       </>
     );
   }
+
+  // If user is logged in but hasn't completed onboarding, force redirection
+  if (currentUser && currentUser.isOnboarded === false && location.pathname !== '/onboarding') {
+    return <Navigate to="/onboarding" replace />;
+  }
+
   return children;
 };
 
@@ -218,6 +226,7 @@ export default function App() {
           <Route path="/auth/github/callback" element={<GitHubCallback />} />
 
           {/* Protected routes — require authentication */}
+          <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
           <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
           <Route path="/chat" element={<ProtectedRoute><MessagingPage /></ProtectedRoute>} />

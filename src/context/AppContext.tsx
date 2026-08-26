@@ -122,6 +122,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   });
 
   const [currentUser, setCurrentUser] = useState<User>(() => {
+    const savedUser = localStorage.getItem('earnbyway_user');
+    if (savedUser) {
+      try {
+        return JSON.parse(savedUser);
+      } catch (_) {}
+    }
     const token = localStorage.getItem('earnbyway_token') || localStorage.getItem('earnbyway_access_token');
     if (!token) {
       return {
@@ -132,6 +138,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         role: 'guest',
         location: 'Global',
         isVerified: false,
+        isOnboarded: true,
         joinedDate: 'Today',
         balance: 0,
         pendingBalance: 0,
@@ -140,7 +147,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
     const role = localStorage.getItem('earnbyway_role') as UserRole;
     const user = users.find(u => u.role === role) || users.find(u => u.role === 'client') || users[0];
-    return user;
+    return { ...user, isOnboarded: true }; // default mock users to onboarded
   });
 
   const [profiles, setProfiles] = useState<Record<string, FreelancerProfile>>(() => {
@@ -378,11 +385,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!usingBackend) {
       localStorage.setItem('earnbyway_users', JSON.stringify(users));
     }
-    const active = users.find(u => u.id === currentUser.id);
-    if (active && JSON.stringify(active) !== JSON.stringify(currentUser)) {
-      setCurrentUser(active);
+  }, [users, usingBackend]);
+
+  useEffect(() => {
+    if (currentUser && currentUser.id !== 'guest_user') {
+      localStorage.setItem('earnbyway_user', JSON.stringify(currentUser));
+    } else {
+      localStorage.removeItem('earnbyway_user');
     }
-  }, [users, currentUser.id, usingBackend]);
+  }, [currentUser]);
 
   useEffect(() => {
     localStorage.setItem('earnbyway_profiles', JSON.stringify(profiles));
@@ -990,18 +1001,58 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
   };
 
-  // Update current user's profile (settings)
-  const updateProfile = async (updates: Partial<User>) => {
+  // Update current user's profile (settings & onboarding)
+  const updateProfile = async (updates: any) => {
     if (usingBackend) {
       try {
         const updatedUser = await api.updateProfile(updates);
         setCurrentUser(updatedUser);
+        if (updatedUser.freelancerProfile) {
+          setProfiles(prev => ({
+            ...prev,
+            [updatedUser.id]: updatedUser.freelancerProfile
+          }));
+        }
+        return updatedUser;
       } catch (err) {
         console.error('Failed to update profile:', err);
+        throw err;
       }
     } else {
-      setUsers(prev => prev.map(u => u.id === currentUser.id ? { ...u, ...updates } : u));
-      setCurrentUser(prev => prev ? { ...prev, ...updates } : prev);
+      const isFreelancer = currentUser.role === 'freelancer';
+      const updatedUser = {
+        ...currentUser,
+        name: updates.name || currentUser.name,
+        location: updates.location || currentUser.location,
+        title: updates.title || currentUser.title,
+        avatar: updates.avatar || currentUser.avatar,
+        company: currentUser.role === 'client' ? (updates.company || currentUser.company) : undefined,
+        isOnboarded: true,
+      };
+
+      setUsers(prev => prev.map(u => u.id === currentUser.id ? updatedUser : u));
+      setCurrentUser(updatedUser);
+
+      if (isFreelancer && updates.freelancerProfile) {
+        const mockProfile = {
+          ...updates.freelancerProfile,
+          userId: currentUser.id,
+          rating: 5.0,
+          completedJobs: 0,
+          totalEarned: 0,
+          responseTime: '< 1 hour',
+          avgDeliveryTime: '3 Days',
+          responseRate: 100,
+          proposalSuccessRate: 100,
+          profileViewsThisMonth: 0,
+          verifiedSkills: [],
+        };
+        setProfiles(prev => ({
+          ...prev,
+          [currentUser.id]: mockProfile
+        }));
+      }
+      return updatedUser;
     }
   };
 

@@ -131,7 +131,7 @@ router.post('/register', validate(registerSchema), async (req, res) => {
     return res.status(201).json({
       accessToken,
       refreshToken,
-      user: { id: user.id, name: user.name, email: user.email, role: user.role }
+      user: { id: user.id, name: user.name, email: user.email, role: user.role, isOnboarded: user.isOnboarded }
     });
   } catch (error: any) {
     console.error('Registration error:', error);
@@ -245,6 +245,7 @@ router.put('/profile', authenticateToken, async (req: AuthRequest, res) => {
         title,
         location,
         proTier,
+        isOnboarded: true,
       },
       include: { freelancerProfile: true }
     });

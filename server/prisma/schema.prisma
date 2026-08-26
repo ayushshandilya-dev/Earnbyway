@@ -19,6 +19,7 @@ model User {
   location         String
   isVerified       Boolean              @default(false)
   isSuspended      Boolean              @default(false)
+  isOnboarded      Boolean              @default(false)
   joinedDate       DateTime             @default(now())
   balance          Float                @default(0.0)
   pendingBalance   Float                @default(0.0)
