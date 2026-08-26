@@ -223,6 +223,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               setCurrentRole(me.role);
               localStorage.setItem('earnbyway_role', me.role);
             }
+            if (me.freelancerProfile) {
+              setProfiles(prev => ({
+                ...prev,
+                [me.id]: me.freelancerProfile
+              }));
+            }
           } catch (err) {
             console.warn('API getMe failed, clearing token:', err);
             api.setToken(null);
@@ -461,6 +467,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         role,
         location: 'Global',
         isVerified: false,
+        isOnboarded: false,
         joinedDate: new Date().toISOString().split('T')[0],
         balance: 0,
         pendingBalance: 0,
@@ -481,6 +488,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setCurrentUser(user);
       setCurrentRole(user.role);
       localStorage.setItem('earnbyway_role', user.role);
+      if (user.freelancerProfile) {
+        setProfiles(prev => ({
+          ...prev,
+          [user.id]: user.freelancerProfile
+        }));
+      }
       const [ordersData, convsData] = await Promise.all([
         api.getOrders(),
         api.getConversations()
@@ -506,6 +519,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setCurrentUser(user);
       setCurrentRole(user.role);
       localStorage.setItem('earnbyway_role', user.role);
+      if (user.freelancerProfile) {
+        setProfiles(prev => ({
+          ...prev,
+          [user.id]: user.freelancerProfile
+        }));
+      }
       return user;
     } else {
       return signIn(role, emailInput, nameInput);
