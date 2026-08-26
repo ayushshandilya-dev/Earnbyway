@@ -453,16 +453,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   // Sign in: find or create a user by role + email, persist identity
+  // Sign in: find or create a user by role + email, persist identity
   const signIn = (role: 'client' | 'freelancer', email?: string, name?: string) => {
     let target = users.find(u => u.role === role && (!email || u.email === email));
-    if (!target) {
-      target = users.find(u => u.role === role);
-    }
-    if (!target) {
+    if (!target && email) {
+      // If registering a new user, create it
       const newUser: User = {
         id: `user_${Date.now()}`,
         name: name || (role === 'client' ? 'New Client' : 'New Freelancer'),
-        email: email || `${role}@earnbyway.dev`,
+        email: email,
         avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
         role,
         location: 'Global',
@@ -475,6 +474,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       };
       setUsers(prev => [newUser, ...prev]);
       target = newUser;
+    }
+    if (!target) {
+      target = users.find(u => u.role === role) || users[0];
     }
     setCurrentRole(role);
     localStorage.setItem('earnbyway_role', role);
@@ -502,7 +504,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setConversations(convsData);
       return user;
     } else {
-      return signIn('client', emailInput);
+      // Enforce strict mock credentials lookup - reject wrong emails/passwords
+      const target = users.find(u => u.email === emailInput);
+      if (!target || (passwordInput !== 'password123' && passwordInput !== 'password')) {
+        throw new Error('Invalid email or password.');
+      }
+      setCurrentRole(target.role);
+      localStorage.setItem('earnbyway_role', target.role);
+      setCurrentUser(target);
+      return target;
     }
   };
 
